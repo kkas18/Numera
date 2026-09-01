@@ -4,7 +4,7 @@
 
 'use strict';
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const SHELL = 'numera-shell-v' + VERSION;
 const RUNTIME = 'numera-runtime-v1';
 

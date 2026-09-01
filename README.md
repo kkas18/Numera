@@ -11,7 +11,7 @@ sw.js                   service worker (offline + oppdatering)
 .nojekyll               ber GitHub Pages servere filene som de er
 icons/                  app-ikoner (SVG + PNG, vanlige og maskerbare)
 tests/engine.test.js    103 tester av regnemotoren
-tests/ui.test.js        40 tester av grensesnittet og PWA-oppsettet
+tests/ui.test.js        51 tester av grensesnittet og PWA-oppsettet
 ```
 
 Alle stier er relative (`./`), så appen virker både på
@@ -33,7 +33,7 @@ Via kommandolinjen:
 ```bash
 git init
 git add .
-git commit -m "NUMERA 1.0.0"
+git commit -m "NUMERA 1.1.0"
 git branch -M main
 git remote add origin https://github.com/BRUKERNAVN/numera.git
 git push -u origin main
@@ -84,8 +84,16 @@ kjører alltid på koden som faktisk sendes til telefonen.
 | `Delete` | nullstill |
 | `Esc` | lukk panel |
 
+## Vitenskapelige funksjoner
+
+Håndtaket midt på streken over tastene slår dem av og på med ett trykk.
+Du kan også sveipe nedover på tallvinduet for å hente dem fram, og
+oppover for å skjule dem igjen. Valget huskes til neste gang.
+
 ## Gester
 
+- **Trykk håndtaket** over tastene for trigonometri, logaritmer og potenser.
+- **Sveip ned eller opp** på vinduet for det samme.
 - **Hold inne tallet** i vinduet for å kopiere det.
 - **Sveip sidelengs** over vinduet for å slette siste tegn.
 - **Hold inne slettetasten** for å nullstille alt.
