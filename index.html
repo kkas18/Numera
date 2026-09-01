@@ -197,6 +197,8 @@ body::after {
   letter-spacing: .14em;
   color: var(--ink-dim);
 }
+/* Plass til alle knappene på smale telefoner. */
+@media (max-width: 430px) { .brand-tag { display: none; } }
 .topbar-actions { display: flex; gap: 2px; }
 
 .icon-btn {
@@ -527,6 +529,81 @@ body::after {
   padding: 30px 0 20px;
 }
 
+/* Forklaringer */
+.help-intro {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  padding-bottom: 6px;
+}
+.help-group { padding-top: 18px; }
+.help-group h3 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .2em;
+  color: var(--accent);
+  padding-bottom: 4px;
+}
+.help-item {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.help-badge {
+  height: 46px;
+  display: grid; place-items: center;
+  border-radius: 13px;
+  border: 1px solid var(--key-border);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+.help-item h4 { font-size: 14.5px; font-weight: 700; margin-bottom: 5px; }
+.help-item p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  max-width: 62ch;
+}
+.help-item p + p { margin-top: 6px; }
+.help-ex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--accent-soft-2);
+  border: 1px solid var(--accent-soft);
+}
+.help-ex code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.help-try {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent-soft);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.help-try:hover { background: var(--accent-soft); }
+.help-item.flash { animation: flash 1.4s var(--ease); }
+@keyframes flash {
+  0%, 70% { background: var(--accent-soft-2); }
+  100% { background: transparent; }
+}
+
 .row {
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; padding: 14px 2px;
@@ -677,6 +754,13 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
           <path d="M12 3.5v10.5"/><path d="M8 10.5l4 4 4-4"/><path d="M4.5 16.5v2.2a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-2.2"/>
         </svg>
       </button>
+      <button class="icon-btn" id="btnHelp" aria-label="Forklaringer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8.5"/>
+          <path d="M9.7 9.6a2.4 2.4 0 1 1 3.2 2.3c-.7.3-1 .8-1 1.4v.4"/>
+          <circle cx="11.9" cy="16.4" r=".9" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
       <button class="icon-btn" id="btnHistory" aria-label="Historikk">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
           <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
@@ -721,34 +805,34 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
   <section class="keypad-wrap">
 
     <div class="sci-pad" id="sciPad" aria-label="Vitenskapelige funksjoner">
-      <button class="key skey tag" style="--i:0" data-action="inv" id="btnInv" aria-label="Andrefunksjon">INV</button>
-      <button class="key skey" style="--i:1" data-action="lparen" aria-label="Venstreparentes">(</button>
-      <button class="key skey" style="--i:2" data-action="rparen" aria-label="Høyreparentes">)</button>
-      <button class="key skey" style="--i:3" data-fn="sqrt" data-inv-fn="cbrt" aria-label="Kvadratrot">√</button>
-      <button class="key skey" style="--i:4" data-op="^" data-inv-op="root" aria-label="Opphøyd i"><span class="lbl">x<sup>y</sup></span></button>
+      <button class="key skey tag" style="--i:0" data-action="inv" data-help="inv" id="btnInv" aria-label="Andrefunksjon">INV</button>
+      <button class="key skey" style="--i:1" data-action="lparen" data-help="paren" aria-label="Venstreparentes">(</button>
+      <button class="key skey" style="--i:2" data-action="rparen" data-help="paren" aria-label="Høyreparentes">)</button>
+      <button class="key skey" style="--i:3" data-fn="sqrt" data-help="sqrt" data-inv-fn="cbrt" aria-label="Kvadratrot">√</button>
+      <button class="key skey" style="--i:4" data-op="^" data-help="pow" data-inv-op="root" aria-label="Opphøyd i"><span class="lbl">x<sup>y</sup></span></button>
 
-      <button class="key skey" style="--i:5" data-fn="sin" data-inv-fn="asin">sin</button>
-      <button class="key skey" style="--i:6" data-fn="cos" data-inv-fn="acos">cos</button>
-      <button class="key skey" style="--i:7" data-fn="tan" data-inv-fn="atan">tan</button>
-      <button class="key skey" style="--i:8" data-fn="ln"  data-inv-fn="exp">ln</button>
-      <button class="key skey" style="--i:9" data-fn="log" data-inv-fn="exp10">log</button>
+      <button class="key skey" style="--i:5" data-fn="sin" data-help="trig" data-inv-fn="asin">sin</button>
+      <button class="key skey" style="--i:6" data-fn="cos" data-help="trig" data-inv-fn="acos">cos</button>
+      <button class="key skey" style="--i:7" data-fn="tan" data-help="trig" data-inv-fn="atan">tan</button>
+      <button class="key skey" style="--i:8" data-fn="ln" data-help="ln"  data-inv-fn="exp">ln</button>
+      <button class="key skey" style="--i:9" data-fn="log" data-help="log" data-inv-fn="exp10">log</button>
 
-      <button class="key skey" style="--i:10" data-const="pi" aria-label="Pi">π</button>
-      <button class="key skey" style="--i:11" data-const="e" aria-label="Eulers tall">e</button>
-      <button class="key skey" style="--i:12" data-action="square" data-inv-action="cube" aria-label="Andre potens"><span class="lbl">x<sup>2</sup></span></button>
-      <button class="key skey" style="--i:13" data-action="fact" aria-label="Fakultet">n!</button>
-      <button class="key skey tag" style="--i:14" data-action="angle" id="btnAngle" aria-label="Vinkelenhet">DEG</button>
+      <button class="key skey" style="--i:10" data-const="pi" data-help="pi" aria-label="Pi">π</button>
+      <button class="key skey" style="--i:11" data-const="e" data-help="euler" aria-label="Eulers tall">e</button>
+      <button class="key skey" style="--i:12" data-action="square" data-help="square" data-inv-action="cube" aria-label="Andre potens"><span class="lbl">x<sup>2</sup></span></button>
+      <button class="key skey" style="--i:13" data-action="fact" data-help="fact" aria-label="Fakultet">n!</button>
+      <button class="key skey tag" style="--i:14" data-action="angle" data-help="angle" id="btnAngle" aria-label="Vinkelenhet">DEG</button>
     </div>
 
     <div class="keypad" id="keypad">
-      <button class="key ac" style="--i:0" data-action="ac" id="btnAC" aria-label="Nullstill">AC</button>
+      <button class="key ac" style="--i:0" data-action="ac" data-help="g-clear" id="btnAC" aria-label="Nullstill">AC</button>
       <button class="key"    style="--i:1" data-action="back" aria-label="Slett siste">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9.5 5h10a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 19.5 19h-10L3 12l6.5-7z"/>
           <path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>
         </svg>
       </button>
-      <button class="key op" style="--i:2" data-action="percent" aria-label="Prosent">%</button>
+      <button class="key op" style="--i:2" data-action="percent" data-help="pct" aria-label="Prosent">%</button>
       <button class="key op" style="--i:3" data-op="÷" aria-label="Divider">÷</button>
 
       <button class="key" style="--i:4" data-digit="7">7</button>
@@ -766,7 +850,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
       <button class="key" style="--i:14" data-digit="3">3</button>
       <button class="key op" style="--i:15" data-op="+" aria-label="Pluss">+</button>
 
-      <button class="key" style="--i:16" data-action="neg" aria-label="Bytt fortegn">±</button>
+      <button class="key" style="--i:16" data-action="neg" data-help="neg" aria-label="Bytt fortegn">±</button>
       <button class="key" style="--i:17" data-digit="0">0</button>
       <button class="key" style="--i:18" data-action="comma" aria-label="Desimaltegn">,</button>
       <button class="key eq" style="--i:19" data-action="equals" aria-label="Er lik">=</button>
@@ -889,6 +973,18 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     NUMERA <span id="verTag">1.0.0</span><br>
     <button id="btnReset">Tilbakestill alt</button>
   </div>
+</section>
+
+<section class="sheet" id="sheetHelp" role="dialog" aria-modal="true" aria-label="Forklaringer">
+  <div class="grab"></div>
+  <div class="sheet-head">
+    <h2>FORKLARINGER</h2>
+    <button class="icon-btn" data-close aria-label="Lukk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <p class="help-intro">Hold inne en tast i kalkulatoren for å hoppe rett hit.</p>
+  <div id="helpBody"></div>
 </section>
 
 <button class="toast" id="toast" type="button" hidden></button>
@@ -1371,19 +1467,187 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     return this.entry !== '' ? fmtEntry(this.entry, sep) : fmtNum(this.main, sep);
   };
 
+  /* Spiller av en tastesekvens og gir tilbake kalkulatoren.
+     Brukes av hjelpeeksemplene og av testene. */
+  function play(seq, angle) {
+    var c = new Calc();
+    if (angle) c.angle = angle;
+    for (var i = 0; i < seq.length; i++) {
+      var k = seq[i];
+      if (/^[0-9]$/.test(k)) c.digit(k);
+      else if (k === '.') c.comma();
+      else if (k === '+' || k === '-' || k === '×' || k === '÷' || k === '^' || k === 'root') c.op(k);
+      else if (k === '(') c.lparen();
+      else if (k === ')') c.rparen();
+      else if (k === '%' || k === '!') c.postfix(k);
+      else if (k === 'sq') c.postfix('square');
+      else if (k === 'cu') c.postfix('cube');
+      else if (k === '±') c.negate();
+      else if (k === 'pi' || k === 'e') c.constant(k);
+      else c.fn(k);
+    }
+    return c;
+  }
+
   root.Numera = {
     Calc: Calc,
+    play: play,
     evaluate: evaluate,
     buildExpr: buildExpr,
     fmtNum: fmtNum,
     fmtEntry: fmtEntry,
     roundSig: roundSig,
     FN_TEXT: FN_TEXT,
-    VERSION: '1.2.0'
+    VERSION: '1.3.0'
   };
 
 })(typeof window !== 'undefined' ? window : globalThis);
 /* ENGINE:END */
+
+/* ================================================================
+   Forklaringer — hva tastene gjør, med eksempler du kan prøve
+   ================================================================ */
+/* HELP:START */
+(function (root) {
+
+  var HELP = [
+    {
+      group: 'Regnestykket',
+      items: [
+        {
+          id: 'pct', key: '%', name: 'Prosent',
+          text: 'Regner ut en del av hundre. Etter pluss eller minus legger den til eller trekker fra prosenten av tallet du startet med — slik du forventer når du regner på priser.',
+          ex: '200 + 10 % = 220', seq: ['2','0','0','+','1','0','%'], res: '220',
+          more: 'Etter gange eller dele er 10 % rett og slett 0,1: 200 × 10 % = 20.'
+        },
+        {
+          id: 'neg', key: '±', name: 'Fortegn',
+          text: 'Gjør tallet negativt, og positivt igjen om du trykker en gang til. Ikke det samme som minustasten, som trekker fra.',
+          ex: '50 ± = −50', seq: ['5','0','±'], res: '-50'
+        },
+        {
+          id: 'paren', key: '( )', name: 'Parenteser',
+          text: 'Bestemmer hva som regnes først. Uten parenteser går gange og dele foran pluss og minus.',
+          ex: '(2 + 3) × 4 = 20', seq: ['(','2','+','3',')','×','4'], res: '20',
+          more: 'Uten parentesene blir 2 + 3 × 4 lik 14, fordi 3 × 4 regnes først.',
+          sci: true
+        }
+      ]
+    },
+    {
+      group: 'Potenser og røtter',
+      items: [
+        {
+          id: 'square', key: 'x²', name: 'Andre potens',
+          text: 'Ganger tallet med seg selv. Arealet av et kvadrat med side 7 er 7².',
+          ex: '7² = 49', seq: ['7','sq'], res: '49', sci: true
+        },
+        {
+          id: 'pow', key: 'xʸ', name: 'Potens',
+          text: 'Ganger tallet med seg selv så mange ganger du sier. Nyttig til renter: 1000 kr med 5 % rente i ti år blir 1000 × 1,05¹⁰.',
+          ex: '2 xʸ 10 = 1024', seq: ['2','^','1','0'], res: '1024', sci: true
+        },
+        {
+          id: 'sqrt', key: '√', name: 'Kvadratrot',
+          text: 'Går motsatt vei av x². Svarer på: hvilket tall ganget med seg selv gir dette?',
+          ex: '√81 = 9', seq: ['sqrt','8','1',')'], res: '9', sci: true
+        },
+        {
+          id: 'root', key: 'ˣ√y', name: 'N-te rot',
+          text: 'Samme spørsmål, men med flere ganger. Trykk INV og så xʸ. Skriv først hvor mange ganger, så tallet.',
+          ex: '3 ˣ√ 8 = 2', seq: ['3','root','8'], res: '2',
+          more: 'Fordi 2 × 2 × 2 = 8. Tredjeroten av 27 er tilsvarende 3.',
+          sci: true
+        }
+      ]
+    },
+    {
+      group: 'Trigonometri',
+      items: [
+        {
+          id: 'trig', key: 'sin', name: 'Sinus, cosinus og tangens',
+          text: 'Forholdet mellom sidene i en rettvinklet trekant. Har du en rampe på 5 meter med 30 graders stigning, er høyden sin(30) × 5.',
+          ex: 'sin(30) × 5 = 2,5', seq: ['sin','3','0',')','×','5'], res: '2.5',
+          more: 'sin gir høyden, cos gir lengden langs bakken, og tan gir forholdet mellom dem.',
+          sci: true
+        },
+        {
+          id: 'atrig', key: 'sin⁻¹', name: 'Invers trigonometri',
+          text: 'Går motsatt vei: du kjenner forholdet mellom sidene og vil finne vinkelen. Trykk INV og så sin, cos eller tan.',
+          ex: 'sin⁻¹(0,5) = 30', seq: ['asin','0','.','5',')'], res: '30',
+          more: 'En rampe som er 2,5 meter høy og 5 meter lang stiger altså 30 grader.',
+          sci: true
+        },
+        {
+          id: 'angle', key: 'DEG', name: 'Grader og radianer',
+          text: 'Grader deler sirkelen i 360 deler, radianer i 2π. Bruk grader til vanlig; radianer når du regner videre med formler fra matematikken. Tasten viser hvilken som gjelder.',
+          ex: 'sin(90) = 1 i DEG', seq: ['sin','9','0',')'], res: '1', sci: true
+        }
+      ]
+    },
+    {
+      group: 'Logaritmer',
+      items: [
+        {
+          id: 'log', key: 'log', name: 'Tierlogaritme',
+          text: 'Svarer på hvor mange tiere du må gange sammen. Siden 10 × 10 × 10 er 1000, er log(1000) lik 3. Ligger bak pH-skalaen, desibel og Richters skala.',
+          ex: 'log(1000) = 3', seq: ['log','1','0','0','0',')'], res: '3', sci: true
+        },
+        {
+          id: 'ln', key: 'ln', name: 'Naturlig logaritme',
+          text: 'Samme spørsmål, men med e i stedet for 10. Brukes når noe vokser eller avtar jevnt — renters rente, befolkning, halveringstid.',
+          ex: 'ln(e) = 1', seq: ['ln','e',')'], res: '1', sci: true
+        },
+        {
+          id: 'exp', key: '10ˣ', name: 'Motsatt vei',
+          text: 'Trykk INV og så log eller ln. 10ˣ bygger tallet opp igjen fra logaritmen, eˣ gjør det samme for den naturlige.',
+          ex: '10ˣ 3 = 1000', seq: ['exp10','3',')'], res: '1000', sci: true
+        }
+      ]
+    },
+    {
+      group: 'Resten',
+      items: [
+        {
+          id: 'fact', key: 'n!', name: 'Fakultet',
+          text: 'Ganger sammen alle hele tall opp til tallet. Sier hvor mange rekkefølger noe kan stokkes i: fem kort kan legges i 120 forskjellige rekkefølger.',
+          ex: '5! = 120', seq: ['5','!'], res: '120',
+          more: 'Altså 5 × 4 × 3 × 2 × 1.',
+          sci: true
+        },
+        {
+          id: 'pi', key: 'π', name: 'Pi',
+          text: 'Forholdet mellom en sirkels omkrets og diameter, 3,14159… Omkretsen av en sirkel er 2 × π × radius.',
+          ex: '2 × π × 3 ≈ 18,85', seq: ['2','×','pi','×','3'], res: '18.8495559215', sci: true
+        },
+        {
+          id: 'euler', key: 'e', name: 'Eulers tall',
+          text: 'Vekstkonstanten, 2,71828… Dukker opp overalt der noe vokser jevnt over tid. Hører sammen med ln.',
+          ex: 'e × e ≈ 7,39', seq: ['e','×','e'], res: '7.38905609893', sci: true
+        },
+        {
+          id: 'inv', key: 'INV', name: 'Andrefunksjon',
+          text: 'Bytter tastene til den motsatte funksjonen: √ blir tredjerot, sin blir sin⁻¹, ln blir eˣ. Den slår seg av igjen etter at du har brukt én av dem.',
+          sci: true
+        }
+      ]
+    },
+    {
+      group: 'Grep som sparer tid',
+      items: [
+        { id: 'g-handle', key: '⌄', name: 'Håndtaket over tastene', text: 'Ett trykk henter fram de vitenskapelige tastene. Du kan også sveipe nedover på tallvinduet.' },
+        { id: 'g-copy', key: '⧉', name: 'Kopier svaret', text: 'Hold inne tallvinduet, så ligger svaret på utklippstavlen.' },
+        { id: 'g-swipe', key: '↔', name: 'Slett med sveip', text: 'Dra til siden over tallvinduet for å slette siste tegn.' },
+        { id: 'g-clear', key: '⌫', name: 'Nullstill alt', text: 'Hold inne slettetasten, så tømmes hele regnestykket.' },
+        { id: 'g-help', key: '?', name: 'Denne hjelpen', text: 'Hold inne hvilken som helst tast for å hoppe rett til forklaringen av den.' }
+      ]
+    }
+  ];
+
+  root.NumeraHelp = HELP;
+
+})(typeof window !== 'undefined' ? window : globalThis);
+/* HELP:END */
 
 
 /* ================================================================
@@ -1583,6 +1847,93 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     });
   }
 
+  /* ---------------- Forklaringer ---------------- */
+
+  var helpBuilt = false;
+
+  function buildHelp() {
+    if (helpBuilt) return;
+    helpBuilt = true;
+    var body = $('helpBody');
+    NumeraHelp.forEach(function (g) {
+      var sec = document.createElement('section');
+      sec.className = 'help-group';
+      var h3 = document.createElement('h3');
+      h3.textContent = g.group;
+      sec.appendChild(h3);
+
+      g.items.forEach(function (it) {
+        var row = document.createElement('article');
+        row.className = 'help-item';
+        row.id = 'help-' + it.id;
+
+        var badge = document.createElement('div');
+        badge.className = 'help-badge';
+        badge.setAttribute('aria-hidden', 'true');
+        badge.textContent = it.key;
+        row.appendChild(badge);
+
+        var col = document.createElement('div');
+        var h4 = document.createElement('h4');
+        h4.textContent = it.name;
+        col.appendChild(h4);
+
+        var p = document.createElement('p');
+        p.textContent = it.text;
+        col.appendChild(p);
+
+        if (it.more) {
+          var p2 = document.createElement('p');
+          p2.textContent = it.more;
+          col.appendChild(p2);
+        }
+
+        if (it.seq) {
+          var box = document.createElement('div');
+          box.className = 'help-ex';
+          var code = document.createElement('code');
+          code.textContent = it.ex;
+          var btn = document.createElement('button');
+          btn.className = 'help-try';
+          btn.type = 'button';
+          btn.textContent = 'PRØV';
+          btn.addEventListener('click', function () { runExample(it); });
+          box.appendChild(code);
+          box.appendChild(btn);
+          col.appendChild(box);
+        }
+
+        row.appendChild(col);
+        sec.appendChild(row);
+      });
+
+      body.appendChild(sec);
+    });
+  }
+
+  /* Legger eksempelet inn i kalkulatoren og regner det ut. */
+  function runExample(it) {
+    if (it.sci) setSci(true);
+    calc = Numera.play(it.seq);
+    calc.equals();
+    closeSheets();
+    afterEquals();
+  }
+
+  function openHelp(id) {
+    buildHelp();
+    openSheet($('sheetHelp'));
+    var el = id ? $('help-' + id) : null;
+    if (el) {
+      el.scrollIntoView({ block: 'center' });
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+    }
+  }
+
+  $('btnHelp').addEventListener('click', function () { openHelp(null); });
+
   /* ---------------- Tema ---------------- */
 
   var mq = (typeof window.matchMedia === 'function')
@@ -1609,7 +1960,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     lastFocus = document.activeElement;
     $('backdrop').classList.add('show');
     el.classList.add('open');
-    el.scrollTop = 0;
+    if (el.id !== 'sheetHelp') el.scrollTop = 0;
   }
   function closeSheets() {
     $('backdrop').classList.remove('show');
@@ -1763,6 +2114,23 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     tick(btn.dataset.digit ? 1750 : btn.classList.contains('eq') ? 900 : 1400);
   }
 
+  /* Tastetrykket skjer med én gang. Blir tasten holdt inne, angrer vi
+     trykket og viser forklaringen i stedet. */
+  function snapshot() {
+    return {
+      tokens: calc.tokens.map(function (t) { return { t: t.t, v: t.v }; }),
+      entry: calc.entry, main: calc.main, done: calc.done,
+      error: calc.error, lastExpr: calc.lastExpr, angle: calc.angle, inv: inv
+    };
+  }
+  function restore(s) {
+    calc.tokens = s.tokens; calc.entry = s.entry; calc.main = s.main;
+    calc.done = s.done; calc.error = s.error; calc.lastExpr = s.lastExpr;
+    calc.angle = s.angle;
+    if (inv !== s.inv) setInv(s.inv);
+    render();
+  }
+
   document.addEventListener('pointerdown', function (e) {
     var btn = e.target.closest('.key');
     if (!btn) return;
@@ -1770,15 +2138,26 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     heldFired = false;
     btn.classList.add('press');
     feedback(btn, e);
+
+    var before = snapshot();
     route(btn);
-    /* Hold inne slettetasten for å tømme alt. */
+
     if (btn.dataset.action === 'back') {
+      /* Hold inne slettetasten for å tømme alt. */
       holdTimer = setTimeout(function () {
         heldFired = true;
         calc.clear(); calc.clear(); render();
         buzz(24); toast('ALT ER NULLSTILT');
       }, 550);
+      return;
     }
+
+    holdTimer = setTimeout(function () {
+      heldFired = true;
+      restore(before);
+      buzz(18);
+      openHelp(btn.dataset.help || null);
+    }, 550);
   }, { passive: true });
 
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
@@ -2059,6 +2438,11 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
   renderHist();
   fitViewport();
   render();
+
+  if (!store.get('numera:hinted', false)) {
+    store.set('numera:hinted', true);
+    setTimeout(function () { toast('HOLD INNE EN TAST FOR Å SE HVA DEN GJØR'); }, 1400);
+  }
 
 })();
 </script>
