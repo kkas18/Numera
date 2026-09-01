@@ -55,9 +55,27 @@ regnestoffet ligger lokalt — den virker i flymodus.
 
 ## Slik oppdaterer du appen
 
-Endre filene, øk `VERSION` øverst i `sw.js`, og push. Neste gang appen
-åpnes lastes den nye versjonen ned i bakgrunnen, og du får en melding
-nederst på skjermen som du kan trykke på for å ta den i bruk.
+Push endringene til GitHub. Det er alt — du trenger ikke telle versjoner
+eller endre noe i `sw.js`.
+
+Appen kjenner igjen nye filer på ETag-en serveren sender, ikke på et
+versjonsnummer du må huske å skru opp. Tre ting skjer:
+
+- **Neste gang appen åpnes** henter den siden på nytt fra nettet og
+  bruker den nye utgaven med en gang. Svarer ikke serveren innen 700 ms,
+  starter appen fra hurtiglageret i stedet, og bytter når den friske
+  utgaven kommer.
+- **Står appen allerede åpen**, ser den etter nye filer hver gang den
+  kommer i forgrunnen (maks én sjekk i minuttet) og når telefonen får
+  nett igjen.
+- **Er du midt i et regnestykke**, avbrytes du ikke. Du får en melding
+  nederst du kan trykke på når det passer. Er skjermen tom, oppdateres
+  appen stille.
+
+Under *Innstillinger → Oppdatering* kan du også se etter nye filer selv.
+
+`VERSION` øverst i `sw.js` trenger du bare å endre hvis du legger til
+eller fjerner filer i `icons/` — den styrer bare navnet på hurtiglageret.
 
 ## Kjør testene
 

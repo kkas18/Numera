@@ -877,6 +877,14 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     <label class="switch"><input type="checkbox" id="optLarge"><span class="track"><span class="thumb"></span></span></label>
   </div>
 
+  <div class="row">
+    <div class="row-txt">
+      <label>Oppdatering</label>
+      <small>Nye filer hentes av seg selv når appen åpnes</small>
+    </div>
+    <button class="text-btn" id="btnCheckUpdate">SE ETTER NY</button>
+  </div>
+
   <div class="sheet-foot">
     NUMERA <span id="verTag">1.0.0</span><br>
     <button id="btnReset">Tilbakestill alt</button>
@@ -1371,7 +1379,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     fmtEntry: fmtEntry,
     roundSig: roundSig,
     FN_TEXT: FN_TEXT,
-    VERSION: '1.1.0'
+    VERSION: '1.2.0'
   };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -1948,9 +1956,73 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     toast('NUMERA ER INSTALLERT');
   });
 
+  /* Oppdaget appen en nyere utgave? Last inn på nytt hvis brukeren ikke
+     står midt i et regnestykke — ellers spør først. */
+  function applyUpdate() {
+    if (calc.isEmpty() && !document.querySelector('.sheet.open')) location.reload();
+    else toast('NY VERSJON KLAR — TRYKK FOR Å OPPDATERE', function () { location.reload(); });
+  }
+
+  /* Serveren gir en ETag som endrer seg hver gang filen endres.
+     Vi trenger derfor ikke å telle versjoner selv. */
+  var baseline = null, lastCheck = 0, checking = false;
+
+  function buildTag(res) {
+    return res.headers.get('etag') || res.headers.get('last-modified') || '';
+  }
+
+  function checkForUpdate(force) {
+    if (location.protocol === 'file:' || checking) return Promise.resolve('ukjent');
+    var now = Date.now();
+    if (!force && now - lastCheck < 60000) return Promise.resolve('aktuell');
+    lastCheck = now;
+    checking = true;
+
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
+      navigator.serviceWorker.getRegistration()
+        .then(function (r) { if (r) r.update(); })
+        .catch(function () {});
+    }
+
+    return fetch('./index.html', { method: 'HEAD', cache: 'no-store' })
+      .then(function (res) {
+        checking = false;
+        if (!res || !res.ok) return 'ukjent';
+        var tag = buildTag(res);
+        if (!tag) return 'ukjent';
+        if (baseline === null) { baseline = tag; return 'aktuell'; }
+        if (tag === baseline) return 'aktuell';
+        baseline = tag;
+        applyUpdate();
+        return 'ny';
+      })
+      .catch(function () { checking = false; return 'ukjent'; });
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) checkForUpdate(false);
+  });
+  window.addEventListener('online', function () { checkForUpdate(true); });
+
+  $('btnCheckUpdate').addEventListener('click', function () {
+    var b = $('btnCheckUpdate');
+    b.disabled = true;
+    b.textContent = 'SJEKKER';
+    checkForUpdate(true).then(function (r) {
+      b.disabled = false;
+      b.textContent = 'SE ETTER NY';
+      if (r === 'aktuell') toast('DU HAR NYESTE VERSJON');
+      else if (r === 'ukjent') toast('FIKK IKKE KONTAKT MED SERVEREN');
+    });
+  });
+
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').then(function (reg) {
+      setTimeout(function () { checkForUpdate(true); }, 1500);
+      navigator.serviceWorker.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'UPDATE_READY') applyUpdate();
+      });
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) {
         reg.addEventListener('updatefound', function () {
           var sw = reg.installing;
           if (!sw) return;

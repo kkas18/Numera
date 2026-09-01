@@ -4,7 +4,7 @@
 
 'use strict';
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const SHELL = 'numera-shell-v' + VERSION;
 const RUNTIME = 'numera-runtime-v1';
 
@@ -38,9 +38,6 @@ self.addEventListener('activate', event => {
     await Promise.all(
       keys.filter(k => k !== SHELL && k !== RUNTIME).map(k => caches.delete(k))
     );
-    if (self.registration.navigationPreload) {
-      await self.registration.navigationPreload.enable().catch(() => {});
-    }
     await self.clients.claim();
   })());
 });
@@ -48,6 +45,25 @@ self.addEventListener('activate', event => {
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(() => resolve(null), ms));
+}
+
+/* Si fra til alle åpne vinduer om at det finnes en nyere utgave. */
+async function announce() {
+  const clients = await self.clients.matchAll({ type: 'window' });
+  clients.forEach(c => c.postMessage({ type: 'UPDATE_READY' }));
+}
+
+function offlinePage() {
+  return new Response(
+    '<!doctype html><meta charset="utf-8"><title>Uten nett</title>' +
+    '<body style="font:16px system-ui;padding:2rem">Kalkulatoren er ikke lastet ned ennå. ' +
+    'Koble til nett én gang, så virker den offline etterpå.</body>',
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
+}
 
 /* Hent fra hurtiglager, og friskt opp i bakgrunnen. */
 async function staleWhileRevalidate(request, cacheName) {
@@ -70,22 +86,34 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(req.url);
 
-  /* Sidevisninger: fall alltid tilbake til appskallet. */
+  /* Sidevisninger.
+     Med nett: hent friskt, slik at nye filer på GitHub tas i bruk med én gang.
+     Uten nett eller på treg linje: server skallet fra hurtiglageret etter 700 ms,
+     og si fra til appen dersom den friske utgaven viser seg å være nyere. */
   if (req.mode === 'navigate') {
     event.respondWith((async () => {
       const cache = await caches.open(SHELL);
       const cached = await cache.match('./index.html');
-      const fresh = fetch(req)
+      const tag = res => (res && (res.headers.get('etag') || res.headers.get('last-modified'))) || '';
+
+      const fresh = fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' }))
         .then(res => {
           if (res && res.ok) cache.put('./index.html', res.clone());
           return res;
         })
         .catch(() => null);
-      return cached || (await fresh) || new Response(
-        '<!doctype html><meta charset="utf-8"><title>Uten nett</title>' +
-        '<body style="font:16px system-ui;padding:2rem">Kalkulatoren er ikke lastet ned ennå. Koble til nett én gang, så virker den offline etterpå.</body>',
-        { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
-      );
+
+      const quick = await Promise.race([fresh, wait(700)]);
+      if (quick) return quick;
+
+      if (cached) {
+        /* Vi rakk ikke å vente. Sjekk i etterkant om det kom noe nytt. */
+        fresh.then(res => {
+          if (res && res.ok && tag(res) && tag(res) !== tag(cached)) announce();
+        });
+        return cached;
+      }
+      return (await fresh) || offlinePage();
     })());
     return;
   }
