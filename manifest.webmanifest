@@ -1,0 +1,33 @@
+{
+  "name": "NUMERA — Kalkulator",
+  "short_name": "Numera",
+  "description": "En presis og rask kalkulator for mobil. Virker uten nett.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0e1013",
+  "theme_color": "#0e1013",
+  "lang": "nb-NO",
+  "dir": "ltr",
+  "categories": ["utilities", "productivity", "education"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "./icons/icon-64.png",  "sizes": "64x64",   "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Vitenskapelig modus",
+      "short_name": "Vitenskapelig",
+      "url": "./?mode=sci",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}
