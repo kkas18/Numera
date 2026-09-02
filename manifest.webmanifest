@@ -10,8 +10,8 @@
   "orientation": "any",
   "lang": "nb",
   "dir": "ltr",
-  "background_color": "#0e1013",
-  "theme_color": "#0e1013",
+  "background_color": "#0f1012",
+  "theme_color": "#0f1012",
   "categories": ["utilities", "productivity", "education"],
   "prefer_related_applications": false,
   "icons": [

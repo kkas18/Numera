@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" id="metaTheme" content="#0e1013">
+<meta name="theme-color" id="metaTheme" content="#0f1012">
 <meta name="description" content="NUMERA — en presis og elegant kalkulator for Android og Samsung Galaxy.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -108,57 +108,61 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #e9ebec;
-  --bg-2: #f5f6f6;
-  --surface: #f9faf9;
-  --surface-active: #eef0ef;
-  --ink: #1b1d20;
-  --ink-dim: #6f757c;
-  --line: rgba(27, 29, 32, .13);
-  --key-border: rgba(27, 29, 32, .06);
-  --key-shadow: 0 1px 2px rgba(20,22,25,.10), inset 0 1px 0 rgba(255,255,255,.9);
-  --key-shadow-press: 0 1px 1px rgba(20,22,25,.12), inset 0 1px 0 rgba(255,255,255,.6);
+  --bg: #ebebe9;
+  --bg-2: #f4f4f2;
+  --surface: #fafaf8;          /* siffer */
+  --surface-2: #dfe0dd;        /* operatorer: mørkere nyanse */
+  --surface-active: #eeeeec;
+  --ink: #1a1b1d;
+  --ink-dim: #767a80;
+  --line: rgba(26, 27, 29, .12);
+  --key-border: rgba(26, 27, 29, .05);
+  --key-shadow: 0 1px 2px rgba(20,22,25,.08), inset 0 1px 0 rgba(255,255,255,.85);
+  --key-shadow-press: 0 0 0 rgba(0,0,0,0), inset 0 1px 2px rgba(20,22,25,.10);
+  --soft: rgba(26, 27, 29, .06);
+  --soft-2: rgba(26, 27, 29, .035);
   --accent: #a9772b;
   --accent-hi: #c99a45;
   --accent-ink: #241a06;
-  --accent-soft: rgba(169, 119, 43, .12);
-  --accent-soft-2: rgba(169, 119, 43, .07);
-  --eq-glow: 0 6px 18px rgba(169,119,43,.32);
-  --ripple: rgba(20, 22, 25, .12);
-  --sheet-shadow: 0 -12px 40px rgba(15,17,20,.18);
-  --orn-opacity: .045;
-  --dot: rgba(27,29,32,.16);
-  --glow-a: rgba(201,154,69,.10);
-  --glow-b: rgba(27,29,32,.05);
-  --toast-bg: #1b1d20;
-  --toast-ink: #f5f6f6;
+  --accent-soft: rgba(169, 119, 43, .13);
+  --eq-glow: 0 6px 18px rgba(169,119,43,.30);
+  --ripple: rgba(20, 22, 25, .10);
+  --sheet-shadow: 0 -12px 40px rgba(15,17,20,.16);
+  --orn-opacity: .04;
+  --dot: rgba(26,27,29,.15);
+  --glow-a: rgba(26,27,29,.05);
+  --glow-b: rgba(255,255,255,.55);
+  --toast-bg: #1a1b1d;
+  --toast-ink: #f4f4f2;
 }
 
 :root[data-theme="dark"] {
-  --bg: #0e1013;
-  --bg-2: #14171b;
-  --surface: #1b1f24;
-  --surface-active: #242a31;
-  --ink: #f1f1ee;
-  --ink-dim: #868d95;
-  --line: rgba(241, 241, 238, .12);
-  --key-border: rgba(255, 255, 255, .05);
-  --key-shadow: 0 2px 5px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.055);
-  --key-shadow-press: 0 1px 2px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.03);
+  --bg: #0f1012;
+  --bg-2: #151618;
+  --surface: #1d1f22;          /* siffer */
+  --surface-2: #2a2d31;        /* operatorer: lysere nyanse */
+  --surface-active: #33363b;
+  --ink: #f2f2f0;
+  --ink-dim: #8a8e94;
+  --line: rgba(242, 242, 240, .11);
+  --key-border: rgba(255, 255, 255, .045);
+  --key-shadow: 0 2px 5px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+  --key-shadow-press: 0 0 0 rgba(0,0,0,0), inset 0 1px 3px rgba(0,0,0,.45);
+  --soft: rgba(242, 242, 240, .08);
+  --soft-2: rgba(242, 242, 240, .045);
   --accent: #d8a54a;
   --accent-hi: #e8bf6e;
   --accent-ink: #231a05;
-  --accent-soft: rgba(216, 165, 74, .15);
-  --accent-soft-2: rgba(216, 165, 74, .08);
-  --eq-glow: 0 6px 22px rgba(216,165,74,.28);
-  --ripple: rgba(241, 241, 238, .15);
+  --accent-soft: rgba(216, 165, 74, .16);
+  --eq-glow: 0 6px 22px rgba(216,165,74,.26);
+  --ripple: rgba(242, 242, 240, .14);
   --sheet-shadow: 0 -12px 44px rgba(0,0,0,.55);
-  --orn-opacity: .038;
-  --dot: rgba(241,241,238,.13);
-  --glow-a: rgba(216,165,74,.08);
-  --glow-b: rgba(120,140,170,.05);
-  --toast-bg: #f1f1ee;
-  --toast-ink: #0e1013;
+  --orn-opacity: .035;
+  --dot: rgba(242,242,240,.12);
+  --glow-a: rgba(242,242,240,.045);
+  --glow-b: rgba(242,242,240,.025);
+  --toast-bg: #f2f2f0;
+  --toast-ink: #0f1012;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -273,9 +277,9 @@ body::after {
   -webkit-appearance: none;
   transition: color .2s, background .2s, transform .15s;
 }
-.icon-btn:hover { color: var(--ink); background: var(--accent-soft-2); }
-.icon-btn:active { transform: scale(.9); background: var(--accent-soft); }
-.icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon-btn:hover { color: var(--ink); background: var(--soft-2); }
+.icon-btn:active { transform: scale(.9); background: var(--soft); }
+.icon-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 .icon-btn svg { width: 20px; height: 20px; }
 
 /* Sol/måne byttes etter tema */
@@ -306,9 +310,9 @@ body::after {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: .18em;
-  color: var(--accent);
-  border: 1px solid var(--accent-soft);
-  background: var(--accent-soft-2);
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
+  background: transparent;
   padding: 3px 9px;
   border-radius: 999px;
   line-height: 1.4;
@@ -338,7 +342,7 @@ body::after {
   font-variant-numeric: tabular-nums;
   transition: color .2s;
 }
-.main:active { color: var(--accent); }
+.main:active { color: var(--ink-dim); }
 .main.pop { animation: pop .32s var(--ease); }
 @keyframes pop {
   0%   { transform: translateY(10px); opacity: 0; }
@@ -351,7 +355,7 @@ body::after {
   60% { transform: translateX(-4px); }
   80% { transform: translateX(4px); }
 }
-.main .err { color: var(--accent); }
+.main .err { color: var(--ink-dim); }
 
 .preview {
   font-family: var(--font-mono);
@@ -363,7 +367,7 @@ body::after {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.preview b { color: var(--accent); font-weight: 500; }
+.preview b { color: var(--ink); font-weight: 500; }
 
 .hairline {
   height: 1px; flex: none;
@@ -440,26 +444,31 @@ body::after {
   box-shadow: var(--key-shadow-press);
   background: var(--surface-active);
 }
-.key:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.key:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .key svg { width: 26px; height: 26px; }
 
-/* Funksjonstaster med aksent */
+/* Operatorer: samme familie, en nyanse forskjøvet fra sifrene */
 .key.op {
-  color: var(--accent);
-  background: var(--accent-soft-2);
+  color: var(--ink);
+  background: var(--surface-2);
   font-weight: 600;
 }
-@media (hover: hover) { .key.op:hover { background: var(--accent-soft); } }
-.key.op:active, .key.op.kbd { background: var(--accent-soft); }
+@media (hover: hover) { .key.op:hover { background: var(--surface-active); } }
+.key.op:active, .key.op.kbd { background: var(--surface-active); }
 
+/* AC: den eneste tasten foruten = som bærer farge */
 .key.ac {
   color: var(--accent);
-  background: var(--accent-soft);
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  box-shadow: none;
   font-weight: 600;
   font-size: clamp(1.05rem, 4.2vmin, 1.35rem);
-  letter-spacing: .1em;
+  letter-spacing: .12em;
 }
+@media (hover: hover) { .key.ac:hover { background: var(--accent-soft); } }
+.key.ac:active, .key.ac.kbd { background: var(--accent-soft); box-shadow: none; }
 
 .key.eq {
   background: linear-gradient(180deg, var(--accent-hi), var(--accent));
@@ -475,11 +484,13 @@ body::after {
   font-size: clamp(.95rem, 3.6vmin, 1.2rem);
   font-weight: 500;
   border-radius: calc(var(--radius-key) * .8);
-  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--line);
+  color: var(--ink-dim);
 }
-.key.skey[data-fn], .key.skey[data-const] { color: var(--ink-dim); }
-.key.skey[data-fn]:active, .key.skey[data-const]:active { color: var(--ink); }
-.key.skey.angle { color: var(--accent); font-family: var(--font-mono); font-size: clamp(.8rem, 3vmin, 1rem); letter-spacing: .12em; }
+.key.skey:active, .key.skey.kbd { color: var(--ink); background: var(--soft-2); }
+.key.skey.angle { color: var(--ink); font-family: var(--font-mono); font-size: clamp(.8rem, 3vmin, 1rem); letter-spacing: .12em; border-color: var(--ink-dim); }
 .key .sup { font-size: .62em; vertical-align: super; line-height: 0; }
 
 /* Ringbølge ved trykk */
@@ -555,9 +566,9 @@ body::after {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: .14em;
-  color: var(--accent);
-  background: var(--accent-soft-2);
-  border: 1px solid var(--accent-soft);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--ink-dim);
   border-radius: 999px;
   padding: 9px 14px;
   min-height: 36px;
@@ -565,7 +576,7 @@ body::after {
   -webkit-appearance: none;
   transition: background .2s;
 }
-.text-btn:active { background: var(--accent-soft); }
+.text-btn:active { background: var(--soft); }
 
 /* Historikk */
 .hist { list-style: none; }
@@ -584,7 +595,7 @@ body::after {
   border-radius: 10px;
   -webkit-appearance: none;
 }
-.hist-item:active { background: var(--accent-soft-2); }
+.hist-item:active { background: var(--soft-2); }
 .hist-item .h-expr {
   display: block;
   font-family: var(--font-mono);
@@ -658,8 +669,8 @@ body::after {
   transition: background .2s, color .2s;
 }
 .seg-btn.active {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--ink);
+  color: var(--bg);
   font-weight: 500;
 }
 
@@ -684,14 +695,14 @@ body::after {
   transition: transform .25s var(--ease), background .25s;
 }
 .switch input:checked + .track {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--ink);
+  border-color: var(--ink);
 }
 .switch input:checked + .track .thumb {
   transform: translateX(20px);
-  background: var(--accent-ink);
+  background: var(--bg);
 }
-.switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch input:focus-visible + .track { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 .sheet-foot {
   margin-top: 18px;
@@ -704,7 +715,7 @@ body::after {
 }
 .sheet-foot button {
   background: none; border: none;
-  color: var(--accent);
+  color: var(--ink);
   font: inherit;
   letter-spacing: .12em;
   cursor: pointer;
@@ -729,7 +740,7 @@ body::after {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: .18em;
-  color: var(--accent);
+  color: var(--ink-dim);
   margin-bottom: 4px;
 }
 .help-item {
@@ -751,7 +762,7 @@ body::after {
   font-size: 1.1rem;
   color: var(--ink);
 }
-.help-sym.mono { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .08em; color: var(--accent); }
+.help-sym.mono { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .08em; color: var(--ink-dim); }
 .help-txt b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
 .help-txt p { font-size: 13px; line-height: 1.55; color: var(--ink-dim); }
 .help-txt code {
@@ -760,8 +771,8 @@ body::after {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--ink);
-  background: var(--accent-soft-2);
-  border: 1px solid var(--accent-soft);
+  background: var(--soft-2);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 4px 9px;
   line-height: 1.6;
@@ -794,7 +805,9 @@ body::after {
 .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
 .toast button {
   background: none; border: none;
-  color: var(--accent);
+  color: var(--toast-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
   font: inherit;
   letter-spacing: .12em;
   font-weight: 500;
@@ -802,7 +815,6 @@ body::after {
   padding: 4px 0;
   -webkit-appearance: none;
 }
-:root[data-theme="dark"] .toast button { color: #a9772b; }
 
 /* ---------- Landskap (Samsung i breddeformat) ---------- */
 @media (orientation: landscape) and (min-width: 620px) {
@@ -1256,7 +1268,7 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
    NUMERA — kalkulatormotor, innstillinger og interaksjon
    ================================================================ */
 
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.1.0';
 
 /* @engine-start
    Ren motor uten DOM-avhengigheter. Trekkes ut og testes i test/engine.test.mjs */
@@ -1766,7 +1778,7 @@ const mq = matchMedia('(prefers-color-scheme: dark)');
 function applyTheme(){
   const resolved = S.theme === 'auto' ? (mq.matches ? 'dark' : 'light') : S.theme;
   document.documentElement.setAttribute('data-theme', resolved);
-  $('metaTheme').content = resolved === 'dark' ? '#0e1013' : '#e9ebec';
+  $('metaTheme').content = resolved === 'dark' ? '#0f1012' : '#ebebe9';
 }
 mq.addEventListener('change', () => { if (S.theme === 'auto') applyTheme(); });
 
