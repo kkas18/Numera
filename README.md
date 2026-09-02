@@ -11,7 +11,7 @@ sw.js                   service worker (offline + oppdatering)
 .nojekyll               ber GitHub Pages servere filene som de er
 icons/                  app-ikoner (SVG + PNG, vanlige og maskerbare)
 tests/engine.test.js    206 tester av regnemotoren og hjelpeeksemplene
-tests/ui.test.js        71 tester av grensesnittet og PWA-oppsettet
+tests/ui.test.js        86 tester av grensesnittet og PWA-oppsettet
 ```
 
 Alle stier er relative (`./`), så appen virker både på
@@ -33,7 +33,7 @@ Via kommandolinjen:
 ```bash
 git init
 git add .
-git commit -m "NUMERA 1.3.0"
+git commit -m "NUMERA 1.4.0"
 git branch -M main
 git remote add origin https://github.com/BRUKERNAVN/numera.git
 git push -u origin main
@@ -107,8 +107,13 @@ kjører alltid på koden som faktisk sendes til telefonen.
 Spørsmålstegnet i toppen åpner en liste over hva hver tast gjør, med et
 regnestykke du kan trykke **Prøv** på for å se det kjøre i kalkulatoren.
 
-Du kommer rett til riktig forklaring ved å **holde inne tasten** du lurer
-på. Trykket blir angret, så du mister ikke det du holdt på med.
+Holder du inne en funksjonstast, får du et kort med **bare den ene
+tasten** — ikke hele listen. Trykket blir angret først, så du mister ikke
+regnestykket du holdt på med. Nederst på kortet ligger en lenke til hele
+oversikten hvis du vil videre.
+
+Sifre og regneartene har ingen forklaring, og der skjer det ingenting ved
+langt trykk.
 
 Innholdet ligger i `HELP`-blokken i `index.html`. Hvert eksempel kjøres
 gjennom regnemotoren i testene, så en forklaring kan aldri love et svar
@@ -122,7 +127,7 @@ oppover for å skjule dem igjen. Valget huskes til neste gang.
 
 ## Gester
 
-- **Hold inne en tast** for å se hva den gjør, med eksempel.
+- **Hold inne en funksjonstast** for å se hva den gjør, med eksempel.
 - **Trykk håndtaket** over tastene for trigonometri, logaritmer og potenser.
 - **Sveip ned eller opp** på vinduet for det samme.
 - **Hold inne tallet** i vinduet for å kopiere det.

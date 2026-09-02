@@ -529,6 +529,23 @@ body::after {
   padding: 30px 0 20px;
 }
 
+/* Forklaring av én tast */
+.keyhelp-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 2px 0 12px;
+}
+.keyhelp-head h2 { font-size: 17px; font-weight: 700; letter-spacing: 0; }
+.keyhelp p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  max-width: 62ch;
+}
+.keyhelp p + p { margin-top: 8px; }
+.keyhelp .help-ex { margin-top: 14px; }
+
 /* Forklaringer */
 .help-intro {
   font-family: var(--font-mono);
@@ -812,8 +829,8 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
       <button class="key skey" style="--i:4" data-op="^" data-help="pow" data-inv-op="root" aria-label="Opphøyd i"><span class="lbl">x<sup>y</sup></span></button>
 
       <button class="key skey" style="--i:5" data-fn="sin" data-help="trig" data-inv-fn="asin">sin</button>
-      <button class="key skey" style="--i:6" data-fn="cos" data-help="trig" data-inv-fn="acos">cos</button>
-      <button class="key skey" style="--i:7" data-fn="tan" data-help="trig" data-inv-fn="atan">tan</button>
+      <button class="key skey" style="--i:6" data-fn="cos" data-help="trig" data-help-key="cos" data-inv-fn="acos">cos</button>
+      <button class="key skey" style="--i:7" data-fn="tan" data-help="trig" data-help-key="tan" data-inv-fn="atan">tan</button>
       <button class="key skey" style="--i:8" data-fn="ln" data-help="ln"  data-inv-fn="exp">ln</button>
       <button class="key skey" style="--i:9" data-fn="log" data-help="log" data-inv-fn="exp10">log</button>
 
@@ -975,6 +992,14 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
   </div>
 </section>
 
+<section class="sheet" id="sheetKeyHelp" role="dialog" aria-modal="true" aria-labelledby="keyHelpName">
+  <div class="grab"></div>
+  <div id="keyHelpBody"></div>
+  <div class="sheet-foot">
+    <button id="btnAllHelp" type="button">Se alle forklaringer</button>
+  </div>
+</section>
+
 <section class="sheet" id="sheetHelp" role="dialog" aria-modal="true" aria-label="Forklaringer">
   <div class="grab"></div>
   <div class="sheet-head">
@@ -983,7 +1008,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
   </div>
-  <p class="help-intro">Hold inne en tast i kalkulatoren for å hoppe rett hit.</p>
+  <p class="help-intro">Hold inne en tast i kalkulatoren for å få bare den ene forklaringen.</p>
   <div id="helpBody"></div>
 </section>
 
@@ -1498,7 +1523,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     fmtEntry: fmtEntry,
     roundSig: roundSig,
     FN_TEXT: FN_TEXT,
-    VERSION: '1.3.0'
+    VERSION: '1.4.0'
   };
 
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -1888,20 +1913,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
           col.appendChild(p2);
         }
 
-        if (it.seq) {
-          var box = document.createElement('div');
-          box.className = 'help-ex';
-          var code = document.createElement('code');
-          code.textContent = it.ex;
-          var btn = document.createElement('button');
-          btn.className = 'help-try';
-          btn.type = 'button';
-          btn.textContent = 'PRØV';
-          btn.addEventListener('click', function () { runExample(it); });
-          box.appendChild(code);
-          box.appendChild(btn);
-          col.appendChild(box);
-        }
+        if (it.seq) col.appendChild(exampleBox(it));
 
         row.appendChild(col);
         sec.appendChild(row);
@@ -1920,19 +1932,77 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     afterEquals();
   }
 
-  function openHelp(id) {
-    buildHelp();
-    openSheet($('sheetHelp'));
-    var el = id ? $('help-' + id) : null;
-    if (el) {
-      el.scrollIntoView({ block: 'center' });
-      el.classList.remove('flash');
-      void el.offsetWidth;
-      el.classList.add('flash');
+  function findHelp(id) {
+    for (var i = 0; i < NumeraHelp.length; i++) {
+      var items = NumeraHelp[i].items;
+      for (var j = 0; j < items.length; j++) if (items[j].id === id) return items[j];
     }
+    return null;
   }
 
-  $('btnHelp').addEventListener('click', function () { openHelp(null); });
+  /* Forklaring av én tast — ingenting annet. */
+  function openKeyHelp(id, label) {
+    var it = findHelp(id);
+    if (!it) return false;
+
+    var body = $('keyHelpBody');
+    body.innerHTML = '';
+    body.className = 'keyhelp';
+
+    var head = document.createElement('div');
+    head.className = 'keyhelp-head';
+    var badge = document.createElement('div');
+    badge.className = 'help-badge';
+    badge.style.width = '46px';
+    badge.setAttribute('aria-hidden', 'true');
+    badge.textContent = label || it.key;
+    var h2 = document.createElement('h2');
+    h2.id = 'keyHelpName';
+    h2.textContent = it.name;
+    head.appendChild(badge);
+    head.appendChild(h2);
+    body.appendChild(head);
+
+    var p = document.createElement('p');
+    p.textContent = it.text;
+    body.appendChild(p);
+
+    if (it.more) {
+      var p2 = document.createElement('p');
+      p2.textContent = it.more;
+      body.appendChild(p2);
+    }
+
+    if (it.seq) body.appendChild(exampleBox(it));
+
+    openSheet($('sheetKeyHelp'));
+    return true;
+  }
+
+  /* Eksempelboksen med Prøv-knapp, delt av begge arkene. */
+  function exampleBox(it) {
+    var box = document.createElement('div');
+    box.className = 'help-ex';
+    var code = document.createElement('code');
+    code.textContent = it.ex;
+    var btn = document.createElement('button');
+    btn.className = 'help-try';
+    btn.type = 'button';
+    btn.textContent = 'PRØV';
+    btn.addEventListener('click', function () { runExample(it); });
+    box.appendChild(code);
+    box.appendChild(btn);
+    return box;
+  }
+
+  /* Hele listen — bare fra spørsmålstegnet i toppen. */
+  function openHelp() {
+    buildHelp();
+    openSheet($('sheetHelp'));
+  }
+
+  $('btnHelp').addEventListener('click', function () { openHelp(); });
+  $('btnAllHelp').addEventListener('click', function () { closeSheets(); openHelp(); });
 
   /* ---------------- Tema ---------------- */
 
@@ -2152,11 +2222,15 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
       return;
     }
 
+    /* Har tasten ingen forklaring, skjer det heller ingenting
+       ved langt trykk — sifre og regneartene forklarer seg selv. */
+    if (!btn.dataset.help) return;
+
     holdTimer = setTimeout(function () {
       heldFired = true;
       restore(before);
       buzz(18);
-      openHelp(btn.dataset.help || null);
+      openKeyHelp(btn.dataset.help, btn.dataset.helpKey);
     }, 550);
   }, { passive: true });
 
@@ -2441,7 +2515,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
 
   if (!store.get('numera:hinted', false)) {
     store.set('numera:hinted', true);
-    setTimeout(function () { toast('HOLD INNE EN TAST FOR Å SE HVA DEN GJØR'); }, 1400);
+    setTimeout(function () { toast('HOLD INNE EN FUNKSJONSTAST FOR FORKLARING'); }, 1400);
   }
 
 })();
