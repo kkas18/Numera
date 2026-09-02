@@ -10,6 +10,6 @@
     "icons": "python3 icons/make-icons.py"
   },
   "devDependencies": {
-    "jsdom": "^30.0.0"
+    "jsdom": "^30.0.1"
   }
 }

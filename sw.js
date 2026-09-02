@@ -5,9 +5,8 @@
    men et nytt versjonsnummer garanterer at gammel cache ryddes.)
    ================================================================ */
 
-const VERSION = '2.0.0';
+const VERSION = '2.0.1';
 const CACHE   = 'numera-' + VERSION;
-const FONTS   = 'numera-fonts';
 
 const PRECACHE = [
   './',
@@ -19,7 +18,13 @@ const PRECACHE = [
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
   './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/apple-touch-icon.png',
+  './fonts/spacegrotesk-var-latin.woff2',
+  './fonts/spacegrotesk-var-latin-ext.woff2',
+  './fonts/plexmono-400-latin.woff2',
+  './fonts/plexmono-400-latin-ext.woff2',
+  './fonts/plexmono-500-latin.woff2',
+  './fonts/plexmono-500-latin-ext.woff2'
 ];
 
 self.addEventListener('install', event => {
@@ -33,7 +38,7 @@ self.addEventListener('activate', event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter(k => k.startsWith('numera-') && k !== CACHE && k !== FONTS)
+      .filter(k => k.startsWith('numera-') && k !== CACHE)
       .map(k => caches.delete(k)));
     await self.clients.claim();
   })());
@@ -47,23 +52,6 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-
-  /* Skrifter fra Google: cache-first (fungerer offline etter første besøk) */
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    event.respondWith((async () => {
-      const cache = await caches.open(FONTS);
-      const hit = await cache.match(req);
-      if (hit) return hit;
-      try {
-        const res = await fetch(req);
-        if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
-        return res;
-      } catch (e) {
-        return hit || Response.error();
-      }
-    })());
-    return;
-  }
 
   if (url.origin !== self.location.origin) return;
 

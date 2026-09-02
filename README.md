@@ -1,7 +1,7 @@
 # NUMERA — Kalkulator
 
 Elegant, presis kalkulator bygd som en installerbar web-app (PWA), tilpasset Samsung Galaxy og Android.
-Én HTML-fil, ingen byggesteg, ingen avhengigheter.
+Én HTML-fil, ingen byggesteg, ingen eksterne avhengigheter – alt (inkl. skrifter) ligger i repoet og fungerer helt offline.
 
 ## Filer
 
@@ -11,6 +11,7 @@ Elegant, presis kalkulator bygd som en installerbar web-app (PWA), tilpasset Sam
 | `manifest.webmanifest` | Navn, ikoner og oppførsel ved installasjon |
 | `sw.js` | Service worker: offline-støtte og automatisk oppdatering |
 | `icons/` | App-ikoner (vanlig + maskable), favicon og generatorskript |
+| `fonts/` | Space Grotesk og IBM Plex Mono lokalt (OFL-lisens) – ingen eksterne kall |
 | `test/` | Automatiske tester for regnemotoren og brukergrensesnittet |
 
 ## Publiser på GitHub Pages
