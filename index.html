@@ -257,74 +257,6 @@ body::after {
   letter-spacing: .42em;
   padding-left: .42em; /* optisk sentrering av tracking */
 }
-.brand { align-items: center; }
-
-/* Modusvelger (nedtrekksmeny) */
-.mode { position: relative; }
-.mode-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 32px;
-  padding: 0 8px 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink-dim);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: .08em;
-  cursor: pointer;
-  -webkit-appearance: none;
-  white-space: nowrap;
-  transition: color .2s, background .2s, border-color .2s;
-}
-.mode-btn svg { width: 16px; height: 16px; transition: transform .25s var(--ease); }
-.mode-btn[aria-expanded="true"] { color: var(--ink); border-color: var(--ink-dim); background: var(--soft-2); }
-.mode-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
-.mode-btn:active { background: var(--soft); }
-.mode-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-
-.menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  min-width: 250px;
-  padding: 6px;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 14px 40px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.12);
-  z-index: 30;
-  transform-origin: top left;
-  animation: menuIn .18s var(--ease);
-}
-.menu[hidden] { display: none; }
-@keyframes menuIn { from { opacity: 0; transform: scale(.94) translateY(-4px); } }
-.menu-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 11px 12px;
-  min-height: 56px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: var(--ink);
-  text-align: left;
-  cursor: pointer;
-  -webkit-appearance: none;
-  transition: background .15s;
-}
-.menu-item:active { background: var(--soft); }
-.menu-item[aria-checked="true"] { background: var(--soft-2); }
-.mi-txt b { display: block; font-size: 14px; font-weight: 600; }
-.mi-txt small { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--ink-dim); margin-top: 2px; letter-spacing: .02em; }
-.mi-check { width: 20px; height: 20px; flex: none; opacity: 0; transform: scale(.7); transition: opacity .15s, transform .2s var(--ease); }
-.menu-item[aria-checked="true"] .mi-check { opacity: 1; transform: none; }
-
 @media (max-width: 380px) {
   .brand-name { letter-spacing: .3em; padding-left: .3em; }
   .icon-btn { width: 38px; }
@@ -434,11 +366,40 @@ body::after {
 }
 .preview b { color: var(--ink); font-weight: 500; }
 
-.hairline {
-  height: 1px; flex: none;
-  background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
-  margin-bottom: var(--gap);
+.pull {
+  position: relative;
+  flex: none;
+  height: 28px;
+  margin-bottom: calc(var(--gap) * .6);
+  display: grid;
+  place-items: center;
 }
+.pull::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line) 15%, var(--line) 85%, transparent);
+}
+.pull-btn {
+  position: relative;
+  width: 64px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--ink-dim);
+  cursor: pointer;
+  -webkit-appearance: none;
+  transition: color .2s, background .2s, border-color .2s, transform .12s;
+}
+.pull-btn::after { /* større trykkflate uten å endre utseendet */
+  content: ""; position: absolute; inset: -12px -20px;
+}
+.pull-btn svg { width: 16px; height: 16px; transition: transform .3s var(--ease); }
+.pull-btn.open svg { transform: rotate(180deg); }
+.pull-btn:active { transform: scale(.94); background: var(--soft); color: var(--ink); }
+.pull-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 /* ---------- Tastatur ---------- */
 .keypad-wrap {
@@ -555,7 +516,9 @@ body::after {
   color: var(--ink-dim);
 }
 .key.skey:active, .key.skey.kbd { color: var(--ink); background: var(--soft-2); }
-.key.skey.angle { color: var(--ink); font-family: var(--font-mono); font-size: clamp(.8rem, 3vmin, 1rem); letter-spacing: .12em; border-color: var(--ink-dim); }
+.key.skey.angle, .key.skey.inv { color: var(--ink); font-family: var(--font-mono); font-size: clamp(.8rem, 3vmin, 1rem); letter-spacing: .12em; border-color: var(--ink-dim); }
+.key.skey.inv[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.key.skey .sup { font-size: .6em; }
 .key .sup { font-size: .62em; vertical-align: super; line-height: 0; }
 
 /* Ringbølge ved trykk */
@@ -896,7 +859,7 @@ body::after {
     min-height: 0;
     justify-content: center;
   }
-  .hairline { display: none; }
+  .pull { display: none; }
   .keypad-wrap { grid-column: 2; grid-row: 2; }
   .orn-pi { font-size: 34vmin; }
   .orn-root { display: none; }
@@ -937,22 +900,6 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
   <header class="topbar">
     <div class="brand">
       <span class="brand-name">NUMERA</span>
-      <div class="mode">
-        <button class="mode-btn" id="btnMode" aria-haspopup="menu" aria-expanded="false" aria-controls="modeMenu">
-          <span id="modeLabel">Standard</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg>
-        </button>
-        <div class="menu" id="modeMenu" role="menu" hidden>
-          <button class="menu-item" role="menuitemradio" data-mode="std" aria-checked="true">
-            <span class="mi-txt"><b>Standard</b><small>De fire regneartene, prosent og fortegn</small></span>
-            <svg class="mi-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-          </button>
-          <button class="menu-item" role="menuitemradio" data-mode="sci" aria-checked="false">
-            <span class="mi-txt"><b>Vitenskapelig</b><small>sin, cos, log, røtter, π og parenteser</small></span>
-            <svg class="mi-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-          </button>
-        </div>
-      </div>
     </div>
     <div class="topbar-actions">
       <button class="icon-btn" id="btnHistory" aria-label="Historikk">
@@ -998,27 +945,31 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
     <div class="preview" id="previewLine"></div>
   </section>
 
-  <div class="hairline"></div>
+  <div class="pull">
+    <button class="pull-btn" id="btnPull" aria-expanded="false" aria-controls="sciPad" aria-label="Vis vitenskapelige funksjoner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg>
+    </button>
+  </div>
 
   <!-- Tastatur -->
   <section class="keypad-wrap">
 
     <div class="sci-pad" id="sciPad" aria-label="Vitenskapelige funksjoner">
-      <button class="key skey" style="--i:0"  data-fn="sin">sin</button>
-      <button class="key skey" style="--i:1"  data-fn="cos">cos</button>
-      <button class="key skey" style="--i:2"  data-fn="tan">tan</button>
-      <button class="key skey" style="--i:3"  data-action="lparen">(</button>
-      <button class="key skey" style="--i:4"  data-action="rparen">)</button>
-      <button class="key skey" style="--i:5"  data-fn="ln">ln</button>
-      <button class="key skey" style="--i:6"  data-fn="log">log</button>
-      <button class="key skey" style="--i:7"  data-fn="sqrt">√</button>
-      <button class="key skey" style="--i:8"  data-action="square">x<span class="sup">2</span></button>
-      <button class="key skey" style="--i:9"  data-op="^">x<span class="sup">y</span></button>
+      <button class="key skey inv" style="--i:0" data-action="inv" id="btnInv" aria-pressed="false">INV</button>
+      <button class="key skey" style="--i:1"  data-action="lparen">(</button>
+      <button class="key skey" style="--i:2"  data-action="rparen">)</button>
+      <button class="key skey" style="--i:3"  data-fn="sqrt">√</button>
+      <button class="key skey" style="--i:4"  data-op="^">x<span class="sup">y</span></button>
+      <button class="key skey" style="--i:5"  data-fn="sin" data-inv="asin">sin</button>
+      <button class="key skey" style="--i:6"  data-fn="cos" data-inv="acos">cos</button>
+      <button class="key skey" style="--i:7"  data-fn="tan" data-inv="atan">tan</button>
+      <button class="key skey" style="--i:8"  data-fn="ln"  data-inv="exp">ln</button>
+      <button class="key skey" style="--i:9"  data-fn="log" data-inv="pow10">log</button>
       <button class="key skey" style="--i:10" data-const="pi">π</button>
       <button class="key skey" style="--i:11" data-const="e">e</button>
-      <button class="key skey" style="--i:12" data-action="fact">n!</button>
-      <button class="key skey angle" style="--i:13" data-action="angle" id="btnAngle">DEG</button>
-      <button class="key skey" style="--i:14" data-action="ans">Ans</button>
+      <button class="key skey" style="--i:12" data-action="square">x<span class="sup">2</span></button>
+      <button class="key skey" style="--i:13" data-action="fact">n!</button>
+      <button class="key skey angle" style="--i:14" data-action="angle" id="btnAngle">DEG</button>
     </div>
 
     <div class="keypad" id="keypad">
@@ -1166,6 +1117,15 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
       </div>
     </div>
     <div class="help-item">
+      <div class="help-sym mono">INV</div>
+      <div class="help-txt">
+        <b>Omvendte funksjoner</b>
+        <p>Trykk INV, og de fem funksjonstastene bytter til sin⁻¹, cos⁻¹, tan⁻¹, eˣ og 10ˣ for ett trykk. sin⁻¹ finner vinkelen når du kjenner forholdet.</p>
+        <code>INV sin(0,5) = 30</code>
+        <code>INV log(3) = 1 000</code>
+      </div>
+    </div>
+    <div class="help-item">
       <div class="help-sym">sin</div>
       <div class="help-txt">
         <b>sin, cos, tan</b>
@@ -1219,10 +1179,10 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
       </div>
     </div>
     <div class="help-item">
-      <div class="help-sym">Ans</div>
+      <div class="help-sym">=</div>
       <div class="help-txt">
-        <b>Forrige svar</b>
-        <p>Setter inn det siste resultatet. Trykker du en operator rett etter et svar, brukes svaret automatisk.</p>
+        <b>Regne videre på svaret</b>
+        <p>Trykker du en operator rett etter =, fortsetter regnestykket med svaret. Trykker du et tall, starter du på nytt.</p>
         <code>12 × 4 = 48, deretter + 2 = 50</code>
       </div>
     </div>
@@ -1241,7 +1201,7 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
       <div class="help-sym mono">TAST</div>
       <div class="help-txt">
         <b>Fysisk tastatur</b>
-        <p>Med tastatur (DeX eller PC) bruker du tallene, + − * /, ^, %, ( ), Enter for =, Backspace for slett og Escape for AC.</p>
+        <p>Med tastatur (DeX eller PC) bruker du tallene, + − * /, ^, %, ( ), Enter for =, Backspace for slett og Escape for AC. I vitenskapelig modus: s, c, t, l, g, r, p, e og i for INV.</p>
       </div>
     </div>
   </div>
@@ -1280,7 +1240,7 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
   <div class="row">
     <div class="row-txt">
       <label for="optSci">Vitenskapelige funksjoner</label>
-      <small>sin, cos, logaritmer, parenteser med mer</small>
+      <small>Kan også åpnes med pilen over tastaturet</small>
     </div>
     <label class="switch"><input type="checkbox" id="optSci"><span class="track"><span class="thumb"></span></span></label>
   </div>
@@ -1348,13 +1308,14 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
    NUMERA — kalkulatormotor, innstillinger og interaksjon
    ================================================================ */
 
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.3.0';
 
 /* @engine-start
    Ren motor uten DOM-avhengigheter. Trekkes ut og testes i test/engine.test.mjs */
 const Engine = (() => {
 
   const OP_DISPLAY = { '+':' + ', '-':' − ', '×':' × ', '÷':' ÷ ', '^':' ^ ' };
+  const FN_DISPLAY = { sqrt:'√', asin:'sin⁻¹', acos:'cos⁻¹', atan:'tan⁻¹', exp:'e^', pow10:'10^' };
   const THIN = '\u2009';
 
   function groupDigits(s, sep){
@@ -1416,7 +1377,7 @@ const Engine = (() => {
       if (tk.t === 'num')   return fmtNum(tk.v, sep);
       if (tk.t === 'const') return tk.v === 'pi' ? 'π' : 'e';
       if (tk.t === 'op')    return OP_DISPLAY[tk.v] || tk.v;
-      if (tk.t === 'fn')    return (tk.v === 'sqrt' ? '√' : tk.v) + '(';
+      if (tk.t === 'fn')    return (FN_DISPLAY[tk.v] || tk.v) + '(';
       if (tk.t === 'lp')    return '(';
       if (tk.t === 'rp')    return ')';
       if (tk.t === 'post')  return tk.v;
@@ -1511,12 +1472,18 @@ const Engine = (() => {
           if (angleMode === 'deg' && Math.abs(((x % 180) + 180) % 180 - 90) < 1e-9) throw new Error('domain');
           return cleanTrig(Math.tan(rad));
         }
+        case 'asin': if (x < -1 || x > 1) throw new Error('domain'); return fromRad(Math.asin(x));
+        case 'acos': if (x < -1 || x > 1) throw new Error('domain'); return fromRad(Math.acos(x));
+        case 'atan': return fromRad(Math.atan(x));
         case 'ln':   if (x <= 0) throw new Error('domain'); return Math.log(x);
         case 'log':  if (x <= 0) throw new Error('domain'); return Math.log10(x);
+        case 'exp':  return Math.exp(x);
+        case 'pow10': return Math.pow(10, x);
         case 'sqrt': if (x <  0) throw new Error('domain'); return Math.sqrt(x);
       }
       throw new Error('syntax');
     }
+    function fromRad(r){ return angleMode === 'deg' ? r * 180 / Math.PI : r; }
     /* Fjerner flyttallsstøy nær 0 og ±1 (sin(180°) -> 0, ikke 1.2e-16) */
     function cleanTrig(v){
       if (Math.abs(v) < 1e-14) return 0;
@@ -1557,6 +1524,16 @@ let lastAnswer = null;
 let hist = safeParse(localStorage.getItem('numera:history'), []);
 if (!Array.isArray(hist)) hist = [];
 let errTimer = null;
+let inv = false;          // INV: viser sin⁻¹, cos⁻¹, tan⁻¹, eˣ, 10ˣ
+
+const INV_LABEL = { sin:'sin⁻¹', cos:'cos⁻¹', tan:'tan⁻¹', ln:'eˣ', log:'10ˣ' };
+function applyInv(){
+  const b = document.getElementById('btnInv');
+  b.setAttribute('aria-pressed', String(inv));
+  document.querySelectorAll('.key[data-inv]').forEach(k => {
+    k.textContent = inv ? INV_LABEL[k.dataset.fn] : k.dataset.fn;
+  });
+}
 
 const fmtNum   = s => Engine.fmtNum(s, S.sep);
 const fmtEntry = e => Engine.fmtEntry(e, S.sep);
@@ -1668,16 +1645,6 @@ function postfix(kind){ /* '%' | '!' | 'square' */
   if (!l || !(l.t === 'num' || l.t === 'rp' || l.t === 'const' || l.t === 'post')) return;
   if (kind === 'square') { tokens.push({ t:'op', v:'^' }); tokens.push({ t:'num', v:'2' }); }
   else tokens.push({ t:'post', v:kind });
-  render();
-}
-
-function inputAns(){
-  clearTimeout(errTimer);
-  resetIfEvaluated();
-  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
-  const v = lastAnswer !== null ? lastAnswer : 0;
-  tokens.push({ t:'num', v:String(v) });
-  mainValue = String(v);
   render();
 }
 
@@ -1871,7 +1838,6 @@ $('btnTheme').addEventListener('click', () => {
 /* ---------------- Ark (sheets) ---------------- */
 let sheetHistoryStateAdded = false;
 function openSheet(el){
-  setMenu(false);
   closeSheets(true);
   $('backdrop').classList.add('show');
   el.classList.add('open');
@@ -1896,6 +1862,9 @@ $('backdrop').addEventListener('click', () => closeSheets());
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeSheets()));
 $('btnHistory').addEventListener('click', () => { renderHist(); openSheet($('sheetHistory')); buzz(); });
 $('btnHelp').addEventListener('click', () => { openSheet($('sheetHelp')); buzz(); });
+$('btnPull').addEventListener('click', () => {
+  S.sci = !S.sci; saveSettings(); syncSettingsUI(); applySettingsEffects(); buzz(10);
+});
 $('btnSettings').addEventListener('click', () => { openSheet($('sheetSettings')); buzz(); });
 $('btnClearHist').addEventListener('click', () => {
   hist = []; try { localStorage.setItem('numera:history', '[]'); } catch (e) {}
@@ -1916,23 +1885,6 @@ document.querySelectorAll('.sheet').forEach(sheet => {
   sheet.addEventListener('touchend', () => { startY = null; });
 });
 
-/* ---------------- Modusvelger (nedtrekksmeny) ---------------- */
-function setMenu(open){
-  $('modeMenu').hidden = !open;
-  $('btnMode').setAttribute('aria-expanded', String(open));
-}
-function menuOpen(){ return !$('modeMenu').hidden; }
-$('btnMode').addEventListener('click', e => { e.stopPropagation(); setMenu(!menuOpen()); buzz(); });
-document.querySelectorAll('#modeMenu .menu-item').forEach(b => b.addEventListener('click', e => {
-  e.stopPropagation();
-  S.sci = b.dataset.mode === 'sci';
-  saveSettings(); syncSettingsUI(); applySettingsEffects(); buzz(10);
-  setMenu(false);
-}));
-document.addEventListener('pointerdown', e => {
-  if (menuOpen() && !e.target.closest('.mode')) setMenu(false);
-}, { passive: true });
-
 /* ---------------- Innstillingsbindinger ---------------- */
 function syncSettingsUI(){
   $('optSci').checked    = S.sci;
@@ -1949,9 +1901,11 @@ function syncSettingsUI(){
 function applySettingsEffects(){
   $('sciPad').classList.toggle('open', S.sci);
   $('chipRow').hidden = !S.sci;
-  $('modeLabel').textContent = S.sci ? 'Vitenskapelig' : 'Standard';
-  document.querySelectorAll('#modeMenu .menu-item').forEach(b =>
-    b.setAttribute('aria-checked', String((b.dataset.mode === 'sci') === S.sci)));
+  const pull = $('btnPull');
+  pull.classList.toggle('open', S.sci);
+  pull.setAttribute('aria-expanded', String(S.sci));
+  pull.setAttribute('aria-label', S.sci ? 'Skjul vitenskapelige funksjoner' : 'Vis vitenskapelige funksjoner');
+  if (!S.sci && inv) { inv = false; applyInv(); }
   $('btnHistory').style.display = S.history ? '' : 'none';
   document.body.classList.toggle('large', S.large);
   applyWake();
@@ -2041,7 +1995,11 @@ function route(btn){
     const map = { '−':'-', '+':'+', '×':'×', '÷':'÷', '^':'^' };
     return inputOp(map[d.op]);
   }
-  if (d.fn     !== undefined) return inputFn(d.fn);
+  if (d.fn     !== undefined) {
+    const name = inv && d.inv ? d.inv : d.fn;
+    if (inv) { inv = false; applyInv(); }
+    return inputFn(name);
+  }
   if (d.const  !== undefined) return inputConst(d.const);
   switch (d.action) {
     case 'comma':   return inputComma();
@@ -2054,7 +2012,8 @@ function route(btn){
     case 'percent': return postfix('%');
     case 'fact':    return postfix('!');
     case 'square':  return postfix('square');
-    case 'ans':     return inputAns();
+    case 'inv':
+      inv = !inv; applyInv(); return;
     case 'angle':
       S.angle = S.angle === 'deg' ? 'rad' : 'deg';
       saveSettings(); render(); return;
@@ -2147,13 +2106,13 @@ document.addEventListener('keydown', e => {
     return;
   }
   const sheetOpen = document.querySelector('.sheet.open');
-  if (e.key === 'Escape' && menuOpen()) { setMenu(false); return; }
   if (e.key === 'Escape' && sheetOpen) { closeSheets(); return; }
   if (sheetOpen) return;
   let btn = findBtn(e.key);
   if (!btn) {
     const sci = { s:'sin', c:'cos', t:'tan', l:'ln', g:'log', r:'sqrt', p:'pi', e:'e' }[e.key.toLowerCase()];
     if (sci && S.sci) btn = KEYS.find(b => b.dataset.fn === sci || b.dataset.const === sci);
+    if (e.key.toLowerCase() === 'i' && S.sci) btn = $('btnInv');
   }
   if (btn) {
     e.preventDefault();
