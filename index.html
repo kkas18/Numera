@@ -2,24 +2,25 @@
 <html lang="nb" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" id="metaTheme" content="#0e1013">
-<meta name="description" content="NUMERA — en presis, rask kalkulator for mobil. Fungerer uten nett.">
+<meta name="description" content="NUMERA — en presis og elegant kalkulator for Android og Samsung Galaxy.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Numera">
+<meta name="apple-mobile-web-app-title" content="NUMERA">
+<meta name="application-name" content="NUMERA">
 <meta name="format-detection" content="telephone=no">
 <title>NUMERA — Kalkulator</title>
 
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
-<link rel="icon" href="./icons/icon-32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="./icons/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <script>
-/* Tema settes før første maling, så appen aldri blinker hvitt. */
+/* Tidlig temavalg: hindrer blinking ved lasting */
 (function () {
   try {
     var s = JSON.parse(localStorage.getItem('numera:settings') || '{}');
@@ -28,8 +29,9 @@
       ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : t;
     document.documentElement.setAttribute('data-theme', r);
-    if (s.large) document.documentElement.classList.add('pre-large');
-  } catch (e) {}
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
 })();
 </script>
 
@@ -39,16 +41,17 @@
 
 <style>
 /* ============================================================
-   NUMERA — kalkulator
-   Nøytral grunnpalett, én gullaksent, lys + mørk modus.
+   NUMERA — elegant kalkulator
+   Nøytral palett, én aksentfarge (gull), lys + mørk modus.
+   Tilpasset Samsung Galaxy / Android (One UI-følelse).
    ============================================================ */
 
 :root {
-  --font-display: "Space Grotesk", "SamsungOne", "Roboto", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", "Roboto Mono", ui-monospace, "Courier New", monospace;
+  --font-display: "Space Grotesk", "Segoe UI", Roboto, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Roboto Mono", "Courier New", monospace;
   --ease: cubic-bezier(.22,.9,.3,1);
-  --gap: clamp(8px, 1.7vmin, 13px);
-  --radius-key: clamp(14px, 3.6vmin, 20px);
+  --gap: clamp(8px, 1.6vmin, 12px);
+  --radius-key: clamp(16px, 3.8vmin, 22px);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
@@ -78,7 +81,8 @@
   --dot: rgba(27,29,32,.16);
   --glow-a: rgba(201,154,69,.10);
   --glow-b: rgba(27,29,32,.05);
-  --scrim: rgba(60,64,68,.42);
+  --toast-bg: #1b1d20;
+  --toast-ink: #f5f6f6;
 }
 
 :root[data-theme="dark"] {
@@ -104,7 +108,8 @@
   --dot: rgba(241,241,238,.13);
   --glow-a: rgba(216,165,74,.08);
   --glow-b: rgba(120,140,170,.05);
-  --scrim: rgba(4,6,8,.55);
+  --toast-bg: #f1f1ee;
+  --toast-ink: #0e1013;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -112,8 +117,6 @@
 html, body {
   height: 100%;
   overscroll-behavior: none;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
 }
 
 body {
@@ -126,10 +129,12 @@ body {
   -webkit-user-select: none;
   touch-action: manipulation;
   overflow: hidden;
+  position: fixed;
+  inset: 0;
   transition: background .35s var(--ease), color .35s var(--ease);
 }
 
-/* ---------- Bakgrunn: svak glød + fint punktraster ---------- */
+/* ---------- Lagdelt bakgrunn: glød + fint punktmønster ---------- */
 body::before {
   content: "";
   position: fixed; inset: 0;
@@ -149,8 +154,10 @@ body::after {
   pointer-events: none; z-index: 0;
 }
 
+/* Store, svake matematiske glyfer som ambient ornamentikk */
 .ornament {
   position: fixed;
+  font-family: var(--font-display);
   font-weight: 700;
   color: var(--ink);
   opacity: var(--orn-opacity);
@@ -161,7 +168,7 @@ body::after {
 .orn-pi   { font-size: 48vmin; top: -7vmin;  right: -5vmin;  transform: rotate(9deg); }
 .orn-root { font-size: 40vmin; bottom: -6vmin; left: -4vmin; transform: rotate(-7deg); }
 
-/* ---------- Ramme ---------- */
+/* ---------- App-ramme ---------- */
 .app {
   position: relative;
   z-index: 1;
@@ -172,11 +179,10 @@ body::after {
   display: flex;
   flex-direction: column;
   padding:
-    calc(10px + var(--safe-top))
+    calc(8px + var(--safe-top))
     calc(clamp(14px, 4vw, 26px) + var(--safe-right))
-    calc(12px + var(--safe-bottom))
+    calc(10px + var(--safe-bottom))
     calc(clamp(14px, 4vw, 26px) + var(--safe-left));
-  overflow: hidden;
   animation: appIn .6s var(--ease) backwards;
 }
 @keyframes appIn { from { opacity: 0; transform: translateY(10px); } }
@@ -186,20 +192,26 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: clamp(6px, 1.5vmin, 14px);
+  gap: 8px;
+  padding-bottom: clamp(4px, 1.2vmin, 12px);
   flex: none;
+  min-height: 44px;
 }
-.brand { display: flex; align-items: baseline; gap: 10px; }
-.brand-name { font-size: 13px; font-weight: 700; letter-spacing: .42em; }
+.brand { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
+.brand-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .42em;
+  padding-left: .42em; /* optisk sentrering av tracking */
+}
 .brand-tag {
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: .14em;
   color: var(--ink-dim);
+  white-space: nowrap;
 }
-/* Plass til alle knappene på smale telefoner. */
-@media (max-width: 430px) { .brand-tag { display: none; } }
-.topbar-actions { display: flex; gap: 2px; }
+.topbar-actions { display: flex; gap: 2px; flex: none; }
 
 .icon-btn {
   width: 42px; height: 42px;
@@ -209,42 +221,60 @@ body::after {
   border-radius: 50%;
   color: var(--ink-dim);
   cursor: pointer;
+  -webkit-appearance: none;
   transition: color .2s, background .2s, transform .15s;
 }
 .icon-btn:hover { color: var(--ink); background: var(--accent-soft-2); }
-.icon-btn:active { transform: scale(.92); }
-.icon-btn svg { width: 19px; height: 19px; }
-.icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-#btnInstall { color: var(--accent); }
-#btnInstall[hidden] { display: none; }
+.icon-btn:active { transform: scale(.9); background: var(--accent-soft); }
+.icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon-btn svg { width: 20px; height: 20px; }
 
+/* Sol/måne byttes etter tema */
 .icon-sun  { display: none; }
 .icon-moon { display: block; }
 :root[data-theme="dark"] .icon-sun  { display: block; }
 :root[data-theme="dark"] .icon-moon { display: none; }
 
-/* ---------- Skjerm ---------- */
+/* ---------- Skjerm / display ---------- */
 .display {
   flex: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   text-align: right;
-  padding: clamp(8px, 2vmin, 18px) 4px clamp(10px, 2.2vmin, 20px);
-  min-height: clamp(126px, 24vh, 230px);
+  padding: clamp(6px, 1.6vmin, 16px) 4px clamp(8px, 2vmin, 18px);
+  min-height: clamp(128px, 25vh, 240px);
   animation: appIn .7s var(--ease) .08s backwards;
-  touch-action: none;
 }
+.display-meta {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 6px;
+  min-height: 22px;
+}
+.chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: var(--accent);
+  border: 1px solid var(--accent-soft);
+  background: var(--accent-soft-2);
+  padding: 3px 9px;
+  border-radius: 999px;
+  line-height: 1.4;
+}
+
 .expr {
   font-family: var(--font-mono);
   font-size: clamp(12px, 3.4vmin, 15px);
   color: var(--ink-dim);
-  min-height: 1.5em;
+  min-height: 1.6em;
   white-space: nowrap;
   overflow-x: auto;
-  overflow-y: hidden;
   scrollbar-width: none;
-  touch-action: pan-x;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 28px);
+  mask-image: linear-gradient(90deg, transparent, black 28px);
 }
 .expr::-webkit-scrollbar { display: none; }
 
@@ -252,11 +282,14 @@ body::after {
   font-size: clamp(2.7rem, 12.5vmin, 4.9rem);
   font-weight: 500;
   letter-spacing: -.015em;
-  line-height: 1.14;
+  line-height: 1.12;
   white-space: nowrap;
   overflow: hidden;
   cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: color .2s;
 }
+.main:active { color: var(--accent); }
 .main.pop { animation: pop .32s var(--ease); }
 @keyframes pop {
   0%   { transform: translateY(10px); opacity: 0; }
@@ -269,62 +302,25 @@ body::after {
   60% { transform: translateX(-4px); }
   80% { transform: translateX(4px); }
 }
-.main .err {
-  color: var(--accent);
-  font-size: clamp(1.4rem, 6vmin, 2.1rem);
-  font-weight: 600;
-}
+.main .err { color: var(--accent); }
 
 .preview {
   font-family: var(--font-mono);
   font-size: clamp(12px, 3.4vmin, 15px);
   color: var(--ink-dim);
-  min-height: 1.5em;
+  min-height: 1.6em;
+  opacity: .85;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 .preview b { color: var(--accent); font-weight: 500; }
 
-/* Streken mellom vinduet og tastene er samtidig bryteren
-   for de vitenskapelige funksjonene. */
-.rule {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.hairline {
+  height: 1px; flex: none;
+  background: linear-gradient(90deg, transparent, var(--line) 20%, var(--line) 80%, transparent);
   margin-bottom: var(--gap);
 }
-.rule::before, .rule::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--line));
-}
-.rule::after { background: linear-gradient(90deg, var(--line), transparent); }
-
-.rule-handle {
-  flex: none;
-  width: 62px; height: 26px;
-  display: grid; place-items: center;
-  padding: 0;
-  border: 1px solid var(--key-border);
-  border-radius: 999px;
-  background: var(--surface);
-  box-shadow: var(--key-shadow);
-  color: var(--ink-dim);
-  cursor: pointer;
-  transition: color .2s, background .2s, border-color .2s, transform .12s;
-}
-.rule-handle svg { width: 17px; height: 17px; transition: transform .38s var(--ease); }
-.rule-handle:hover { color: var(--ink); }
-.rule-handle:active { transform: scale(.93); }
-.rule-handle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.rule-handle.on {
-  color: var(--accent);
-  background: var(--accent-soft);
-  border-color: var(--accent-soft);
-}
-.rule-handle.on svg { transform: rotate(180deg); }
 
 /* ---------- Tastatur ---------- */
 .keypad-wrap {
@@ -333,7 +329,6 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: var(--gap);
-  contain: layout paint;
 }
 
 .sci-pad {
@@ -349,14 +344,20 @@ body::after {
   transition: max-height .4s var(--ease), opacity .3s var(--ease),
               transform .4s var(--ease), visibility .4s;
 }
-.sci-pad.open { max-height: 320px; opacity: 1; visibility: visible; transform: none; }
+.sci-pad.open {
+  max-height: 400px;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.sci-pad .key { min-height: 44px; }
 
 .keypad {
   flex: 1;
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(0, 1fr);
+  grid-auto-rows: minmax(48px, 1fr);
   gap: var(--gap);
 }
 
@@ -375,23 +376,33 @@ body::after {
   display: grid;
   place-items: center;
   padding: 0;
+  min-height: 48px;
   transition: background .18s, transform .09s, box-shadow .18s, color .18s;
   animation: keyIn .5s var(--ease) backwards;
   animation-delay: calc(var(--i, 0) * 16ms);
   -webkit-appearance: none;
-  appearance: none;
+  touch-action: manipulation;
 }
 @keyframes keyIn { from { opacity: 0; transform: translateY(12px) scale(.96); } }
 
-.key:hover { background: var(--surface-active); }
-.key.press, .key.kbd { transform: scale(.95); box-shadow: var(--key-shadow-press); }
+@media (hover: hover) { .key:hover { background: var(--surface-active); } }
+.key:active, .key.kbd {
+  transform: scale(.95);
+  box-shadow: var(--key-shadow-press);
+  background: var(--surface-active);
+}
 .key:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.key svg { width: 24px; height: 24px; }
-.key .lbl { display: inline-block; white-space: nowrap; }
-.key sup { font-size: .6em; line-height: 0; vertical-align: super; margin-left: .02em; }
 
-.key.op { color: var(--accent); background: var(--accent-soft-2); font-weight: 600; }
-.key.op:hover { background: var(--accent-soft); }
+.key svg { width: 26px; height: 26px; }
+
+/* Funksjonstaster med aksent */
+.key.op {
+  color: var(--accent);
+  background: var(--accent-soft-2);
+  font-weight: 600;
+}
+@media (hover: hover) { .key.op:hover { background: var(--accent-soft); } }
+.key.op:active, .key.op.kbd { background: var(--accent-soft); }
 
 .key.ac {
   color: var(--accent);
@@ -408,30 +419,21 @@ body::after {
   border-color: transparent;
   box-shadow: var(--key-shadow), var(--eq-glow);
 }
-.key.eq:hover { filter: brightness(1.06); }
-.key.eq.press, .key.eq.kbd { box-shadow: var(--eq-glow); }
+@media (hover: hover) { .key.eq:hover { filter: brightness(1.06); } }
+.key.eq:active, .key.eq.kbd { box-shadow: var(--eq-glow); background: linear-gradient(180deg, var(--accent), var(--accent-hi)); }
 
 .key.skey {
-  min-height: 42px;
-  font-size: clamp(.9rem, 3.5vmin, 1.15rem);
+  font-size: clamp(.95rem, 3.6vmin, 1.2rem);
   font-weight: 500;
-  color: var(--ink-dim);
-  border-radius: calc(var(--radius-key) * .75);
+  border-radius: calc(var(--radius-key) * .8);
   background: color-mix(in srgb, var(--surface) 55%, transparent);
 }
-.key.skey:hover { color: var(--ink); }
-.key.skey.tag {
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: clamp(.72rem, 2.8vmin, .9rem);
-  letter-spacing: .1em;
-}
-.key.skey.tag.on {
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 600;
-}
+.key.skey[data-fn], .key.skey[data-const] { color: var(--ink-dim); }
+.key.skey[data-fn]:active, .key.skey[data-const]:active { color: var(--ink); }
+.key.skey.angle { color: var(--accent); font-family: var(--font-mono); font-size: clamp(.8rem, 3vmin, 1rem); letter-spacing: .12em; }
+.key .sup { font-size: .62em; vertical-align: super; line-height: 0; }
 
+/* Ringbølge ved trykk */
 .ripple {
   position: absolute;
   border-radius: 50%;
@@ -441,14 +443,14 @@ body::after {
   pointer-events: none;
 }
 @keyframes ripple {
-  0%   { transform: translate(-50%,-50%) scale(0); opacity: .5; }
-  100% { transform: translate(-50%,-50%) scale(1); opacity: 0; }
+  0%   { transform: translate(-50%,-50%) scale(0);   opacity: .5; }
+  100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
 }
 
-/* ---------- Paneler ---------- */
+/* ---------- Ark (bunnpaneler) ---------- */
 .backdrop {
   position: fixed; inset: 0;
-  background: var(--scrim);
+  background: rgba(8, 10, 12, .45);
   opacity: 0;
   pointer-events: none;
   transition: opacity .3s var(--ease);
@@ -469,18 +471,35 @@ body::after {
   padding: 8px clamp(18px, 5vw, 28px) calc(20px + var(--safe-bottom));
   transition: transform .42s var(--ease);
   z-index: 50;
-  max-height: 82dvh;
+  max-height: 84dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   visibility: hidden;
 }
 .sheet.open { transform: translate(-50%, 0); visibility: visible; }
-.grab { width: 42px; height: 4px; border-radius: 999px; background: var(--line); margin: 6px auto 14px; }
-.sheet-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px;
+.grab {
+  width: 42px; height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  margin: 6px auto 14px;
 }
-.sheet-head h2 { font-size: 15px; font-weight: 700; letter-spacing: .22em; }
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  position: sticky;
+  top: 0;
+  background: var(--bg-2);
+  padding: 4px 0;
+  z-index: 1;
+}
+.sheet-head h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .22em;
+}
 .sheet-head .group { display: flex; align-items: center; gap: 4px; }
 
 .text-btn {
@@ -491,12 +510,15 @@ body::after {
   background: var(--accent-soft-2);
   border: 1px solid var(--accent-soft);
   border-radius: 999px;
-  padding: 7px 14px;
+  padding: 9px 14px;
+  min-height: 36px;
   cursor: pointer;
+  -webkit-appearance: none;
   transition: background .2s;
 }
-.text-btn:hover { background: var(--accent-soft); }
+.text-btn:active { background: var(--accent-soft); }
 
+/* Historikk */
 .hist { list-style: none; }
 .hist-item {
   width: 100%;
@@ -504,137 +526,65 @@ body::after {
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--line);
-  padding: 12px 4px;
+  padding: 12px 6px;
+  min-height: 56px;
   cursor: pointer;
   color: var(--ink);
   font-family: var(--font-display);
   transition: background .2s;
   border-radius: 10px;
+  -webkit-appearance: none;
 }
-.hist-item:hover { background: var(--accent-soft-2); }
+.hist-item:active { background: var(--accent-soft-2); }
 .hist-item .h-expr {
   display: block;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--ink-dim);
   margin-bottom: 3px;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.hist-item .h-res { font-size: 1.25rem; font-weight: 600; }
+.hist-item .h-res { font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .hist-empty {
   text-align: center;
   color: var(--ink-dim);
   font-family: var(--font-mono);
   font-size: 12px;
+  letter-spacing: .08em;
   padding: 30px 0 20px;
+  line-height: 1.7;
 }
 
-/* Forklaring av én tast */
-.keyhelp-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 2px 0 12px;
-}
-.keyhelp-head h2 { font-size: 17px; font-weight: 700; letter-spacing: 0; }
-.keyhelp p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--ink-dim);
-  max-width: 62ch;
-}
-.keyhelp p + p { margin-top: 8px; }
-.keyhelp .help-ex { margin-top: 14px; }
-
-/* Forklaringer */
-.help-intro {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-dim);
-  padding-bottom: 6px;
-}
-.help-group { padding-top: 18px; }
-.help-group h3 {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: .2em;
-  color: var(--accent);
-  padding-bottom: 4px;
-}
-.help-item {
-  display: grid;
-  grid-template-columns: 46px 1fr;
-  gap: 14px;
-  padding: 14px 0;
-  border-top: 1px solid var(--line);
-}
-.help-badge {
-  height: 46px;
-  display: grid; place-items: center;
-  border-radius: 13px;
-  border: 1px solid var(--key-border);
-  background: var(--surface);
-  color: var(--accent);
-  font-size: 15px;
-  font-weight: 600;
-}
-.help-item h4 { font-size: 14.5px; font-weight: 700; margin-bottom: 5px; }
-.help-item p {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--ink-dim);
-  max-width: 62ch;
-}
-.help-item p + p { margin-top: 6px; }
-.help-ex {
+/* Innstillinger */
+.row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 10px;
-  padding: 9px 12px;
-  border-radius: 12px;
-  background: var(--accent-soft-2);
-  border: 1px solid var(--accent-soft);
-}
-.help-ex code {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  color: var(--ink);
-}
-.help-try {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: .12em;
-  color: var(--accent);
-  background: transparent;
-  border: 1px solid var(--accent-soft);
-  border-radius: 999px;
-  padding: 6px 12px;
-  cursor: pointer;
-}
-.help-try:hover { background: var(--accent-soft); }
-.help-item.flash { animation: flash 1.4s var(--ease); }
-@keyframes flash {
-  0%, 70% { background: var(--accent-soft-2); }
-  100% { background: transparent; }
-}
-
-.row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; padding: 14px 2px;
+  gap: 16px;
+  padding: 14px 2px;
+  min-height: 60px;
   border-bottom: 1px solid var(--line);
 }
 .row:last-of-type { border-bottom: none; }
-.row-txt label { display: block; font-size: 14px; font-weight: 600; cursor: pointer; }
+.row-txt label, .row-txt .lbl {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  cursor: pointer;
+}
 .row-txt small {
   display: block;
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: var(--ink-dim);
   margin-top: 3px;
+  letter-spacing: .03em;
+  line-height: 1.5;
 }
+.row[hidden] { display: none; }
 
 .seg {
   display: flex;
@@ -648,20 +598,27 @@ body::after {
   font-family: var(--font-mono);
   font-size: 10.5px;
   letter-spacing: .1em;
-  padding: 7px 12px;
+  padding: 8px 12px;
+  min-height: 34px;
   border: none;
   border-radius: 999px;
   background: transparent;
   color: var(--ink-dim);
   cursor: pointer;
+  -webkit-appearance: none;
   transition: background .2s, color .2s;
 }
-.seg-btn.active { background: var(--accent); color: var(--accent-ink); font-weight: 500; }
+.seg-btn.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
 
 .switch { position: relative; display: inline-block; flex: none; cursor: pointer; }
 .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
 .track {
-  display: block; width: 48px; height: 28px;
+  display: block;
+  width: 50px; height: 30px;
   border-radius: 999px;
   background: var(--surface);
   border: 1px solid var(--key-border);
@@ -670,23 +627,31 @@ body::after {
   position: relative;
 }
 .thumb {
-  position: absolute; top: 3px; left: 3px;
+  position: absolute;
+  top: 4px; left: 4px;
   width: 20px; height: 20px;
   border-radius: 50%;
   background: var(--ink-dim);
   transition: transform .25s var(--ease), background .25s;
 }
-.switch input:checked + .track { background: var(--accent); border-color: var(--accent); }
-.switch input:checked + .track .thumb { transform: translateX(20px); background: var(--accent-ink); }
+.switch input:checked + .track {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.switch input:checked + .track .thumb {
+  transform: translateX(20px);
+  background: var(--accent-ink);
+}
 .switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .sheet-foot {
-  margin-top: 16px;
+  margin-top: 18px;
   text-align: center;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: .12em;
   color: var(--ink-dim);
+  line-height: 1.9;
 }
 .sheet-foot button {
   background: none; border: none;
@@ -694,62 +659,144 @@ body::after {
   font: inherit;
   letter-spacing: .12em;
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 6px;
+  padding: 6px 10px;
   text-decoration: underline;
   text-underline-offset: 3px;
+  -webkit-appearance: none;
 }
 
+/* Hjelp */
+.help-intro {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  margin: 2px 0 14px;
+}
+.help-group {
+  margin-top: 18px;
+}
+.help-group h3 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.help-item {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: start;
+}
+.help-item:last-child { border-bottom: none; }
+.help-sym {
+  height: 44px;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--key-border);
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+.help-sym.mono { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .08em; color: var(--accent); }
+.help-txt b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.help-txt p { font-size: 13px; line-height: 1.55; color: var(--ink-dim); }
+.help-txt code {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--accent-soft-2);
+  border: 1px solid var(--accent-soft);
+  border-radius: 8px;
+  padding: 4px 9px;
+  line-height: 1.6;
+  user-select: text;
+}
+
+/* ---------- Toast ---------- */
 .toast {
   position: fixed;
   left: 50%;
   bottom: calc(26px + var(--safe-bottom));
   transform: translate(-50%, 20px);
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--toast-bg);
+  color: var(--toast-ink);
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: .1em;
+  letter-spacing: .12em;
   padding: 11px 20px;
-  border: none;
   border-radius: 999px;
   opacity: 0;
   pointer-events: none;
   transition: opacity .3s var(--ease), transform .3s var(--ease);
   z-index: 60;
-  max-width: calc(100% - 40px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100% - 32px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
-.toast.tappable { pointer-events: auto; cursor: pointer; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.toast button {
+  background: none; border: none;
+  color: var(--accent);
+  font: inherit;
+  letter-spacing: .12em;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  -webkit-appearance: none;
+}
+:root[data-theme="dark"] .toast button { color: #a9772b; }
 
-/* ---------- Liggende format ---------- */
+/* ---------- Landskap (Samsung i breddeformat) ---------- */
 @media (orientation: landscape) and (min-width: 620px) {
   .app {
     max-width: none;
     display: grid;
     grid-template-columns: minmax(250px, 42%) 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     column-gap: clamp(18px, 3vw, 40px);
   }
   .topbar { grid-column: 1 / -1; }
-  .display { grid-column: 1; grid-row: 2; min-height: 0; justify-content: center; padding-bottom: 40px; }
-  .rule { grid-column: 1; grid-row: 2; align-self: end; margin-bottom: 4px; }
+  .display {
+    grid-column: 1; grid-row: 2;
+    min-height: 0;
+    justify-content: center;
+  }
+  .hairline { display: none; }
   .keypad-wrap { grid-column: 2; grid-row: 2; }
   .orn-pi { font-size: 34vmin; }
   .orn-root { display: none; }
+  .sheet { width: min(100%, 640px); }
 }
 @media (orientation: landscape) and (max-height: 460px) {
   .display { min-height: 0; padding-top: 0; }
   .main { font-size: clamp(2rem, 9vmin, 3rem); }
-  .key.skey { min-height: 34px; }
+  .key { min-height: 36px; }
+  .keypad { grid-auto-rows: minmax(36px, 1fr); }
 }
 
-/* Stor tekst */
-body.large .main { font-size: clamp(3.2rem, 15vmin, 5.8rem); }
+/* Svært lave skjermer i portrett (delt skjerm på Samsung) */
+@media (orientation: portrait) and (max-height: 560px) {
+  .display { min-height: 96px; }
+  .ornament { display: none; }
+}
+
+/* Stor tekst (innstilling) */
+body.large .main  { font-size: clamp(3.2rem, 15vmin, 5.8rem); }
 body.large .expr,
 body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
+body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 </style>
 </head>
@@ -760,27 +807,23 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
 
 <main class="app" id="app">
 
+  <!-- Toppbar -->
   <header class="topbar">
     <div class="brand">
       <span class="brand-name">NUMERA</span>
       <span class="brand-tag">PRESISJON</span>
     </div>
     <div class="topbar-actions">
-      <button class="icon-btn" id="btnInstall" hidden aria-label="Installer appen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3.5v10.5"/><path d="M8 10.5l4 4 4-4"/><path d="M4.5 16.5v2.2a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-2.2"/>
-        </svg>
-      </button>
-      <button class="icon-btn" id="btnHelp" aria-label="Forklaringer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="8.5"/>
-          <path d="M9.7 9.6a2.4 2.4 0 1 1 3.2 2.3c-.7.3-1 .8-1 1.4v.4"/>
-          <circle cx="11.9" cy="16.4" r=".9" fill="currentColor" stroke="none"/>
-        </svg>
-      </button>
       <button class="icon-btn" id="btnHistory" aria-label="Historikk">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
           <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="btnHelp" aria-label="Hjelp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8.5"/>
+          <path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.35-1 .9-1 1.6v.4"/>
+          <circle cx="12" cy="16.6" r=".6" fill="currentColor" stroke="none"/>
         </svg>
       </button>
       <button class="icon-btn" id="btnTheme" aria-label="Bytt tema">
@@ -803,82 +846,80 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     </div>
   </header>
 
-  <section class="display" id="displayBox">
-    <div class="expr" id="exprLine" aria-hidden="true">&nbsp;</div>
-    <div class="main" id="mainLine" role="status" aria-live="polite" aria-atomic="true" title="Hold inne for å kopiere">0</div>
-    <div class="preview" id="previewLine" aria-hidden="true"></div>
+  <!-- Skjerm -->
+  <section class="display" id="displayBox" aria-live="polite">
+    <div class="display-meta" id="chipRow" hidden>
+      <span class="chip" id="chipAngle">DEG</span>
+      <span class="chip">SCI</span>
+    </div>
+    <div class="expr" id="exprLine">&nbsp;</div>
+    <div class="main" id="mainLine" title="Hold inne for å kopiere">0</div>
+    <div class="preview" id="previewLine"></div>
   </section>
 
-  <div class="rule">
-    <button class="rule-handle" id="btnSciToggle" type="button"
-            aria-controls="sciPad" aria-expanded="false"
-            aria-label="Vis vitenskapelige funksjoner">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 9.5l6 6 6-6"/>
-      </svg>
-    </button>
-  </div>
+  <div class="hairline"></div>
 
+  <!-- Tastatur -->
   <section class="keypad-wrap">
 
     <div class="sci-pad" id="sciPad" aria-label="Vitenskapelige funksjoner">
-      <button class="key skey tag" style="--i:0" data-action="inv" data-help="inv" id="btnInv" aria-label="Andrefunksjon">INV</button>
-      <button class="key skey" style="--i:1" data-action="lparen" data-help="paren" aria-label="Venstreparentes">(</button>
-      <button class="key skey" style="--i:2" data-action="rparen" data-help="paren" aria-label="Høyreparentes">)</button>
-      <button class="key skey" style="--i:3" data-fn="sqrt" data-help="sqrt" data-inv-fn="cbrt" aria-label="Kvadratrot">√</button>
-      <button class="key skey" style="--i:4" data-op="^" data-help="pow" data-inv-op="root" aria-label="Opphøyd i"><span class="lbl">x<sup>y</sup></span></button>
-
-      <button class="key skey" style="--i:5" data-fn="sin" data-help="trig" data-inv-fn="asin">sin</button>
-      <button class="key skey" style="--i:6" data-fn="cos" data-help="trig" data-help-key="cos" data-inv-fn="acos">cos</button>
-      <button class="key skey" style="--i:7" data-fn="tan" data-help="trig" data-help-key="tan" data-inv-fn="atan">tan</button>
-      <button class="key skey" style="--i:8" data-fn="ln" data-help="ln"  data-inv-fn="exp">ln</button>
-      <button class="key skey" style="--i:9" data-fn="log" data-help="log" data-inv-fn="exp10">log</button>
-
-      <button class="key skey" style="--i:10" data-const="pi" data-help="pi" aria-label="Pi">π</button>
-      <button class="key skey" style="--i:11" data-const="e" data-help="euler" aria-label="Eulers tall">e</button>
-      <button class="key skey" style="--i:12" data-action="square" data-help="square" data-inv-action="cube" aria-label="Andre potens"><span class="lbl">x<sup>2</sup></span></button>
-      <button class="key skey" style="--i:13" data-action="fact" data-help="fact" aria-label="Fakultet">n!</button>
-      <button class="key skey tag" style="--i:14" data-action="angle" data-help="angle" id="btnAngle" aria-label="Vinkelenhet">DEG</button>
+      <button class="key skey" style="--i:0"  data-fn="sin">sin</button>
+      <button class="key skey" style="--i:1"  data-fn="cos">cos</button>
+      <button class="key skey" style="--i:2"  data-fn="tan">tan</button>
+      <button class="key skey" style="--i:3"  data-action="lparen">(</button>
+      <button class="key skey" style="--i:4"  data-action="rparen">)</button>
+      <button class="key skey" style="--i:5"  data-fn="ln">ln</button>
+      <button class="key skey" style="--i:6"  data-fn="log">log</button>
+      <button class="key skey" style="--i:7"  data-fn="sqrt">√</button>
+      <button class="key skey" style="--i:8"  data-action="square">x<span class="sup">2</span></button>
+      <button class="key skey" style="--i:9"  data-op="^">x<span class="sup">y</span></button>
+      <button class="key skey" style="--i:10" data-const="pi">π</button>
+      <button class="key skey" style="--i:11" data-const="e">e</button>
+      <button class="key skey" style="--i:12" data-action="fact">n!</button>
+      <button class="key skey angle" style="--i:13" data-action="angle" id="btnAngle">DEG</button>
+      <button class="key skey" style="--i:14" data-action="ans">Ans</button>
     </div>
 
     <div class="keypad" id="keypad">
-      <button class="key ac" style="--i:0" data-action="ac" data-help="g-clear" id="btnAC" aria-label="Nullstill">AC</button>
-      <button class="key"    style="--i:1" data-action="back" aria-label="Slett siste">
+      <button class="key ac"  style="--i:0"  data-action="ac" id="btnAC">AC</button>
+      <button class="key"     style="--i:1"  data-action="back" aria-label="Slett siste">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9.5 5h10a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 19.5 19h-10L3 12l6.5-7z"/>
           <path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>
         </svg>
       </button>
-      <button class="key op" style="--i:2" data-action="percent" data-help="pct" aria-label="Prosent">%</button>
-      <button class="key op" style="--i:3" data-op="÷" aria-label="Divider">÷</button>
+      <button class="key op"  style="--i:2"  data-action="percent">%</button>
+      <button class="key op"  style="--i:3"  data-op="÷">÷</button>
 
-      <button class="key" style="--i:4" data-digit="7">7</button>
-      <button class="key" style="--i:5" data-digit="8">8</button>
-      <button class="key" style="--i:6" data-digit="9">9</button>
-      <button class="key op" style="--i:7" data-op="×" aria-label="Multipliser">×</button>
+      <button class="key" style="--i:4"  data-digit="7">7</button>
+      <button class="key" style="--i:5"  data-digit="8">8</button>
+      <button class="key" style="--i:6"  data-digit="9">9</button>
+      <button class="key op" style="--i:7" data-op="×">×</button>
 
       <button class="key" style="--i:8"  data-digit="4">4</button>
       <button class="key" style="--i:9"  data-digit="5">5</button>
       <button class="key" style="--i:10" data-digit="6">6</button>
-      <button class="key op" style="--i:11" data-op="-" aria-label="Minus">−</button>
+      <button class="key op" style="--i:11" data-op="−">−</button>
 
       <button class="key" style="--i:12" data-digit="1">1</button>
       <button class="key" style="--i:13" data-digit="2">2</button>
       <button class="key" style="--i:14" data-digit="3">3</button>
-      <button class="key op" style="--i:15" data-op="+" aria-label="Pluss">+</button>
+      <button class="key op" style="--i:15" data-op="+">+</button>
 
-      <button class="key" style="--i:16" data-action="neg" data-help="neg" aria-label="Bytt fortegn">±</button>
+      <button class="key" style="--i:16" data-action="neg">±</button>
       <button class="key" style="--i:17" data-digit="0">0</button>
-      <button class="key" style="--i:18" data-action="comma" aria-label="Desimaltegn">,</button>
+      <button class="key" style="--i:18" data-action="comma">,</button>
       <button class="key eq" style="--i:19" data-action="equals" aria-label="Er lik">=</button>
     </div>
 
   </section>
 </main>
 
+<!-- Bakgrunn for ark -->
 <div class="backdrop" id="backdrop"></div>
 
-<section class="sheet" id="sheetHistory" role="dialog" aria-modal="true" aria-label="Historikk">
+<!-- Historikk-ark -->
+<section class="sheet" id="sheetHistory" role="dialog" aria-label="Historikk">
   <div class="grab"></div>
   <div class="sheet-head">
     <h2>HISTORIKK</h2>
@@ -890,10 +931,183 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
     </div>
   </div>
   <ul class="hist" id="histList"></ul>
-  <p class="hist-empty" id="histEmpty">Regnestykkene dine dukker opp her.</p>
+  <p class="hist-empty" id="histEmpty">Ingen regnestykker ennå.<br>Trykk på et resultat her for å bruke det videre.</p>
 </section>
 
-<section class="sheet" id="sheetSettings" role="dialog" aria-modal="true" aria-label="Innstillinger">
+<!-- Hjelp-ark -->
+<section class="sheet" id="sheetHelp" role="dialog" aria-label="Hjelp">
+  <div class="grab"></div>
+  <div class="sheet-head">
+    <h2>SLIK VIRKER DET</h2>
+    <button class="icon-btn" data-close aria-label="Lukk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <p class="help-intro">NUMERA regner med vanlig prioritet: parenteser først, så potenser, deretter gange og dele, og til slutt pluss og minus. Slå på vitenskapelige funksjoner i innstillingene for å få tastene under.</p>
+
+  <div class="help-group">
+    <h3>GRUNNTASTER</h3>
+    <div class="help-item">
+      <div class="help-sym">%</div>
+      <div class="help-txt">
+        <b>Prosent</b>
+        <p>Etter pluss eller minus regnes prosenten av tallet foran. Alene eller etter gange og dele betyr det «delt på hundre».</p>
+        <code>200 + 10 % = 220</code>
+        <code>1 500 − 25 % = 1 125</code>
+        <code>40 × 15 % = 6</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">±</div>
+      <div class="help-txt">
+        <b>Bytt fortegn</b>
+        <p>Gjør tallet du skriver negativt eller positivt. Fungerer også på et ferdig resultat.</p>
+        <code>25 → ± → −25</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">C</div>
+      <div class="help-txt">
+        <b>C og AC</b>
+        <p>C sletter bare tallet du holder på å skrive. Trykk en gang til (AC) for å tømme hele regnestykket.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-group">
+    <h3>POTENSER OG RØTTER</h3>
+    <div class="help-item">
+      <div class="help-sym">√</div>
+      <div class="help-txt">
+        <b>Kvadratrot</b>
+        <p>Finner tallet som ganget med seg selv gir verdien. Skriv rot først, deretter tallet og lukk parentesen.</p>
+        <code>√(144) = 12</code>
+        <code>√(2) = 1,41421356237</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">x²</div>
+      <div class="help-txt">
+        <b>Kvadrat</b>
+        <p>Ganger tallet med seg selv.</p>
+        <code>7 x² = 49</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">xʸ</div>
+      <div class="help-txt">
+        <b>Potens</b>
+        <p>Første tall opphøyd i det andre. Praktisk for renter og vekst.</p>
+        <code>2 ^ 10 = 1 024</code>
+        <code>1,05 ^ 3 = 1,157625 (5 % rente i 3 år)</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">n!</div>
+      <div class="help-txt">
+        <b>Fakultet</b>
+        <p>Ganger sammen alle hele tall fra 1 opp til n. Brukes for å telle rekkefølger og kombinasjoner.</p>
+        <code>5 ! = 120 (1·2·3·4·5)</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-group">
+    <h3>TRIGONOMETRI</h3>
+    <div class="help-item">
+      <div class="help-sym mono">DEG</div>
+      <div class="help-txt">
+        <b>Grader eller radianer</b>
+        <p>Tasten veksler mellom DEG og RAD, og gjelder for sin, cos og tan. Bruk DEG for vinkler i grader (mest vanlig), RAD for matematikk med π.</p>
+        <code>DEG: sin(30) = 0,5</code>
+        <code>RAD: sin(π ÷ 6) = 0,5</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">sin</div>
+      <div class="help-txt">
+        <b>sin, cos, tan</b>
+        <p>Forholdet mellom sidene i en rettvinklet trekant. Sinus er motstående side delt på hypotenus, cosinus er hosliggende delt på hypotenus, og tangens er motstående delt på hosliggende.</p>
+        <code>cos(60) = 0,5</code>
+        <code>tan(45) = 1</code>
+        <code>10 × sin(30) = 5 (høyde av skrå stige på 10 m)</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-group">
+    <h3>LOGARITMER OG KONSTANTER</h3>
+    <div class="help-item">
+      <div class="help-sym">log</div>
+      <div class="help-txt">
+        <b>Logaritme (base 10)</b>
+        <p>Svarer på «10 opphøyd i hva gir dette tallet?». Brukes for desibel, pH og størrelsesordener.</p>
+        <code>log(1 000) = 3</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">ln</div>
+      <div class="help-txt">
+        <b>Naturlig logaritme</b>
+        <p>Samme spørsmål med grunntallet e. Brukes ved kontinuerlig vekst og halveringstid.</p>
+        <code>ln(e) = 1</code>
+        <code>ln(2) ÷ 0,05 = 13,86 (år til dobling ved 5 %)</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">π</div>
+      <div class="help-txt">
+        <b>Pi og e</b>
+        <p>π (3,14159…) er forholdet mellom omkrets og diameter. e (2,71828…) er grunntallet for naturlig vekst. Et tall rett før en konstant ganges automatisk.</p>
+        <code>2 π 5 = 31,4159265359 (omkrets, r = 5)</code>
+        <code>π × 3 x² = 28,2743338823 (areal, r = 3)</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-group">
+    <h3>PARENTESER OG MINNE</h3>
+    <div class="help-item">
+      <div class="help-sym">( )</div>
+      <div class="help-txt">
+        <b>Parenteser</b>
+        <p>Regnes ut først. Manglende sluttparenteser lukkes automatisk når du trykker =.</p>
+        <code>(2 + 3) × 4 = 20</code>
+        <code>2 + 3 × 4 = 14</code>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym">Ans</div>
+      <div class="help-txt">
+        <b>Forrige svar</b>
+        <p>Setter inn det siste resultatet. Trykker du en operator rett etter et svar, brukes svaret automatisk.</p>
+        <code>12 × 4 = 48, deretter + 2 = 50</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-group">
+    <h3>TIPS</h3>
+    <div class="help-item">
+      <div class="help-sym mono">HOLD</div>
+      <div class="help-txt">
+        <b>Kopier resultatet</b>
+        <p>Hold fingeren på det store tallet for å kopiere det til utklippstavlen.</p>
+      </div>
+    </div>
+    <div class="help-item">
+      <div class="help-sym mono">TAST</div>
+      <div class="help-txt">
+        <b>Fysisk tastatur</b>
+        <p>Med tastatur (DeX eller PC) bruker du tallene, + − * /, ^, %, ( ), Enter for =, Backspace for slett og Escape for AC.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Innstillingsark -->
+<section class="sheet" id="sheetSettings" role="dialog" aria-label="Innstillinger">
   <div class="grab"></div>
   <div class="sheet-head">
     <h2>INNSTILLINGER</h2>
@@ -904,15 +1118,15 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
 
   <div class="row" id="rowInstall" hidden>
     <div class="row-txt">
-      <label>Installer på hjemskjermen</label>
-      <small>Åpner i fullskjerm og virker uten nett</small>
+      <span class="lbl">Installer på telefonen</span>
+      <small>Legger NUMERA på hjemskjermen og åpner uten nettleserlinje</small>
     </div>
-    <button class="text-btn" id="btnInstall2">INSTALLER</button>
+    <button class="text-btn" id="btnInstall">INSTALLER</button>
   </div>
 
   <div class="row">
     <div class="row-txt">
-      <label>Tema</label>
+      <span class="lbl">Tema</span>
       <small>Følger systemet i automatisk modus</small>
     </div>
     <div class="seg" id="themeSeg" role="group" aria-label="Temavalg">
@@ -925,7 +1139,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
   <div class="row">
     <div class="row-txt">
       <label for="optSci">Vitenskapelige funksjoner</label>
-      <small>Kan også slås av og på med håndtaket over tastene</small>
+      <small>sin, cos, logaritmer, parenteser med mer</small>
     </div>
     <label class="switch"><input type="checkbox" id="optSci"><span class="track"><span class="thumb"></span></span></label>
   </div>
@@ -933,7 +1147,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
   <div class="row">
     <div class="row-txt">
       <label for="optSep">Tusenskilletegn</label>
-      <small>Grupperer sifrene i store tall</small>
+      <small>Grupperer sifre i store tall</small>
     </div>
     <label class="switch"><input type="checkbox" id="optSep"><span class="track"><span class="thumb"></span></span></label>
   </div>
@@ -941,7 +1155,7 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
   <div class="row">
     <div class="row-txt">
       <label for="optHaptic">Vibrasjon</label>
-      <small>Kort respons i tastene</small>
+      <small>Haptisk tilbakemelding ved tastetrykk</small>
     </div>
     <label class="switch"><input type="checkbox" id="optHaptic"><span class="track"><span class="thumb"></span></span></label>
   </div>
@@ -957,1568 +1171,911 @@ body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
   <div class="row">
     <div class="row-txt">
       <label for="optHist">Historikk</label>
-      <small>Lagrer de 50 siste regnestykkene på enheten</small>
+      <small>Lagrer tidligere regnestykker på enheten</small>
     </div>
     <label class="switch"><input type="checkbox" id="optHist"><span class="track"><span class="thumb"></span></span></label>
   </div>
 
   <div class="row">
     <div class="row-txt">
-      <label for="optSwipe">Sveip for å slette</label>
-      <small>Dra til siden på tallvinduet</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optSwipe"><span class="track"><span class="thumb"></span></span></label>
-  </div>
-
-  <div class="row">
-    <div class="row-txt">
       <label for="optLarge">Stor tekst</label>
-      <small>Større tall i vinduet</small>
+      <small>Økt skriftstørrelse på skjerm og taster</small>
     </div>
     <label class="switch"><input type="checkbox" id="optLarge"><span class="track"><span class="thumb"></span></span></label>
   </div>
 
   <div class="row">
     <div class="row-txt">
-      <label>Oppdatering</label>
-      <small>Nye filer hentes av seg selv når appen åpnes</small>
+      <label for="optWake">Hold skjermen på</label>
+      <small>Skjermen slukker ikke mens appen er åpen</small>
     </div>
-    <button class="text-btn" id="btnCheckUpdate">SE ETTER NY</button>
+    <label class="switch"><input type="checkbox" id="optWake"><span class="track"><span class="thumb"></span></span></label>
   </div>
 
   <div class="sheet-foot">
-    NUMERA <span id="verTag">1.0.0</span><br>
+    NUMERA <span id="verLabel"></span><br>
+    TILPASSET SAMSUNG GALAXY · ANDROID<br>
     <button id="btnReset">Tilbakestill alt</button>
   </div>
 </section>
 
-<section class="sheet" id="sheetKeyHelp" role="dialog" aria-modal="true" aria-labelledby="keyHelpName">
-  <div class="grab"></div>
-  <div id="keyHelpBody"></div>
-  <div class="sheet-foot">
-    <button id="btnAllHelp" type="button">Se alle forklaringer</button>
-  </div>
-</section>
-
-<section class="sheet" id="sheetHelp" role="dialog" aria-modal="true" aria-label="Forklaringer">
-  <div class="grab"></div>
-  <div class="sheet-head">
-    <h2>FORKLARINGER</h2>
-    <button class="icon-btn" data-close aria-label="Lukk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-  </div>
-  <p class="help-intro">Hold inne en tast i kalkulatoren for å få bare den ene forklaringen.</p>
-  <div id="helpBody"></div>
-</section>
-
-<button class="toast" id="toast" type="button" hidden></button>
+<div class="toast" id="toast" role="status"><span id="toastMsg"></span><button id="toastAct" hidden></button></div>
 
 <script>
 "use strict";
-
 /* ================================================================
-   NUMERA — regnemotor
-   Ren logikk uten DOM. Kan kjøres og testes utenfor nettleseren.
+   NUMERA — kalkulatormotor, innstillinger og interaksjon
    ================================================================ */
-/* ENGINE:START */
-(function (root) {
 
-  var SUP = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻','+':'' };
+const APP_VERSION = '2.0.0';
 
-  var OP_TEXT = { '+':' + ', '-':' − ', '×':' × ', '÷':' ÷ ', '^':'^', 'root':' √ ' };
+/* @engine-start
+   Ren motor uten DOM-avhengigheter. Trekkes ut og testes i test/engine.test.mjs */
+const Engine = (() => {
 
-  var FN_TEXT = {
-    sin:'sin', cos:'cos', tan:'tan',
-    asin:'sin⁻¹', acos:'cos⁻¹', atan:'tan⁻¹',
-    ln:'ln', log:'log', sqrt:'√', cbrt:'³√',
-    exp:'e^', exp10:'10^'
-  };
+  const OP_DISPLAY = { '+':' + ', '-':' − ', '×':' × ', '÷':' ÷ ', '^':' ^ ' };
+  const THIN = '\u2009';
 
-  var MAX_DIGITS = 15;
-  var SIG = 12;
-
-  /* ---------- Tallformat ---------- */
-
-  function roundSig(n, sig) {
-    sig = sig || SIG;
-    if (!isFinite(n) || n === 0) return n;
-    var d = Math.ceil(Math.log10(Math.abs(n)));
-    var p = Math.pow(10, sig - d);
-    if (!isFinite(p)) return n;
-    var r = Math.round(n * p) / p;
-    return r === 0 ? 0 : r;
+  function groupDigits(s, sep){
+    return sep ? s.replace(/\B(?=(\d{3})+(?!\d))/g, THIN) : s;
   }
 
-  function group(s, sep) {
-    return sep ? s.replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009') : s;
-  }
-
-  function superscript(s) {
-    return String(s).split('').map(function (c) { return SUP[c] !== undefined ? SUP[c] : c; }).join('');
-  }
-
-  /* Intern form ('.' som desimaltegn, '-' som minus) → norsk visning. */
-  function fmtNum(v, sep) {
-    if (v === null || v === undefined || v === '') return '0';
-    var s = String(v);
-    if (s === 'NaN') return '0';
+  /* Intern tallstreng ("-12.5", "1e21") -> norsk visning ("−12,5", "1·10^21") */
+  function fmtNum(s, sep){
+    if (s === null || s === undefined || s === '') return '0';
+    s = String(s);
+    if (s === 'NaN' || s === 'Infinity' || s === '-Infinity') return 'Feil';
     if (/[eE]/.test(s)) {
-      var parts = s.split(/[eE]/);
-      var m = parts[0].replace('.', ',').replace('-', '−');
-      return m + '\u00D710' + superscript(parts[1]);
+      let [m, e] = s.split(/[eE]/);
+      m = m.replace('.', ',').replace('-', '−');
+      e = e.replace('+', '').replace('-', '−');
+      return m + '·10^' + e;
     }
-    var neg = s.charAt(0) === '-';
+    const neg = s.startsWith('-');
     if (neg) s = s.slice(1);
-    var bits = s.split('.');
-    var out = group(bits[0], sep) + (bits.length > 1 ? ',' + bits[1] : '');
+    const [ip, dp] = s.split('.');
+    const out = groupDigits(ip, sep) + (dp !== undefined ? ',' + dp : '');
     return (neg ? '−' : '') + out;
   }
 
-  /* Tall under innskriving: beholder etterfølgende komma og nuller. */
-  function fmtEntry(e, sep) {
-    var neg = e.charAt(0) === '-';
-    var b = neg ? e.slice(1) : e;
-    var dot = b.indexOf('.') >= 0;
-    var bits = b.split('.');
-    return (neg ? '−' : '') + group(bits[0] || '0', sep) + (dot ? ',' + (bits[1] || '') : '');
+  /* Tall under innskriving ("12." skal vise "12,") */
+  function fmtEntry(e, sep){
+    const neg = e.startsWith('-');
+    const b = neg ? e.slice(1) : e;
+    const hasDot = b.includes('.');
+    const [ip, dp] = b.split('.');
+    return (neg ? '−' : '') + groupDigits(ip || '0', sep) + (hasDot ? ',' + (dp || '') : '');
   }
 
-  function buildExpr(tokens, sep) {
-    var out = '';
-    for (var i = 0; i < tokens.length; i++) {
-      var t = tokens[i];
-      if (t.t === 'num') out += fmtNum(t.v, sep);
-      else if (t.t === 'const') out += (t.v === 'pi' ? 'π' : 'e');
-      else if (t.t === 'op') out += (OP_TEXT[t.v] || t.v);
-      else if (t.t === 'fn') out += FN_TEXT[t.v] + '(';
-      else if (t.t === 'lp') out += '(';
-      else if (t.t === 'rp') out += ')';
-      else if (t.t === 'post') out += t.v;
+  function roundSig(n, sig){
+    sig = sig || 12;
+    if (!isFinite(n) || n === 0) return n;
+    const d = Math.ceil(Math.log10(Math.abs(n)));
+    const p = Math.pow(10, sig - d);
+    if (!isFinite(p) || p === 0) return n;
+    const r = Math.round(n * p) / p;
+    return r === 0 ? 0 : r;
+  }
+
+  /* Avrundet resultat som streng, uten avrundingsstøy */
+  function resultString(v){
+    const r = roundSig(v);
+    let s = String(r);
+    if (/e/.test(s)) {
+      /* Rydd mantissen: 1.2300000000001e+21 -> 1.23e+21 */
+      let [m, e] = s.split('e');
+      m = String(parseFloat(parseFloat(m).toPrecision(12)));
+      s = m + 'e' + e;
     }
+    return s;
+  }
+
+  function buildExpr(toks, sep){
+    return toks.map(tk => {
+      if (tk.t === 'num')   return fmtNum(tk.v, sep);
+      if (tk.t === 'const') return tk.v === 'pi' ? 'π' : 'e';
+      if (tk.t === 'op')    return OP_DISPLAY[tk.v] || tk.v;
+      if (tk.t === 'fn')    return (tk.v === 'sqrt' ? '√' : tk.v) + '(';
+      if (tk.t === 'lp')    return '(';
+      if (tk.t === 'rp')    return ')';
+      if (tk.t === 'post')  return tk.v;
+      return '';
+    }).join('');
+  }
+
+  function balance(toks){
+    return toks.reduce((a, t) => a + (t.t === 'lp' || t.t === 'fn' ? 1 : t.t === 'rp' ? -1 : 0), 0);
+  }
+
+  /* Legger til manglende sluttparenteser (som Google/Samsung-kalkulatoren) */
+  function autoClose(toks){
+    const out = toks.slice();
+    let b = balance(out);
+    while (b-- > 0) out.push({ t:'rp' });
     return out;
   }
 
-  /* ---------- Evaluering: rekursiv descent ---------- */
+  /* Rekursiv nedstigning.
+     Prioritet: + −  <  × ÷  <  unær ±  <  ^ (høyreassosiativ)  <  postfiks (% !)  <  primær
+     Prosent: «a + b%» og «a − b%» tolkes som prosent av a (Samsung-oppførsel). */
+  function evaluate(toks, angleMode){
+    let i = 0;
+    const peek = () => toks[i];
 
-  function CalcError(code) { this.code = code; this.name = 'CalcError'; }
-  CalcError.prototype = Object.create(Error.prototype);
-
-  function evaluate(toks, angle) {
-    var i = 0;
-    var pct = false;               /* siste ledd var et rent prosentledd */
-    var deg = angle !== 'rad';
-
-    function peek() { return toks[i]; }
-    function isOp(v) { var p = peek(); return p && p.t === 'op' && p.v === v; }
-
-    function expr() {
-      var v = term();
-      while (isOp('+') || isOp('-')) {
-        var o = toks[i++].v;
-        var r = term();
-        /* Naturlig prosent: 200 + 10% = 220, 200 − 10% = 180 */
-        if (pct) r = v * r;
-        v = (o === '+') ? v + r : v - r;
+    function expr(){
+      let v = term(null);
+      while (peek() && peek().t === 'op' && (peek().v === '+' || peek().v === '-')) {
+        const o = toks[i++].v;
+        const r = term(v);
+        v = o === '+' ? v + r : v - r;
       }
       return v;
     }
-
-    function term() {
-      var v = unary();
-      var p = pct;
-      while (isOp('×') || isOp('÷')) {
-        var o = toks[i++].v;
-        var r = unary();
-        if (o === '÷') {
-          if (r === 0) throw new CalcError('div0');
-          v = v / r;
-        } else v = v * r;
-        p = false;
+    function term(pctBase){
+      let v = unary(pctBase);
+      while (peek() && peek().t === 'op' && (peek().v === '×' || peek().v === '÷')) {
+        const o = toks[i++].v, r = unary(null);
+        if (o === '÷') { if (r === 0) throw new Error('div0'); v /= r; }
+        else v *= r;
       }
-      pct = p;
       return v;
     }
-
-    function unary() {
-      if (isOp('-') || isOp('+')) {
-        var s = toks[i++].v;
-        var v = unary();
-        return s === '-' ? -v : v;
+    function unary(pctBase){
+      const p = peek();
+      if (p && p.t === 'op' && (p.v === '-' || p.v === '+')) {
+        i++; const v = unary(pctBase);
+        return p.v === '-' ? -v : v;
       }
-      return power();
+      return power(pctBase);
     }
-
-    function power() {
-      var b = post();
-      if (isOp('^')) { i++; pct = false; return guard(Math.pow(b, unary())); }
-      if (isOp('root')) {
-        i++; pct = false;
-        var y = unary();
-        if (b === 0) throw new CalcError('domain');
-        if (y < 0 && Math.abs(b % 2) !== 1) throw new CalcError('domain');
-        var r = Math.pow(Math.abs(y), 1 / b);
-        return guard(y < 0 ? -r : r);
-      }
+    function power(pctBase){
+      const b = post(pctBase);
+      const p = peek();
+      if (p && p.t === 'op' && p.v === '^') { i++; return Math.pow(b, unary(null)); }
       return b;
     }
-
-    function post() {
-      var v = prim();
-      var p = false;
+    function post(pctBase){
+      let v = prim();
       while (peek() && peek().t === 'post') {
-        var o = toks[i++].v;
-        if (o === '%') { v = v / 100; p = true; }
-        else { v = factorial(v); p = false; }
+        const o = toks[i++].v;
+        if (o === '%') v = (pctBase !== null && pctBase !== undefined) ? pctBase * v / 100 : v / 100;
+        else v = fact(v);
       }
-      pct = p;
       return v;
     }
-
-    function prim() {
-      var t = toks[i++];
-      if (!t) throw new CalcError('syntax');
-      if (t.t === 'num') {
-        var n = parseFloat(t.v);
-        if (isNaN(n)) throw new CalcError('syntax');
-        return n;
-      }
+    function prim(){
+      const t = toks[i++];
+      if (!t) throw new Error('syntax');
+      if (t.t === 'num')   return parseFloat(t.v);
       if (t.t === 'const') return t.v === 'pi' ? Math.PI : Math.E;
       if (t.t === 'lp') {
-        var v = expr();
-        if (!(toks[i] && toks[i].t === 'rp')) throw new CalcError('syntax');
+        const v = expr();
+        if (!(toks[i] && toks[i].t === 'rp')) throw new Error('syntax');
         i++; return v;
       }
       if (t.t === 'fn') {
-        var a = expr();
-        if (!(toks[i] && toks[i].t === 'rp')) throw new CalcError('syntax');
-        i++; return applyFn(t.v, a);
+        const v = expr();
+        if (!(toks[i] && toks[i].t === 'rp')) throw new Error('syntax');
+        i++; return applyFn(t.v, v);
       }
-      throw new CalcError('syntax');
+      throw new Error('syntax');
     }
-
-    function toRad(x) { return deg ? x * Math.PI / 180 : x; }
-    function fromRad(x) { return deg ? x * 180 / Math.PI : x; }
-    function snap(x) { return Math.abs(x) < 1e-12 ? 0 : x; }
-
-    function applyFn(f, x) {
+    function applyFn(f, x){
+      const rad = angleMode === 'deg' ? x * Math.PI / 180 : x;
       switch (f) {
-        case 'sin': return snap(Math.sin(toRad(x)));
-        case 'cos': return snap(Math.cos(toRad(x)));
-        case 'tan':
-          if (deg ? Math.abs(((x - 90) % 180 + 180) % 180) < 1e-9
-                  : Math.abs(((x - Math.PI / 2) % Math.PI + Math.PI) % Math.PI) < 1e-12)
-            throw new CalcError('domain');
-          return snap(Math.tan(toRad(x)));
-        case 'asin': if (x < -1 || x > 1) throw new CalcError('domain'); return snap(fromRad(Math.asin(x)));
-        case 'acos': if (x < -1 || x > 1) throw new CalcError('domain'); return snap(fromRad(Math.acos(x)));
-        case 'atan': return snap(fromRad(Math.atan(x)));
-        case 'ln':   if (x <= 0) throw new CalcError('domain'); return Math.log(x);
-        case 'log':  if (x <= 0) throw new CalcError('domain'); return Math.log10(x);
-        case 'sqrt': if (x < 0)  throw new CalcError('domain'); return Math.sqrt(x);
-        case 'cbrt': return Math.cbrt(x);
-        case 'exp':  return guard(Math.exp(x));
-        case 'exp10':return guard(Math.pow(10, x));
+        case 'sin':  return cleanTrig(Math.sin(rad));
+        case 'cos':  return cleanTrig(Math.cos(rad));
+        case 'tan': {
+          /* tan(90°) er udefinert — fang det før flyttallene lurer oss */
+          if (angleMode === 'deg' && Math.abs(((x % 180) + 180) % 180 - 90) < 1e-9) throw new Error('domain');
+          return cleanTrig(Math.tan(rad));
+        }
+        case 'ln':   if (x <= 0) throw new Error('domain'); return Math.log(x);
+        case 'log':  if (x <= 0) throw new Error('domain'); return Math.log10(x);
+        case 'sqrt': if (x <  0) throw new Error('domain'); return Math.sqrt(x);
       }
-      throw new CalcError('syntax');
+      throw new Error('syntax');
     }
-
-    function factorial(n) {
-      if (n < 0 || !Number.isInteger(n)) throw new CalcError('domain');
-      if (n > 170) throw new CalcError('overflow');
-      var r = 1;
-      for (var k = 2; k <= n; k++) r *= k;
+    /* Fjerner flyttallsstøy nær 0 og ±1 (sin(180°) -> 0, ikke 1.2e-16) */
+    function cleanTrig(v){
+      if (Math.abs(v) < 1e-14) return 0;
+      if (Math.abs(Math.abs(v) - 1) < 1e-14) return Math.sign(v);
+      return v;
+    }
+    function fact(n){
+      if (n < 0 || !Number.isInteger(n) || n > 170) throw new Error('domain');
+      let r = 1;
+      for (let k = 2; k <= n; k++) r *= k;
       return r;
     }
 
-    function guard(x) {
-      if (!isFinite(x)) throw new CalcError('overflow');
-      return x;
-    }
-
-    if (!toks.length) throw new CalcError('syntax');
-    var val = expr();
-    if (i < toks.length) throw new CalcError('syntax');
-    return guard(val);
+    const v = expr();
+    if (i < toks.length) throw new Error('syntax');
+    if (!isFinite(v)) throw new Error('result');
+    return v;
   }
 
-  /* ---------- Kalkulatortilstand ---------- */
+  return { fmtNum, fmtEntry, roundSig, resultString, buildExpr, balance, autoClose, evaluate, THIN };
+})();
+/* @engine-end */
 
-  function Calc() {
-    this.tokens = [];      /* ferdige token */
-    this.entry = '';       /* tallet som skrives inn nå, intern form */
-    this.main = '0';       /* sist viste tallverdi, intern form */
-    this.done = false;     /* siste handling var = */
-    this.ans = null;       /* forrige svar */
-    this.angle = 'deg';
-    this.error = null;     /* feilkode fra siste = */
+const $ = id => document.getElementById(id);
+
+/* ---------------- Innstillinger ---------------- */
+const DEFAULTS = { theme:'auto', sci:false, sep:true, haptic:true, sound:false, history:true, large:false, wake:false, angle:'deg' };
+let S = Object.assign({}, DEFAULTS, safeParse(localStorage.getItem('numera:settings'), {}));
+const saveSettings = () => { try { localStorage.setItem('numera:settings', JSON.stringify(S)); } catch (e) {} };
+function safeParse(s, fallback){ try { const v = JSON.parse(s); return v === null || v === undefined ? fallback : v; } catch (e) { return fallback; } }
+
+/* ---------------- Tilstand ---------------- */
+let tokens = [];          // fullførte token: {t:'num'|'op'|'fn'|'const'|'lp'|'rp'|'post', v}
+let entry = '';           // tall som skrives inn nå (intern desimal = '.')
+let mainValue = '0';      // sist viste tallverdi
+let justEvaluated = false;
+let lastAnswer = null;
+let hist = safeParse(localStorage.getItem('numera:history'), []);
+if (!Array.isArray(hist)) hist = [];
+let errTimer = null;
+
+const fmtNum   = s => Engine.fmtNum(s, S.sep);
+const fmtEntry = e => Engine.fmtEntry(e, S.sep);
+const buildExpr = t => Engine.buildExpr(t, S.sep);
+
+/* ---------------- Handlinger ---------------- */
+function commitEntry(){
+  if (entry !== '') {
+    let v = entry;
+    if (v.endsWith('.')) v = v.slice(0, -1);
+    if (v === '-' || v === '') v = '0';
+    tokens.push({ t:'num', v }); mainValue = v; entry = '';
   }
+}
+function lastTok(){ return tokens[tokens.length - 1]; }
+function needsImplicitX(){
+  if (entry !== '') return true;
+  const l = lastTok();
+  return !!l && (l.t === 'num' || l.t === 'const' || l.t === 'rp' || l.t === 'post');
+}
+function resetIfEvaluated(){
+  if (justEvaluated) { tokens = []; mainValue = '0'; justEvaluated = false; setExpr(''); }
+}
+/* Etter «=» skal en operator fortsette på svaret, ikke starte på nytt */
+function continueIfEvaluated(){
+  if (justEvaluated) { justEvaluated = false; setExpr(''); }
+}
 
-  Calc.prototype.last = function () { return this.tokens[this.tokens.length - 1]; };
+function inputDigit(d){
+  clearTimeout(errTimer);
+  resetIfEvaluated();
+  if (entry.replace(/[^0-9]/g, '').length >= 15) { buzz([10, 30, 10]); return; }
+  if (entry === '0') entry = d === '0' ? '0' : d;
+  else if (entry === '-0') entry = d === '0' ? '-0' : '-' + d;
+  else entry += d;
+  render();
+}
 
-  Calc.prototype.depth = function () {
-    return this.tokens.reduce(function (a, t) {
-      return a + (t.t === 'lp' || t.t === 'fn' ? 1 : t.t === 'rp' ? -1 : 0);
-    }, 0);
-  };
+function inputComma(){
+  clearTimeout(errTimer);
+  resetIfEvaluated();
+  if (entry === '' || entry === '-') entry += '0.';
+  else if (!entry.includes('.')) entry += '.';
+  render();
+}
 
-  Calc.prototype.commit = function () {
-    if (this.entry !== '') {
-      this.tokens.push({ t: 'num', v: this.entry });
-      this.main = this.entry;
-      this.entry = '';
-    }
-  };
+function inputOp(op){
+  clearTimeout(errTimer);
+  continueIfEvaluated();
+  commitEntry();
+  const l = lastTok();
+  if (!tokens.length) {
+    if (op === '-') { tokens.push({ t:'op', v:'-' }); }
+    else if (lastAnswer !== null) { tokens.push({ t:'num', v:String(lastAnswer) }); tokens.push({ t:'op', v:op }); }
+    else return;
+  } else if (l.t === 'op') {
+    if (op === '-' && l.v !== '-') tokens.push({ t:'op', v:'-' });
+    else tokens[tokens.length - 1] = { t:'op', v:op };
+  } else if (l.t === 'lp' || l.t === 'fn') {
+    if (op === '-') tokens.push({ t:'op', v:'-' });
+    else return;
+  } else {
+    tokens.push({ t:'op', v:op });
+  }
+  render();
+}
 
-  /* Trenger vi et usynlig gangetegn før neste ledd? */
-  Calc.prototype.implicit = function () {
-    if (this.entry !== '') return true;
-    var l = this.last();
-    return !!l && (l.t === 'num' || l.t === 'const' || l.t === 'rp' || l.t === 'post');
-  };
+function inputFn(name){
+  clearTimeout(errTimer);
+  resetIfEvaluated();
+  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
+  tokens.push({ t:'fn', v:name });
+  render();
+}
 
-  /* Nytt regnestykke etter =; operatorer viderefører svaret i stedet. */
-  Calc.prototype.fresh = function () {
-    this.error = null;
-    if (this.done) { this.tokens = []; this.entry = ''; this.done = false; }
-  };
+function inputConst(c){
+  clearTimeout(errTimer);
+  resetIfEvaluated();
+  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
+  tokens.push({ t:'const', v:c });
+  mainValue = c === 'pi' ? Engine.resultString(Math.PI) : Engine.resultString(Math.E);
+  render();
+}
 
-  Calc.prototype.digit = function (d) {
-    this.fresh();
-    if (this.entry.replace(/[^0-9]/g, '').length >= MAX_DIGITS) return this;
-    if (this.entry === '0') this.entry = (d === '0' ? '0' : d);
-    else if (this.entry === '-0') this.entry = '-' + d;
-    else this.entry += d;
-    return this;
-  };
+function inputLParen(){
+  clearTimeout(errTimer);
+  resetIfEvaluated();
+  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
+  tokens.push({ t:'lp' });
+  render();
+}
 
-  Calc.prototype.comma = function () {
-    this.fresh();
-    if (this.entry === '') this.entry = '0.';
-    else if (this.entry.indexOf('.') < 0) this.entry += '.';
-    return this;
-  };
+function inputRParen(){
+  clearTimeout(errTimer);
+  resetIfEvaluated();
+  commitEntry();
+  if (Engine.balance(tokens) <= 0) return;
+  const l = lastTok();
+  if (!l || !(l.t === 'num' || l.t === 'rp' || l.t === 'const' || l.t === 'post')) return;
+  tokens.push({ t:'rp' });
+  render();
+}
 
-  Calc.prototype.op = function (v) {
-    this.error = null;
-    this.done = false;
-    this.commit();
-    var l = this.last();
-    if (!l) {
-      if (v === '-') this.tokens.push({ t: 'op', v: '-' });
-      else if (this.ans !== null) {
-        this.tokens.push({ t: 'num', v: String(this.ans) });
-        this.tokens.push({ t: 'op', v: v });
-      }
-      return this;
-    }
-    if (l.t === 'op') {
-      if (v === '-' && l.v !== '-' && l.v !== '+') this.tokens.push({ t: 'op', v: '-' });
-      else this.tokens[this.tokens.length - 1] = { t: 'op', v: v };
-      return this;
-    }
-    if (l.t === 'lp' || l.t === 'fn') {
-      if (v === '-') this.tokens.push({ t: 'op', v: '-' });
-      return this;
-    }
-    this.tokens.push({ t: 'op', v: v });
-    return this;
-  };
+function postfix(kind){ /* '%' | '!' | 'square' */
+  clearTimeout(errTimer);
+  continueIfEvaluated();
+  commitEntry();
+  const l = lastTok();
+  if (!l || !(l.t === 'num' || l.t === 'rp' || l.t === 'const' || l.t === 'post')) return;
+  if (kind === 'square') { tokens.push({ t:'op', v:'^' }); tokens.push({ t:'num', v:'2' }); }
+  else tokens.push({ t:'post', v:kind });
+  render();
+}
 
-  Calc.prototype.fn = function (name) {
-    this.fresh();
-    if (this.implicit()) { this.commit(); this.tokens.push({ t: 'op', v: '×' }); }
-    this.tokens.push({ t: 'fn', v: name });
-    return this;
-  };
+function inputAns(){
+  clearTimeout(errTimer);
+  resetIfEvaluated();
+  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
+  const v = lastAnswer !== null ? lastAnswer : 0;
+  tokens.push({ t:'num', v:String(v) });
+  mainValue = String(v);
+  render();
+}
 
-  Calc.prototype.constant = function (c) {
-    this.fresh();
-    if (this.implicit()) { this.commit(); this.tokens.push({ t: 'op', v: '×' }); }
-    this.tokens.push({ t: 'const', v: c });
-    this.main = String(c === 'pi' ? Math.PI : Math.E);
-    return this;
-  };
-
-  Calc.prototype.lparen = function () {
-    this.fresh();
-    if (this.implicit()) { this.commit(); this.tokens.push({ t: 'op', v: '×' }); }
-    this.tokens.push({ t: 'lp' });
-    return this;
-  };
-
-  Calc.prototype.rparen = function () {
-    this.fresh();
-    if (this.depth() <= 0) return this;
-    this.commit();
-    var l = this.last();
-    if (!l || !(l.t === 'num' || l.t === 'rp' || l.t === 'const' || l.t === 'post')) return this;
-    this.tokens.push({ t: 'rp' });
-    return this;
-  };
-
-  /* kind: '%' | '!' | 'square' | 'cube' */
-  Calc.prototype.postfix = function (kind) {
-    this.error = null;
-    this.done = false;
-    this.commit();
-    var l = this.last();
-    if (!l || !(l.t === 'num' || l.t === 'rp' || l.t === 'const' || l.t === 'post')) return this;
-    if (kind === 'square' || kind === 'cube') {
-      this.tokens.push({ t: 'op', v: '^' });
-      this.tokens.push({ t: 'num', v: kind === 'square' ? '2' : '3' });
-    } else {
-      this.tokens.push({ t: 'post', v: kind });
-    }
-    return this;
-  };
-
-  Calc.prototype.answer = function () {
-    this.fresh();
-    if (this.implicit()) { this.commit(); this.tokens.push({ t: 'op', v: '×' }); }
-    var v = this.ans !== null ? this.ans : 0;
-    this.tokens.push({ t: 'num', v: String(v) });
-    this.main = String(v);
-    return this;
-  };
-
-  Calc.prototype.negate = function () {
-    this.error = null;
-    if (this.entry !== '') {
-      this.entry = this.entry.charAt(0) === '-' ? this.entry.slice(1) : '-' + this.entry;
-      return this;
-    }
-    var l = this.last();
+function doNeg(){
+  clearTimeout(errTimer);
+  continueIfEvaluated();
+  if (entry !== '') {
+    entry = entry.startsWith('-') ? entry.slice(1) : '-' + entry;
+  } else {
+    const l = lastTok();
     if (l && l.t === 'num') {
       l.v = String(-parseFloat(l.v));
-      this.main = l.v;
-    } else if (!l || l.t === 'op' || l.t === 'lp' || l.t === 'fn') {
-      this.tokens.push({ t: 'op', v: '-' });
-    }
-    return this;
-  };
-
-  Calc.prototype.back = function () {
-    this.error = null;
-    this.done = false;
-    if (this.entry !== '') {
-      this.entry = this.entry.slice(0, -1);
-      if (this.entry === '-') this.entry = '';
-      return this;
-    }
-    this.tokens.pop();
-    this.syncMain();
-    return this;
-  };
-
-  Calc.prototype.syncMain = function () {
-    for (var i = this.tokens.length - 1; i >= 0; i--) {
-      if (this.tokens[i].t === 'num') { this.main = this.tokens[i].v; return; }
-      if (this.tokens[i].t === 'const') { this.main = String(this.tokens[i].v === 'pi' ? Math.PI : Math.E); return; }
-    }
-    this.main = '0';
-  };
-
-  /* Første trykk tømmer innskrevet tall (C), neste tømmer alt (AC). */
-  Calc.prototype.clear = function () {
-    this.error = null;
-    if (this.entry !== '' && !this.done) { this.entry = ''; this.syncMain(); return this; }
-    this.tokens = []; this.entry = ''; this.main = '0'; this.done = false;
-    return this;
-  };
-
-  Calc.prototype.isEmpty = function () { return this.entry === '' && this.tokens.length === 0; };
-
-  /* Tokenrekke klar for evaluering, med usluttede ledd fjernet. */
-  Calc.prototype.snapshot = function () {
-    var t = this.tokens.slice();
-    if (this.entry !== '' && this.entry !== '-' && this.entry !== '.')
-      t.push({ t: 'num', v: this.entry.replace(/\.$/, '') });
-    while (t.length) {
-      var l = t[t.length - 1];
-      if (l.t === 'op' || l.t === 'fn' || l.t === 'lp') t.pop();
-      else break;
-    }
-    var open = t.reduce(function (a, x) {
-      return a + (x.t === 'lp' || x.t === 'fn' ? 1 : x.t === 'rp' ? -1 : 0);
-    }, 0);
-    for (var k = 0; k < open; k++) t.push({ t: 'rp' });
-    return t;
-  };
-
-  /* Løpende svar under skriving. Returnerer intern tallstreng eller null. */
-  Calc.prototype.preview = function () {
-    if (this.done) return null;
-    var t = this.snapshot();
-    var hasWork = t.some(function (x) { return x.t === 'op' || x.t === 'fn' || x.t === 'post'; });
-    if (t.length < 2 || !hasWork) return null;
-    try {
-      var v = evaluate(t, this.angle);
-      var s = String(roundSig(v));
-      return s === this.main ? null : s;
-    } catch (e) { return null; }
-  };
-
-  Calc.prototype.equals = function () {
-    this.commit();
-    if (!this.tokens.length) return this;
-    var text = buildExpr(this.tokens);
-    try {
-      var v = evaluate(this.tokens.slice(), this.angle);
-      var s = String(roundSig(v));
-      this.ans = parseFloat(s);
-      this.tokens = [{ t: 'num', v: s }];
-      this.entry = '';
-      this.main = s;
-      this.done = true;
-      this.error = null;
-      this.lastExpr = text;
-      return this;
-    } catch (e) {
-      this.error = e.code || 'syntax';
-      this.done = false;
-      return this;
-    }
-  };
-
-  /* Det som skal stå i uttrykkslinjen. */
-  Calc.prototype.exprText = function (sep) {
-    if (this.done) return buildExpr([], sep) + (this.lastExpr || '') + ' =';
-    return buildExpr(this.tokens, sep) + (this.entry !== '' ? fmtEntry(this.entry, sep) : '');
-  };
-
-  /* Det store tallet. */
-  Calc.prototype.mainText = function (sep) {
-    return this.entry !== '' ? fmtEntry(this.entry, sep) : fmtNum(this.main, sep);
-  };
-
-  /* Spiller av en tastesekvens og gir tilbake kalkulatoren.
-     Brukes av hjelpeeksemplene og av testene. */
-  function play(seq, angle) {
-    var c = new Calc();
-    if (angle) c.angle = angle;
-    for (var i = 0; i < seq.length; i++) {
-      var k = seq[i];
-      if (/^[0-9]$/.test(k)) c.digit(k);
-      else if (k === '.') c.comma();
-      else if (k === '+' || k === '-' || k === '×' || k === '÷' || k === '^' || k === 'root') c.op(k);
-      else if (k === '(') c.lparen();
-      else if (k === ')') c.rparen();
-      else if (k === '%' || k === '!') c.postfix(k);
-      else if (k === 'sq') c.postfix('square');
-      else if (k === 'cu') c.postfix('cube');
-      else if (k === '±') c.negate();
-      else if (k === 'pi' || k === 'e') c.constant(k);
-      else c.fn(k);
-    }
-    return c;
-  }
-
-  root.Numera = {
-    Calc: Calc,
-    play: play,
-    evaluate: evaluate,
-    buildExpr: buildExpr,
-    fmtNum: fmtNum,
-    fmtEntry: fmtEntry,
-    roundSig: roundSig,
-    FN_TEXT: FN_TEXT,
-    VERSION: '1.4.0'
-  };
-
-})(typeof window !== 'undefined' ? window : globalThis);
-/* ENGINE:END */
-
-/* ================================================================
-   Forklaringer — hva tastene gjør, med eksempler du kan prøve
-   ================================================================ */
-/* HELP:START */
-(function (root) {
-
-  var HELP = [
-    {
-      group: 'Regnestykket',
-      items: [
-        {
-          id: 'pct', key: '%', name: 'Prosent',
-          text: 'Regner ut en del av hundre. Etter pluss eller minus legger den til eller trekker fra prosenten av tallet du startet med — slik du forventer når du regner på priser.',
-          ex: '200 + 10 % = 220', seq: ['2','0','0','+','1','0','%'], res: '220',
-          more: 'Etter gange eller dele er 10 % rett og slett 0,1: 200 × 10 % = 20.'
-        },
-        {
-          id: 'neg', key: '±', name: 'Fortegn',
-          text: 'Gjør tallet negativt, og positivt igjen om du trykker en gang til. Ikke det samme som minustasten, som trekker fra.',
-          ex: '50 ± = −50', seq: ['5','0','±'], res: '-50'
-        },
-        {
-          id: 'paren', key: '( )', name: 'Parenteser',
-          text: 'Bestemmer hva som regnes først. Uten parenteser går gange og dele foran pluss og minus.',
-          ex: '(2 + 3) × 4 = 20', seq: ['(','2','+','3',')','×','4'], res: '20',
-          more: 'Uten parentesene blir 2 + 3 × 4 lik 14, fordi 3 × 4 regnes først.',
-          sci: true
-        }
-      ]
-    },
-    {
-      group: 'Potenser og røtter',
-      items: [
-        {
-          id: 'square', key: 'x²', name: 'Andre potens',
-          text: 'Ganger tallet med seg selv. Arealet av et kvadrat med side 7 er 7².',
-          ex: '7² = 49', seq: ['7','sq'], res: '49', sci: true
-        },
-        {
-          id: 'pow', key: 'xʸ', name: 'Potens',
-          text: 'Ganger tallet med seg selv så mange ganger du sier. Nyttig til renter: 1000 kr med 5 % rente i ti år blir 1000 × 1,05¹⁰.',
-          ex: '2 xʸ 10 = 1024', seq: ['2','^','1','0'], res: '1024', sci: true
-        },
-        {
-          id: 'sqrt', key: '√', name: 'Kvadratrot',
-          text: 'Går motsatt vei av x². Svarer på: hvilket tall ganget med seg selv gir dette?',
-          ex: '√81 = 9', seq: ['sqrt','8','1',')'], res: '9', sci: true
-        },
-        {
-          id: 'root', key: 'ˣ√y', name: 'N-te rot',
-          text: 'Samme spørsmål, men med flere ganger. Trykk INV og så xʸ. Skriv først hvor mange ganger, så tallet.',
-          ex: '3 ˣ√ 8 = 2', seq: ['3','root','8'], res: '2',
-          more: 'Fordi 2 × 2 × 2 = 8. Tredjeroten av 27 er tilsvarende 3.',
-          sci: true
-        }
-      ]
-    },
-    {
-      group: 'Trigonometri',
-      items: [
-        {
-          id: 'trig', key: 'sin', name: 'Sinus, cosinus og tangens',
-          text: 'Forholdet mellom sidene i en rettvinklet trekant. Har du en rampe på 5 meter med 30 graders stigning, er høyden sin(30) × 5.',
-          ex: 'sin(30) × 5 = 2,5', seq: ['sin','3','0',')','×','5'], res: '2.5',
-          more: 'sin gir høyden, cos gir lengden langs bakken, og tan gir forholdet mellom dem.',
-          sci: true
-        },
-        {
-          id: 'atrig', key: 'sin⁻¹', name: 'Invers trigonometri',
-          text: 'Går motsatt vei: du kjenner forholdet mellom sidene og vil finne vinkelen. Trykk INV og så sin, cos eller tan.',
-          ex: 'sin⁻¹(0,5) = 30', seq: ['asin','0','.','5',')'], res: '30',
-          more: 'En rampe som er 2,5 meter høy og 5 meter lang stiger altså 30 grader.',
-          sci: true
-        },
-        {
-          id: 'angle', key: 'DEG', name: 'Grader og radianer',
-          text: 'Grader deler sirkelen i 360 deler, radianer i 2π. Bruk grader til vanlig; radianer når du regner videre med formler fra matematikken. Tasten viser hvilken som gjelder.',
-          ex: 'sin(90) = 1 i DEG', seq: ['sin','9','0',')'], res: '1', sci: true
-        }
-      ]
-    },
-    {
-      group: 'Logaritmer',
-      items: [
-        {
-          id: 'log', key: 'log', name: 'Tierlogaritme',
-          text: 'Svarer på hvor mange tiere du må gange sammen. Siden 10 × 10 × 10 er 1000, er log(1000) lik 3. Ligger bak pH-skalaen, desibel og Richters skala.',
-          ex: 'log(1000) = 3', seq: ['log','1','0','0','0',')'], res: '3', sci: true
-        },
-        {
-          id: 'ln', key: 'ln', name: 'Naturlig logaritme',
-          text: 'Samme spørsmål, men med e i stedet for 10. Brukes når noe vokser eller avtar jevnt — renters rente, befolkning, halveringstid.',
-          ex: 'ln(e) = 1', seq: ['ln','e',')'], res: '1', sci: true
-        },
-        {
-          id: 'exp', key: '10ˣ', name: 'Motsatt vei',
-          text: 'Trykk INV og så log eller ln. 10ˣ bygger tallet opp igjen fra logaritmen, eˣ gjør det samme for den naturlige.',
-          ex: '10ˣ 3 = 1000', seq: ['exp10','3',')'], res: '1000', sci: true
-        }
-      ]
-    },
-    {
-      group: 'Resten',
-      items: [
-        {
-          id: 'fact', key: 'n!', name: 'Fakultet',
-          text: 'Ganger sammen alle hele tall opp til tallet. Sier hvor mange rekkefølger noe kan stokkes i: fem kort kan legges i 120 forskjellige rekkefølger.',
-          ex: '5! = 120', seq: ['5','!'], res: '120',
-          more: 'Altså 5 × 4 × 3 × 2 × 1.',
-          sci: true
-        },
-        {
-          id: 'pi', key: 'π', name: 'Pi',
-          text: 'Forholdet mellom en sirkels omkrets og diameter, 3,14159… Omkretsen av en sirkel er 2 × π × radius.',
-          ex: '2 × π × 3 ≈ 18,85', seq: ['2','×','pi','×','3'], res: '18.8495559215', sci: true
-        },
-        {
-          id: 'euler', key: 'e', name: 'Eulers tall',
-          text: 'Vekstkonstanten, 2,71828… Dukker opp overalt der noe vokser jevnt over tid. Hører sammen med ln.',
-          ex: 'e × e ≈ 7,39', seq: ['e','×','e'], res: '7.38905609893', sci: true
-        },
-        {
-          id: 'inv', key: 'INV', name: 'Andrefunksjon',
-          text: 'Bytter tastene til den motsatte funksjonen: √ blir tredjerot, sin blir sin⁻¹, ln blir eˣ. Den slår seg av igjen etter at du har brukt én av dem.',
-          sci: true
-        }
-      ]
-    },
-    {
-      group: 'Grep som sparer tid',
-      items: [
-        { id: 'g-handle', key: '⌄', name: 'Håndtaket over tastene', text: 'Ett trykk henter fram de vitenskapelige tastene. Du kan også sveipe nedover på tallvinduet.' },
-        { id: 'g-copy', key: '⧉', name: 'Kopier svaret', text: 'Hold inne tallvinduet, så ligger svaret på utklippstavlen.' },
-        { id: 'g-swipe', key: '↔', name: 'Slett med sveip', text: 'Dra til siden over tallvinduet for å slette siste tegn.' },
-        { id: 'g-clear', key: '⌫', name: 'Nullstill alt', text: 'Hold inne slettetasten, så tømmes hele regnestykket.' },
-        { id: 'g-help', key: '?', name: 'Denne hjelpen', text: 'Hold inne hvilken som helst tast for å hoppe rett til forklaringen av den.' }
-      ]
-    }
-  ];
-
-  root.NumeraHelp = HELP;
-
-})(typeof window !== 'undefined' ? window : globalThis);
-/* HELP:END */
-
-
-/* ================================================================
-   Grensesnitt
-   ================================================================ */
-(function () {
-
-  var $ = function (id) { return document.getElementById(id); };
-
-  /* Lagring som aldri kaster, selv der localStorage er sperret. */
-  var store = (function () {
-    var ok = true, mem = {};
-    try { localStorage.setItem('numera:t', '1'); localStorage.removeItem('numera:t'); }
-    catch (e) { ok = false; }
-    return {
-      get: function (k, d) {
-        try { var v = ok ? localStorage.getItem(k) : mem[k]; return v === null || v === undefined ? d : JSON.parse(v); }
-        catch (e) { return d; }
-      },
-      set: function (k, v) {
-        try { var s = JSON.stringify(v); if (ok) localStorage.setItem(k, s); else mem[k] = s; }
-        catch (e) {}
-      },
-      del: function (k) { try { if (ok) localStorage.removeItem(k); else delete mem[k]; } catch (e) {} }
-    };
-  })();
-
-  var DEFAULTS = {
-    theme: 'auto', sci: false, sep: true, haptic: true,
-    sound: false, history: true, large: false, swipe: true
-  };
-  var S = Object.assign({}, DEFAULTS, store.get('numera:settings', {}));
-  var saveSettings = function () { store.set('numera:settings', S); };
-
-  var calc = new Numera.Calc();
-  var hist = store.get('numera:history', []);
-  var inv = false;
-  var errTimer = null;
-
-  var ERRORS = {
-    div0: 'Kan ikke dele på null',
-    domain: 'Utenfor definisjonsområdet',
-    overflow: 'Tallet er for stort',
-    syntax: 'Ufullstendig regnestykke'
-  };
-
-  /* ---------------- Tegning ---------------- */
-
-  function setExpr(t) {
-    var el = $('exprLine');
-    el.textContent = t || '\u00A0';
-    el.scrollLeft = el.scrollWidth;
-  }
-
-  function setPreview(t) {
-    var el = $('previewLine');
-    if (t) { el.innerHTML = ''; el.appendChild(document.createTextNode('= ')); var b = document.createElement('b'); b.textContent = t; el.appendChild(b); }
-    else el.textContent = '';
-  }
-
-  function render() {
-    setExpr(calc.exprText(S.sep));
-    $('mainLine').textContent = calc.mainText(S.sep);
-    var p = calc.preview();
-    setPreview(p !== null ? Numera.fmtNum(p, S.sep) : '');
-    $('btnAC').textContent = calc.isEmpty() ? 'AC' : 'C';
-    $('btnAngle').textContent = calc.angle.toUpperCase();
-    $('btnAngle').classList.toggle('on', calc.angle === 'rad');
-    fitMain();
-  }
-
-  /* Krymper tallet i ett steg til det får plass. */
-  function fitMain() {
-    var el = $('mainLine');
-    el.style.fontSize = '';
-    var box = el.clientWidth;
-    if (!box) return;
-    var w = el.scrollWidth;
-    if (w > box) {
-      var fs = parseFloat(getComputedStyle(el).fontSize);
-      el.style.fontSize = Math.max(15, fs * (box / w) * 0.99) + 'px';
+      if (l.v === '0' || l.v === '-0') l.v = '0';
+      mainValue = l.v;
+    } else if (!l) {
+      entry = '-0';
     }
   }
+  render();
+}
 
-  function showError(code) {
-    var box = $('displayBox'), m = $('mainLine');
-    box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
-    m.innerHTML = '';
-    var s = document.createElement('span');
-    s.className = 'err';
-    s.textContent = ERRORS[code] || ERRORS.syntax;
-    m.appendChild(s);
-    buzz([28, 40, 28]);
-    clearTimeout(errTimer);
-    errTimer = setTimeout(function () { calc.error = null; render(); }, 1600);
+function doBack(){
+  clearTimeout(errTimer);
+  if (justEvaluated) { doAC(true); return; }
+  if (entry !== '') {
+    entry = entry.slice(0, -1);
+    if (entry === '-') entry = '';
+  } else {
+    const l = tokens.pop();
+    /* x² er to token (^ og 2): fjern begge */
+    if (l && l.t === 'num' && l.v === '2' && lastTok() && lastTok().t === 'op' && lastTok().v === '^') tokens.pop();
+    const nums = tokens.filter(t => t.t === 'num');
+    mainValue = nums.length ? nums[nums.length - 1].v : '0';
   }
+  render();
+}
 
-  /* ---------------- Handlinger ---------------- */
-
-  function setInv(v) {
-    inv = v;
-    $('btnInv').classList.toggle('on', inv);
-    document.querySelectorAll('#sciPad .key').forEach(function (b) {
-      var alt = b.dataset.invFn || b.dataset.invOp || b.dataset.invAction;
-      if (!alt) return;
-      if (!b.dataset.label) b.dataset.label = b.innerHTML;
-      b.innerHTML = inv ? labelFor(b) : b.dataset.label;
-    });
+function doAC(full){
+  clearTimeout(errTimer);
+  if (!full && entry !== '') { entry = ''; if (!tokens.length) mainValue = '0'; }
+  else {
+    tokens = []; entry = ''; mainValue = '0'; justEvaluated = false;
+    setExpr(''); setPreview('');
   }
+  render();
+}
 
-  var INV_LABEL = {
-    cbrt: '<span class="lbl"><sup>3</sup>&#8730;</span>', asin: 'sin⁻¹', acos: 'cos⁻¹', atan: 'tan⁻¹',
-    exp: '<span class="lbl">e<sup>x</sup></span>',
-    exp10: '<span class="lbl">10<sup>x</sup></span>',
-    root: '<span class="lbl"><sup>x</sup>&#8730;y</span>',
-    cube: '<span class="lbl">x<sup>3</sup></span>'
-  };
-  function labelFor(b) {
-    var k = b.dataset.invFn || b.dataset.invOp || b.dataset.invAction;
-    return INV_LABEL[k] || b.dataset.label;
+function computePreview(){
+  let copy = tokens.slice();
+  if (entry !== '') copy.push({ t:'num', v: entry.endsWith('.') ? entry.slice(0, -1) : entry });
+  while (copy.length) {
+    const l = copy[copy.length - 1];
+    if (l.t === 'op' || l.t === 'fn' || l.t === 'lp') copy.pop();
+    else break;
   }
+  const hasOp = copy.some(t => t.t === 'op' || t.t === 'fn' || t.t === 'post');
+  if (copy.length < 2 || !hasOp) return null;
+  copy = Engine.autoClose(copy);
+  try {
+    const v = Engine.evaluate(copy, S.angle);
+    return fmtNum(Engine.resultString(v));
+  } catch (e) { return null; }
+}
 
-  function afterEquals() {
-    if (calc.error) { showError(calc.error); return; }
-    if (S.history && calc.lastExpr) {
-      hist.unshift({ e: calc.lastExpr, r: calc.main });
-      hist = hist.slice(0, 50);
-      store.set('numera:history', hist);
+function doEquals(){
+  clearTimeout(errTimer);
+  if (justEvaluated) return;
+  commitEntry();
+  if (!tokens.length) return;
+  /* Fjern hengende operator, lukk parenteser */
+  while (tokens.length && (lastTok().t === 'op' || lastTok().t === 'fn' || lastTok().t === 'lp')) tokens.pop();
+  if (!tokens.length) { doAC(true); return; }
+  tokens = Engine.autoClose(tokens);
+  const exprText = buildExpr(tokens);
+  try {
+    const v = Engine.evaluate(tokens.slice(), S.angle);
+    const rs = Engine.resultString(v);
+    if (S.history) {
+      hist.unshift({ e: exprText, r: rs, t: Date.now() });
+      hist = hist.slice(0, 60);
+      try { localStorage.setItem('numera:history', JSON.stringify(hist)); } catch (e) {}
       renderHist();
     }
-    var m = $('mainLine');
+    lastAnswer = parseFloat(rs);
+    tokens = [{ t:'num', v: rs }];
+    entry = ''; mainValue = rs; justEvaluated = true;
+    setExpr(exprText + ' =');
+    setPreview('');
+    const m = $('mainLine');
     m.classList.remove('pop'); void m.offsetWidth; m.classList.add('pop');
     buzz(14);
-    render();
+  } catch (e) {
+    flashError(e.message);
+    return;
   }
+  render();
+}
 
-  function route(btn) {
-    var d = btn.dataset;
-    clearTimeout(errTimer);
+const ERR_TEXT = { div0:'Kan ikke dele på 0', domain:'Utenfor definisjonsområdet', syntax:'Ufullstendig uttrykk', result:'For stort tall' };
+function flashError(kind){
+  const box = $('displayBox'), m = $('mainLine');
+  box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+  m.innerHTML = '<span class="err">Feil</span>';
+  $('previewLine').textContent = ERR_TEXT[kind] || 'Kan ikke regnes ut';
+  buzz([30, 40, 30]);
+  clearTimeout(errTimer);
+  errTimer = setTimeout(render, 1400);
+}
 
-    if (d.digit !== undefined) { calc.digit(d.digit); return render(); }
+/* ---------------- Rendering ---------------- */
+function setExpr(t){
+  const el = $('exprLine');
+  el.textContent = t || '\u00A0';
+  el.scrollLeft = el.scrollWidth;
+}
+function setPreview(t){
+  const el = $('previewLine');
+  el.textContent = '';
+  if (!t) return;
+  el.append('= ');
+  const b = document.createElement('b'); b.textContent = t; el.append(b);
+}
 
-    if (d.op !== undefined) {
-      var op = (inv && d.invOp) ? d.invOp : d.op;
-      calc.op(op);
-      if (inv && d.invOp) setInv(false);
-      return render();
-    }
+function render(){
+  const exprStr = buildExpr(tokens) + (entry !== '' ? fmtEntry(entry) : '');
+  if (!justEvaluated) setExpr(exprStr);
+  $('mainLine').textContent = entry !== '' ? fmtEntry(entry) : fmtNum(mainValue);
+  if (!justEvaluated) setPreview(computePreview() || '');
 
-    if (d.fn !== undefined) {
-      var fn = (inv && d.invFn) ? d.invFn : d.fn;
-      calc.fn(fn);
-      if (inv && d.invFn) setInv(false);
-      return render();
-    }
+  $('btnAC').textContent = (entry !== '' || tokens.length) ? 'C' : 'AC';
+  $('btnAngle').textContent = S.angle.toUpperCase();
+  $('chipAngle').textContent = S.angle.toUpperCase();
+  fitMain();
+}
 
-    if (d.const !== undefined) { calc.constant(d.const); return render(); }
-
-    switch (d.action) {
-      case 'comma':   calc.comma(); break;
-      case 'neg':     calc.negate(); break;
-      case 'back':    calc.back(); break;
-      case 'ac':      calc.clear(); break;
-      case 'equals':  calc.equals(); return afterEquals();
-      case 'lparen':  calc.lparen(); break;
-      case 'rparen':  calc.rparen(); break;
-      case 'percent': calc.postfix('%'); break;
-      case 'fact':    calc.postfix('!'); break;
-      case 'square':  calc.postfix(inv && d.invAction ? d.invAction : 'square'); if (inv) setInv(false); break;
-      case 'angle':   calc.angle = calc.angle === 'deg' ? 'rad' : 'deg'; break;
-      case 'inv':     setInv(!inv); buzz(); return;
-      default: return;
-    }
-    render();
+function fitMain(){
+  const el = $('mainLine');
+  el.style.fontSize = '';
+  const w = el.clientWidth;
+  if (!w) return;
+  let fs = parseFloat(getComputedStyle(el).fontSize);
+  let guard = 0;
+  while (el.scrollWidth > w + 1 && fs > 15 && guard++ < 30) {
+    fs *= 0.92;
+    el.style.fontSize = fs + 'px';
   }
+}
+if (window.ResizeObserver) new ResizeObserver(() => fitMain()).observe($('displayBox'));
 
-  /* ---------------- Historikk ---------------- */
-
-  function renderHist() {
-    var list = $('histList');
-    list.innerHTML = '';
-    $('histEmpty').style.display = hist.length ? 'none' : 'block';
-    hist.forEach(function (h) {
-      var li = document.createElement('li');
-      var b = document.createElement('button');
-      b.className = 'hist-item';
-      var e = document.createElement('span'); e.className = 'h-expr'; e.textContent = h.e + ' =';
-      var r = document.createElement('span'); r.className = 'h-res'; r.textContent = Numera.fmtNum(h.r, S.sep);
-      b.appendChild(e); b.appendChild(r);
-      b.addEventListener('click', function () {
-        calc.tokens = [{ t: 'num', v: h.r }];
-        calc.entry = ''; calc.main = h.r; calc.done = false; calc.error = null;
-        closeSheets(); render(); buzz();
-      });
-      li.appendChild(b);
-      list.appendChild(li);
+/* ---------------- Historikk ---------------- */
+function renderHist(){
+  const list = $('histList');
+  list.innerHTML = '';
+  $('histEmpty').style.display = hist.length ? 'none' : 'block';
+  hist.forEach(h => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.className = 'hist-item';
+    b.type = 'button';
+    const e = document.createElement('span'); e.className = 'h-expr'; e.textContent = h.e + ' =';
+    const r = document.createElement('span'); r.className = 'h-res';  r.textContent = fmtNum(h.r);
+    b.append(e, r);
+    b.addEventListener('click', () => {
+      clearTimeout(errTimer);
+      tokens = [{ t:'num', v: h.r }];
+      entry = ''; mainValue = h.r; justEvaluated = false;
+      lastAnswer = parseFloat(h.r);
+      setExpr(''); setPreview('');
+      closeSheets(); render(); buzz();
     });
-  }
-
-  /* ---------------- Forklaringer ---------------- */
-
-  var helpBuilt = false;
-
-  function buildHelp() {
-    if (helpBuilt) return;
-    helpBuilt = true;
-    var body = $('helpBody');
-    NumeraHelp.forEach(function (g) {
-      var sec = document.createElement('section');
-      sec.className = 'help-group';
-      var h3 = document.createElement('h3');
-      h3.textContent = g.group;
-      sec.appendChild(h3);
-
-      g.items.forEach(function (it) {
-        var row = document.createElement('article');
-        row.className = 'help-item';
-        row.id = 'help-' + it.id;
-
-        var badge = document.createElement('div');
-        badge.className = 'help-badge';
-        badge.setAttribute('aria-hidden', 'true');
-        badge.textContent = it.key;
-        row.appendChild(badge);
-
-        var col = document.createElement('div');
-        var h4 = document.createElement('h4');
-        h4.textContent = it.name;
-        col.appendChild(h4);
-
-        var p = document.createElement('p');
-        p.textContent = it.text;
-        col.appendChild(p);
-
-        if (it.more) {
-          var p2 = document.createElement('p');
-          p2.textContent = it.more;
-          col.appendChild(p2);
-        }
-
-        if (it.seq) col.appendChild(exampleBox(it));
-
-        row.appendChild(col);
-        sec.appendChild(row);
-      });
-
-      body.appendChild(sec);
-    });
-  }
-
-  /* Legger eksempelet inn i kalkulatoren og regner det ut. */
-  function runExample(it) {
-    if (it.sci) setSci(true);
-    calc = Numera.play(it.seq);
-    calc.equals();
-    closeSheets();
-    afterEquals();
-  }
-
-  function findHelp(id) {
-    for (var i = 0; i < NumeraHelp.length; i++) {
-      var items = NumeraHelp[i].items;
-      for (var j = 0; j < items.length; j++) if (items[j].id === id) return items[j];
-    }
-    return null;
-  }
-
-  /* Forklaring av én tast — ingenting annet. */
-  function openKeyHelp(id, label) {
-    var it = findHelp(id);
-    if (!it) return false;
-
-    var body = $('keyHelpBody');
-    body.innerHTML = '';
-    body.className = 'keyhelp';
-
-    var head = document.createElement('div');
-    head.className = 'keyhelp-head';
-    var badge = document.createElement('div');
-    badge.className = 'help-badge';
-    badge.style.width = '46px';
-    badge.setAttribute('aria-hidden', 'true');
-    badge.textContent = label || it.key;
-    var h2 = document.createElement('h2');
-    h2.id = 'keyHelpName';
-    h2.textContent = it.name;
-    head.appendChild(badge);
-    head.appendChild(h2);
-    body.appendChild(head);
-
-    var p = document.createElement('p');
-    p.textContent = it.text;
-    body.appendChild(p);
-
-    if (it.more) {
-      var p2 = document.createElement('p');
-      p2.textContent = it.more;
-      body.appendChild(p2);
-    }
-
-    if (it.seq) body.appendChild(exampleBox(it));
-
-    openSheet($('sheetKeyHelp'));
-    return true;
-  }
-
-  /* Eksempelboksen med Prøv-knapp, delt av begge arkene. */
-  function exampleBox(it) {
-    var box = document.createElement('div');
-    box.className = 'help-ex';
-    var code = document.createElement('code');
-    code.textContent = it.ex;
-    var btn = document.createElement('button');
-    btn.className = 'help-try';
-    btn.type = 'button';
-    btn.textContent = 'PRØV';
-    btn.addEventListener('click', function () { runExample(it); });
-    box.appendChild(code);
-    box.appendChild(btn);
-    return box;
-  }
-
-  /* Hele listen — bare fra spørsmålstegnet i toppen. */
-  function openHelp() {
-    buildHelp();
-    openSheet($('sheetHelp'));
-  }
-
-  $('btnHelp').addEventListener('click', function () { openHelp(); });
-  $('btnAllHelp').addEventListener('click', function () { closeSheets(); openHelp(); });
-
-  /* ---------------- Tema ---------------- */
-
-  var mq = (typeof window.matchMedia === 'function')
-    ? window.matchMedia('(prefers-color-scheme: dark)')
-    : { matches: true, addEventListener: null };
-  function applyTheme() {
-    var r = S.theme === 'auto' ? (mq.matches ? 'dark' : 'light') : S.theme;
-    document.documentElement.setAttribute('data-theme', r);
-    $('metaTheme').content = r === 'dark' ? '#0e1013' : '#e9ebec';
-  }
-  if (mq.addEventListener) mq.addEventListener('change', function () { if (S.theme === 'auto') applyTheme(); });
-
-  $('btnTheme').addEventListener('click', function () {
-    var order = ['auto', 'light', 'dark'];
-    S.theme = order[(order.indexOf(S.theme) + 1) % 3];
-    saveSettings(); applyTheme(); syncSettingsUI(); buzz();
-    toast(S.theme === 'auto' ? 'TEMA: AUTOMATISK' : S.theme === 'light' ? 'TEMA: LYST' : 'TEMA: MØRKT');
+    li.appendChild(b);
+    list.appendChild(li);
   });
+}
 
-  /* ---------------- Paneler ---------------- */
+/* ---------------- Tema ---------------- */
+const mq = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme(){
+  const resolved = S.theme === 'auto' ? (mq.matches ? 'dark' : 'light') : S.theme;
+  document.documentElement.setAttribute('data-theme', resolved);
+  $('metaTheme').content = resolved === 'dark' ? '#0e1013' : '#e9ebec';
+}
+mq.addEventListener('change', () => { if (S.theme === 'auto') applyTheme(); });
 
-  var lastFocus = null;
-  function openSheet(el) {
-    lastFocus = document.activeElement;
-    $('backdrop').classList.add('show');
-    el.classList.add('open');
-    if (el.id !== 'sheetHelp') el.scrollTop = 0;
+$('btnTheme').addEventListener('click', () => {
+  const resolved = document.documentElement.getAttribute('data-theme');
+  S.theme = resolved === 'dark' ? 'light' : 'dark';
+  saveSettings(); applyTheme(); syncSettingsUI(); buzz();
+});
+
+/* ---------------- Ark (sheets) ---------------- */
+let sheetHistoryStateAdded = false;
+function openSheet(el){
+  closeSheets(true);
+  $('backdrop').classList.add('show');
+  el.classList.add('open');
+  el.scrollTop = 0;
+  /* Android-tilbakeknappen lukker arket i stedet for å forlate appen */
+  if (!sheetHistoryStateAdded) {
+    try { history.pushState({ sheet: true }, ''); sheetHistoryStateAdded = true; } catch (e) {}
   }
-  function closeSheets() {
-    $('backdrop').classList.remove('show');
-    document.querySelectorAll('.sheet').forEach(function (s) { s.classList.remove('open'); });
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+function closeSheets(keepHistory){
+  $('backdrop').classList.remove('show');
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
+  if (!keepHistory && sheetHistoryStateAdded) {
+    sheetHistoryStateAdded = false;
+    try { history.back(); } catch (e) {}
   }
-  $('backdrop').addEventListener('click', closeSheets);
-  document.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', closeSheets); });
-  $('btnHistory').addEventListener('click', function () { renderHist(); openSheet($('sheetHistory')); });
-  $('btnSettings').addEventListener('click', function () { openSheet($('sheetSettings')); });
-  $('btnSciToggle').addEventListener('click', function () { setSci(!S.sci); });
-  $('btnClearHist').addEventListener('click', function () {
-    hist = []; store.set('numera:history', []); renderHist(); buzz(); toast('HISTORIKKEN ER TØMT');
-  });
+}
+window.addEventListener('popstate', () => {
+  if (sheetHistoryStateAdded) { sheetHistoryStateAdded = false; closeSheets(true); }
+});
+$('backdrop').addEventListener('click', () => closeSheets());
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeSheets()));
+$('btnHistory').addEventListener('click', () => { renderHist(); openSheet($('sheetHistory')); buzz(); });
+$('btnHelp').addEventListener('click', () => { openSheet($('sheetHelp')); buzz(); });
+$('btnSettings').addEventListener('click', () => { openSheet($('sheetSettings')); buzz(); });
+$('btnClearHist').addEventListener('click', () => {
+  hist = []; try { localStorage.setItem('numera:history', '[]'); } catch (e) {}
+  renderHist(); buzz(); toast('HISTORIKK TØMT');
+});
 
-  /* Dra arket nedover for å lukke. */
-  document.querySelectorAll('.sheet').forEach(function (sheet) {
-    var y0 = null;
-    sheet.addEventListener('pointerdown', function (e) {
-      if (sheet.scrollTop > 0 || !e.target.closest('.grab, .sheet-head')) return;
-      y0 = e.clientY;
-    });
-    sheet.addEventListener('pointermove', function (e) {
-      if (y0 === null) return;
-      var dy = e.clientY - y0;
-      if (dy > 0) sheet.style.transform = 'translate(-50%, ' + dy + 'px)';
-    });
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
-      sheet.addEventListener(ev, function (e) {
-        if (y0 === null) return;
-        var dy = e.clientY - y0;
-        y0 = null;
-        sheet.style.transform = '';
-        if (dy > 90) closeSheets();
-      });
-    });
-  });
-
-  /* ---------------- Innstillinger ---------------- */
-
-  function syncSettingsUI() {
-    $('optSci').checked = S.sci;
-    $('optSep').checked = S.sep;
-    $('optHaptic').checked = S.haptic;
-    $('optSound').checked = S.sound;
-    $('optHist').checked = S.history;
-    $('optLarge').checked = S.large;
-    $('optSwipe').checked = S.swipe;
-    document.querySelectorAll('#themeSeg .seg-btn').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.tc === S.theme);
-    });
-  }
-
-  /* Slår de vitenskapelige funksjonene av eller på, uansett hvor
-     brukeren trykker: håndtaket, sveipet eller innstillingene. */
-  function setSci(on) {
-    if (S.sci === on) return;
-    S.sci = on;
-    saveSettings();
-    syncSettingsUI();
-    applySettingsEffects();
-    buzz(on ? 12 : 8);
-  }
-
-  function applySettingsEffects() {
-    $('sciPad').classList.toggle('open', S.sci);
-    $('sciPad').setAttribute('aria-hidden', S.sci ? 'false' : 'true');
-    var h = $('btnSciToggle');
-    h.classList.toggle('on', S.sci);
-    h.setAttribute('aria-expanded', S.sci ? 'true' : 'false');
-    h.setAttribute('aria-label', S.sci
-      ? 'Skjul vitenskapelige funksjoner'
-      : 'Vis vitenskapelige funksjoner');
-    document.querySelectorAll('#sciPad .key').forEach(function (b) { b.tabIndex = S.sci ? 0 : -1; });
-    $('btnHistory').hidden = !S.history;
-    document.body.classList.toggle('large', S.large);
-    if (!S.sci && inv) setInv(false);
-    render();
-  }
-
-  document.querySelectorAll('#themeSeg .seg-btn').forEach(function (b) {
-    b.addEventListener('click', function () {
-      S.theme = b.dataset.tc; saveSettings(); applyTheme(); syncSettingsUI(); buzz();
-    });
-  });
-
-  function bindSwitch(id, key, after) {
-    $(id).addEventListener('change', function (e) {
-      S[key] = e.target.checked; saveSettings(); if (after) after();
-    });
-  }
-  bindSwitch('optSci', 'sci', applySettingsEffects);
-  bindSwitch('optSep', 'sep', function () { renderHist(); render(); });
-  bindSwitch('optHaptic', 'haptic');
-  bindSwitch('optSound', 'sound');
-  bindSwitch('optLarge', 'large', applySettingsEffects);
-  bindSwitch('optSwipe', 'swipe');
-  bindSwitch('optHist', 'history', function () {
-    applySettingsEffects();
-    if (!S.history) closeSheets();
-  });
-
-  $('btnReset').addEventListener('click', function () {
-    store.del('numera:settings');
-    store.del('numera:history');
-    location.reload();
-  });
-
-  $('verTag').textContent = Numera.VERSION;
-
-  /* ---------------- Vibrasjon og lyd ---------------- */
-
-  function buzz(p) {
-    if (!S.haptic || !navigator.vibrate) return;
-    try { navigator.vibrate(p || 8); } catch (e) {}
-  }
-
-  var actx = null;
-  function tick(freq) {
-    if (!S.sound) return;
-    try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      if (actx.state === 'suspended') actx.resume();
-      var t = actx.currentTime;
-      var o = actx.createOscillator(), g = actx.createGain();
-      o.type = 'triangle';
-      o.frequency.value = freq || 1750;
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.05, t + 0.006);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
-      o.connect(g); g.connect(actx.destination);
-      o.start(t); o.stop(t + 0.08);
-    } catch (e) {}
-  }
-
-  /* ---------------- Trykk ---------------- */
-
-  var holdTimer = null, heldFired = false, pointerUsed = false;
-
-  function feedback(btn, e) {
-    var r = btn.getBoundingClientRect();
-    var d = Math.max(r.width, r.height) * 2.2;
-    var s = document.createElement('span');
-    s.className = 'ripple';
-    s.style.width = s.style.height = d + 'px';
-    s.style.left = ((e.clientX || r.left + r.width / 2) - r.left) + 'px';
-    s.style.top  = ((e.clientY || r.top + r.height / 2) - r.top) + 'px';
-    btn.appendChild(s);
-    s.addEventListener('animationend', function () { s.remove(); });
-    buzz(btn.classList.contains('eq') ? 12 : 8);
-    tick(btn.dataset.digit ? 1750 : btn.classList.contains('eq') ? 900 : 1400);
-  }
-
-  /* Tastetrykket skjer med én gang. Blir tasten holdt inne, angrer vi
-     trykket og viser forklaringen i stedet. */
-  function snapshot() {
-    return {
-      tokens: calc.tokens.map(function (t) { return { t: t.t, v: t.v }; }),
-      entry: calc.entry, main: calc.main, done: calc.done,
-      error: calc.error, lastExpr: calc.lastExpr, angle: calc.angle, inv: inv
-    };
-  }
-  function restore(s) {
-    calc.tokens = s.tokens; calc.entry = s.entry; calc.main = s.main;
-    calc.done = s.done; calc.error = s.error; calc.lastExpr = s.lastExpr;
-    calc.angle = s.angle;
-    if (inv !== s.inv) setInv(s.inv);
-    render();
-  }
-
-  document.addEventListener('pointerdown', function (e) {
-    var btn = e.target.closest('.key');
-    if (!btn) return;
-    pointerUsed = true;
-    heldFired = false;
-    btn.classList.add('press');
-    feedback(btn, e);
-
-    var before = snapshot();
-    route(btn);
-
-    if (btn.dataset.action === 'back') {
-      /* Hold inne slettetasten for å tømme alt. */
-      holdTimer = setTimeout(function () {
-        heldFired = true;
-        calc.clear(); calc.clear(); render();
-        buzz(24); toast('ALT ER NULLSTILT');
-      }, 550);
-      return;
-    }
-
-    /* Har tasten ingen forklaring, skjer det heller ingenting
-       ved langt trykk — sifre og regneartene forklarer seg selv. */
-    if (!btn.dataset.help) return;
-
-    holdTimer = setTimeout(function () {
-      heldFired = true;
-      restore(before);
-      buzz(18);
-      openKeyHelp(btn.dataset.help, btn.dataset.helpKey);
-    }, 550);
+/* Sveip ned på gripefeltet for å lukke */
+document.querySelectorAll('.sheet').forEach(sheet => {
+  let startY = null;
+  sheet.addEventListener('touchstart', e => {
+    startY = sheet.scrollTop <= 0 ? e.touches[0].clientY : null;
   }, { passive: true });
+  sheet.addEventListener('touchmove', e => {
+    if (startY === null) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 90) { startY = null; closeSheets(); }
+  }, { passive: true });
+  sheet.addEventListener('touchend', () => { startY = null; });
+});
 
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
-    document.addEventListener(ev, function (e) {
-      clearTimeout(holdTimer);
-      var btn = e.target.closest ? e.target.closest('.key') : null;
-      if (btn) btn.classList.remove('press');
-      document.querySelectorAll('.key.press').forEach(function (b) { b.classList.remove('press'); });
-    }, { passive: true });
-  });
+/* ---------------- Innstillingsbindinger ---------------- */
+function syncSettingsUI(){
+  $('optSci').checked    = S.sci;
+  $('optSep').checked    = S.sep;
+  $('optHaptic').checked = S.haptic;
+  $('optSound').checked  = S.sound;
+  $('optHist').checked   = S.history;
+  $('optLarge').checked  = S.large;
+  $('optWake').checked   = S.wake;
+  document.querySelectorAll('#themeSeg .seg-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tc === S.theme));
+}
 
-  /* Klikk fra tastatur/skjermleser (uten forutgående pekertrykk). */
-  document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.key');
-    if (!btn) return;
-    if (pointerUsed) { pointerUsed = false; return; }
-    route(btn);
-  });
+function applySettingsEffects(){
+  $('sciPad').classList.toggle('open', S.sci);
+  $('chipRow').hidden = !S.sci;
+  $('btnHistory').style.display = S.history ? '' : 'none';
+  document.body.classList.toggle('large', S.large);
+  applyWake();
+  render();
+}
 
-  $('app').addEventListener('contextmenu', function (e) {
-    if (e.target.closest('.key')) e.preventDefault();
-  });
+document.querySelectorAll('#themeSeg .seg-btn').forEach(b =>
+  b.addEventListener('click', () => { S.theme = b.dataset.tc; saveSettings(); applyTheme(); syncSettingsUI(); buzz(); }));
 
-  /* ---------------- Tallvindu: kopier og sveip ---------------- */
+$('optSci').addEventListener('change',   e => { S.sci    = e.target.checked; saveSettings(); applySettingsEffects(); });
+$('optSep').addEventListener('change',   e => { S.sep    = e.target.checked; saveSettings(); render(); });
+$('optHaptic').addEventListener('change',e => { S.haptic = e.target.checked; saveSettings(); buzz(12); });
+$('optSound').addEventListener('change', e => { S.sound  = e.target.checked; saveSettings(); tick(1400); });
+$('optHist').addEventListener('change',  e => {
+  S.history = e.target.checked; saveSettings(); applySettingsEffects();
+});
+$('optLarge').addEventListener('change', e => { S.large = e.target.checked; saveSettings(); applySettingsEffects(); });
+$('optWake').addEventListener('change',  e => { S.wake  = e.target.checked; saveSettings(); applyWake(); });
 
-  var lpTimer = null, sx = null, sy = null, swiped = false;
+$('btnReset').addEventListener('click', () => {
+  if (!confirm('Tilbakestille alle innstillinger og slette historikken?')) return;
+  try { localStorage.removeItem('numera:settings'); localStorage.removeItem('numera:history'); } catch (e) {}
+  location.reload();
+});
 
-  /* Hele vinduet tar imot gestene, ikke bare selve tallet. */
-  $('displayBox').addEventListener('pointerdown', function (e) {
-    sx = e.clientX; sy = e.clientY; swiped = false;
-    lpTimer = setTimeout(function () {
-      var plain = String(calc.main);
-      copy(plain);
-      buzz(20);
-    }, 550);
-  });
-
-  $('displayBox').addEventListener('pointermove', function (e) {
-    if (sx === null || swiped) return;
-    var dx = e.clientX - sx, dy = e.clientY - sy;
-    /* Sidelengs: slett siste tegn. */
-    if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.8) {
-      clearTimeout(lpTimer);
-      swiped = true;
-      if (S.swipe) { calc.back(); render(); buzz(); }
-      return;
+/* ---------------- Hold skjermen på (Wake Lock) ---------------- */
+let wakeLock = null;
+async function applyWake(){
+  if (!('wakeLock' in navigator)) { $('optWake').closest('.row').hidden = true; return; }
+  try {
+    if (S.wake && !wakeLock && document.visibilityState === 'visible') {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if (!S.wake && wakeLock) {
+      await wakeLock.release(); wakeLock = null;
     }
-    /* Nedover: hent fram de vitenskapelige funksjonene. Oppover: skjul dem. */
-    if (Math.abs(dy) > 46 && Math.abs(dy) > Math.abs(dx) * 1.8) {
-      clearTimeout(lpTimer);
-      swiped = true;
-      setSci(dy > 0);
-    }
-  });
+  } catch (e) { wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') applyWake(); });
 
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) {
-    $('displayBox').addEventListener(ev, function () { clearTimeout(lpTimer); sx = null; });
-  });
+/* ---------------- Sanselig tilbakemelding ---------------- */
+function buzz(p){
+  if (!S.haptic || !navigator.vibrate) return;
+  try { navigator.vibrate(p || 8); } catch (e) {}
+}
 
-  function copy(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text)
-        .then(function () { toast('KOPIERT'); })
-        .catch(function () { fallbackCopy(text); });
-    } else fallbackCopy(text);
+let actx = null;
+function tick(freq){
+  if (!S.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle';
+    o.frequency.value = freq || 1750;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.05, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t + 0.08);
+  } catch (e) {}
+}
+
+/* Ringbølge + trykk på alle taster */
+document.addEventListener('pointerdown', e => {
+  const btn = e.target.closest('.key');
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  const d = Math.max(r.width, r.height) * 2.2;
+  const s = document.createElement('span');
+  s.className = 'ripple';
+  s.style.width = s.style.height = d + 'px';
+  s.style.left = (e.clientX - r.left) + 'px';
+  s.style.top  = (e.clientY - r.top) + 'px';
+  btn.appendChild(s);
+  s.addEventListener('animationend', () => s.remove());
+  buzz(btn.classList.contains('eq') ? 12 : 8);
+  tick(btn.dataset.digit ? 1750 : btn.classList.contains('eq') ? 900 : 1400);
+}, { passive: true });
+
+/* ---------------- Tastelogikk (delegering) ---------------- */
+function route(btn){
+  const d = btn.dataset;
+  if (d.digit  !== undefined) return inputDigit(d.digit);
+  if (d.op     !== undefined) {
+    const map = { '−':'-', '+':'+', '×':'×', '÷':'÷', '^':'^' };
+    return inputOp(map[d.op]);
   }
-  function fallbackCopy(text) {
-    try {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.cssText = 'position:fixed;opacity:0;';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-      toast('KOPIERT');
-    } catch (e) { toast('KUNNE IKKE KOPIERE'); }
+  if (d.fn     !== undefined) return inputFn(d.fn);
+  if (d.const  !== undefined) return inputConst(d.const);
+  switch (d.action) {
+    case 'comma':   return inputComma();
+    case 'neg':     return doNeg();
+    case 'back':    return doBack();
+    case 'ac':      return doAC();
+    case 'equals':  return doEquals();
+    case 'lparen':  return inputLParen();
+    case 'rparen':  return inputRParen();
+    case 'percent': return postfix('%');
+    case 'fact':    return postfix('!');
+    case 'square':  return postfix('square');
+    case 'ans':     return inputAns();
+    case 'angle':
+      S.angle = S.angle === 'deg' ? 'rad' : 'deg';
+      saveSettings(); render(); return;
   }
+}
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.key');
+  if (btn) route(btn);
+});
 
-  /* ---------------- Meldinger ---------------- */
+/* Hindre kontekstmeny ved langt trykk på taster */
+$('app').addEventListener('contextmenu', e => {
+  if (e.target.closest('.key') || e.target.closest('.main')) e.preventDefault();
+});
 
-  var toastTimer = null, toastAction = null;
-  function toast(msg, action) {
-    var t = $('toast');
-    t.textContent = msg;
-    t.hidden = false;
-    t.classList.toggle('tappable', !!action);
-    toastAction = action || null;
-    requestAnimationFrame(function () { t.classList.add('show'); });
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () {
-      t.classList.remove('show');
-      setTimeout(function () { if (!t.classList.contains('show')) t.hidden = true; }, 320);
-    }, action ? 8000 : 1800);
+/* Langt trykk på slett-tasten = tøm alt (Samsung-vane) */
+let backHoldTimer = null;
+const backBtn = document.querySelector('[data-action="back"]');
+backBtn.addEventListener('pointerdown', () => {
+  backHoldTimer = setTimeout(() => { doAC(true); buzz(20); backHoldTimer = null; backBtn.dataset.held = '1'; }, 600);
+});
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
+  backBtn.addEventListener(ev, () => clearTimeout(backHoldTimer)));
+backBtn.addEventListener('click', e => {
+  if (backBtn.dataset.held) { delete backBtn.dataset.held; e.stopImmediatePropagation(); e.preventDefault(); }
+}, true);
+
+/* ---------------- Langt trykk = kopier resultat ---------------- */
+let lpTimer = null;
+$('mainLine').addEventListener('pointerdown', () => {
+  lpTimer = setTimeout(copyResult, 550);
+});
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
+  $('mainLine').addEventListener(ev, () => clearTimeout(lpTimer)));
+
+function copyResult(){
+  const plain = $('mainLine').textContent.replace(/\u2009/g, '').replace(/−/g, '-').replace(/,/g, '.');
+  if (plain === 'Feil') return;
+  buzz(20);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(plain)
+      .then(() => toast('KOPIERT'))
+      .catch(() => toast('KUNNE IKKE KOPIERE'));
+  } else {
+    toast('KUNNE IKKE KOPIERE');
   }
-  $('toast').addEventListener('click', function () {
-    if (toastAction) toastAction();
-    $('toast').classList.remove('show');
+}
+
+let toastTimer = null;
+function toast(msg, action){
+  const t = $('toast'), a = $('toastAct');
+  $('toastMsg').textContent = msg;
+  clearTimeout(toastTimer);
+  if (action) {
+    a.hidden = false; a.textContent = action.label; a.onclick = action.fn;
+    t.classList.add('show');
+    toastTimer = setTimeout(() => t.classList.remove('show'), 12000);
+  } else {
+    a.hidden = true; a.onclick = null;
+    t.classList.add('show');
+    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  }
+}
+
+/* ---------------- Fysisk tastatur (DeX / PC) ---------------- */
+const KEYS = Array.from(document.querySelectorAll('.key'));
+function findBtn(k){
+  return KEYS.find(b => {
+    const d = b.dataset;
+    if (d.digit === k) return true;
+    if (k === ',' || k === '.') return d.action === 'comma';
+    if (k === '*') return d.op === '×';
+    if (k === '/') return d.op === '÷';
+    if (k === '-') return d.op === '−';
+    if (k === '+') return d.op === '+';
+    if (k === '^') return d.op === '^';
+    if (k === '%') return d.action === 'percent';
+    if (k === '(') return d.action === 'lparen';
+    if (k === ')') return d.action === 'rparen';
+    if (k === '!') return d.action === 'fact';
+    if (k === 'Enter' || k === '=') return d.action === 'equals';
+    if (k === 'Backspace') return d.action === 'back';
+    if (k === 'Escape' || k === 'Delete') return d.action === 'ac';
+    return false;
   });
-
-  /* ---------------- Fysisk tastatur ---------------- */
-
-  var KEYMAP = {
-    '*': '[data-op="×"]', 'x': '[data-op="×"]', '/': '[data-op="÷"]',
-    '-': '[data-op="-"]', '+': '[data-op="+"]',
-    '(': '[data-action="lparen"]', ')': '[data-action="rparen"]',
-    '%': '[data-action="percent"]', '!': '[data-action="fact"]',
-    ',': '[data-action="comma"]', '.': '[data-action="comma"]',
-    'Enter': '[data-action="equals"]', '=': '[data-action="equals"]',
-    'Backspace': '[data-action="back"]', 'Delete': '[data-action="ac"]',
-    'p': '[data-const="pi"]', 'e': '[data-const="e"]', '^': '[data-op="^"]'
-  };
-
-  document.addEventListener('keydown', function (e) {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key === 'Escape') { closeSheets(); return; }
-    if (document.querySelector('.sheet.open')) return;
-    var tag = document.activeElement && document.activeElement.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-
-    var sel = /^[0-9]$/.test(e.key) ? '[data-digit="' + e.key + '"]' : KEYMAP[e.key];
-    if (!sel) return;
-    var btn = document.querySelector(sel);
-    if (!btn) return;
-    if (btn.closest('#sciPad') && !S.sci) return;
+}
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !document.querySelector('.sheet.open')) { copyResult(); e.preventDefault(); }
+    return;
+  }
+  const sheetOpen = document.querySelector('.sheet.open');
+  if (e.key === 'Escape' && sheetOpen) { closeSheets(); return; }
+  if (sheetOpen) return;
+  let btn = findBtn(e.key);
+  if (!btn) {
+    const sci = { s:'sin', c:'cos', t:'tan', l:'ln', g:'log', r:'sqrt', p:'pi', e:'e' }[e.key.toLowerCase()];
+    if (sci && S.sci) btn = KEYS.find(b => b.dataset.fn === sci || b.dataset.const === sci);
+  }
+  if (btn) {
     e.preventDefault();
     btn.classList.add('kbd');
-    setTimeout(function () { btn.classList.remove('kbd'); }, 130);
+    setTimeout(() => btn.classList.remove('kbd'), 130);
     route(btn);
-  });
-
-  /* ---------------- Skjermtilpasning ---------------- */
-
-  var fitPending = false;
-  function fitViewport() {
-    var vv = window.visualViewport;
-    var h = vv ? vv.height : window.innerHeight;
-    document.documentElement.style.setProperty('--app-h', Math.round(h) + 'px');
-    fitMain();
   }
-  function queueFit() {
-    if (fitPending) return;
-    fitPending = true;
-    requestAnimationFrame(function () { fitPending = false; fitViewport(); });
-  }
-  window.addEventListener('resize', queueFit);
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', queueFit);
-  window.addEventListener('orientationchange', function () { setTimeout(fitViewport, 150); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitMain);
+});
 
-  /* ---------------- Installasjon og oppdatering ---------------- */
+/* ---------------- Skjermtilpasning (Samsung) ---------------- */
+function fitViewport(){
+  const vv = window.visualViewport;
+  const h = vv ? vv.height : window.innerHeight;
+  document.documentElement.style.setProperty('--app-h', h + 'px');
+  fitMain();
+}
+window.addEventListener('resize', fitViewport);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fitViewport);
+window.addEventListener('orientationchange', () => setTimeout(fitViewport, 120));
 
-  var deferred = null;
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferred = e;
-    $('btnInstall').hidden = false;
-    $('rowInstall').hidden = false;
-  });
-  function promptInstall() {
-    if (!deferred) return;
-    deferred.prompt();
-    deferred.userChoice.then(function () {
-      deferred = null;
-      $('btnInstall').hidden = true;
-      $('rowInstall').hidden = true;
-    });
-  }
-  $('btnInstall').addEventListener('click', promptInstall);
-  $('btnInstall2').addEventListener('click', function () { closeSheets(); promptInstall(); });
-  window.addEventListener('appinstalled', function () {
-    $('btnInstall').hidden = true;
-    $('rowInstall').hidden = true;
-    toast('NUMERA ER INSTALLERT');
-  });
+/* ---------------- PWA: installasjon ---------------- */
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installPrompt = e;
+  $('rowInstall').hidden = false;
+});
+$('btnInstall').addEventListener('click', async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  const { outcome } = await installPrompt.userChoice;
+  if (outcome === 'accepted') toast('INSTALLERT');
+  installPrompt = null;
+  $('rowInstall').hidden = true;
+});
+window.addEventListener('appinstalled', () => { $('rowInstall').hidden = true; toast('NUMERA ER INSTALLERT'); });
 
-  /* Oppdaget appen en nyere utgave? Last inn på nytt hvis brukeren ikke
-     står midt i et regnestykke — ellers spør først. */
-  function applyUpdate() {
-    if (calc.isEmpty() && !document.querySelector('.sheet.open')) location.reload();
-    else toast('NY VERSJON KLAR — TRYKK FOR Å OPPDATERE', function () { location.reload(); });
-  }
+/* ---------------- PWA: service worker + automatisk oppdatering ---------------- */
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
 
-  /* Serveren gir en ETag som endrer seg hver gang filen endres.
-     Vi trenger derfor ikke å telle versjoner selv. */
-  var baseline = null, lastCheck = 0, checking = false;
-
-  function buildTag(res) {
-    return res.headers.get('etag') || res.headers.get('last-modified') || '';
-  }
-
-  function checkForUpdate(force) {
-    if (location.protocol === 'file:' || checking) return Promise.resolve('ukjent');
-    var now = Date.now();
-    if (!force && now - lastCheck < 60000) return Promise.resolve('aktuell');
-    lastCheck = now;
-    checking = true;
-
-    if (navigator.serviceWorker && navigator.serviceWorker.getRegistration) {
-      navigator.serviceWorker.getRegistration()
-        .then(function (r) { if (r) r.update(); })
-        .catch(function () {});
-    }
-
-    return fetch('./index.html', { method: 'HEAD', cache: 'no-store' })
-      .then(function (res) {
-        checking = false;
-        if (!res || !res.ok) return 'ukjent';
-        var tag = buildTag(res);
-        if (!tag) return 'ukjent';
-        if (baseline === null) { baseline = tag; return 'aktuell'; }
-        if (tag === baseline) return 'aktuell';
-        baseline = tag;
-        applyUpdate();
-        return 'ny';
-      })
-      .catch(function () { checking = false; return 'ukjent'; });
-  }
-
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) checkForUpdate(false);
-  });
-  window.addEventListener('online', function () { checkForUpdate(true); });
-
-  $('btnCheckUpdate').addEventListener('click', function () {
-    var b = $('btnCheckUpdate');
-    b.disabled = true;
-    b.textContent = 'SJEKKER';
-    checkForUpdate(true).then(function (r) {
-      b.disabled = false;
-      b.textContent = 'SE ETTER NY';
-      if (r === 'aktuell') toast('DU HAR NYESTE VERSJON');
-      else if (r === 'ukjent') toast('FIKK IKKE KONTAKT MED SERVEREN');
-    });
-  });
-
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    window.addEventListener('load', function () {
-      setTimeout(function () { checkForUpdate(true); }, 1500);
-      navigator.serviceWorker.addEventListener('message', function (e) {
-        if (e.data && e.data.type === 'UPDATE_READY') applyUpdate();
-      });
-      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) {
-        reg.addEventListener('updatefound', function () {
-          var sw = reg.installing;
-          if (!sw) return;
-          sw.addEventListener('statechange', function () {
-            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-              toast('NY VERSJON KLAR — TRYKK FOR Å OPPDATERE', function () {
-                sw.postMessage({ type: 'SKIP_WAITING' });
-              });
-            }
-          });
+      /* Ny versjon lastet ned i bakgrunnen -> tilby oppdatering */
+      const onWaiting = () => {
+        if (!reg.waiting) return;
+        toast('NY VERSJON KLAR', { label: 'OPPDATER', fn: () => reg.waiting && reg.waiting.postMessage({ type: 'SKIP_WAITING' }) });
+      };
+      /* Ligger det allerede en ferdig versjon klar ved oppstart, tas den i bruk med en gang */
+      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) onWaiting();
         });
-      }).catch(function () {});
-      var reloading = false;
-      navigator.serviceWorker.addEventListener('controllerchange', function () {
-        if (reloading) return;
-        reloading = true;
-        location.reload();
       });
-    });
-  }
 
-  /* ---------------- Oppstart ---------------- */
+      /* Sjekk etter oppdatering hver gang appen kommer i forgrunnen */
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
+    } catch (e) { /* offline eller ikke støttet */ }
+  });
 
-  try {
-    if (new URLSearchParams(location.search).get('mode') === 'sci' && !S.sci) {
-      S.sci = true; saveSettings();
-    }
-  } catch (e) {}
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    location.reload();
+  });
+}
 
-  document.documentElement.classList.remove('pre-large');
-  applyTheme();
-  syncSettingsUI();
-  applySettingsEffects();
-  renderHist();
-  fitViewport();
-  render();
-
-  if (!store.get('numera:hinted', false)) {
-    store.set('numera:hinted', true);
-    setTimeout(function () { toast('HOLD INNE EN FUNKSJONSTAST FOR FORKLARING'); }, 1400);
-  }
-
-})();
+/* ---------------- Init ---------------- */
+$('verLabel').textContent = 'v' + APP_VERSION;
+/* Snarvei fra hjemskjermen (manifest shortcuts): ?mode=sci */
+if (new URLSearchParams(location.search).get('mode') === 'sci') S.sci = true;
+applyTheme();
+syncSettingsUI();
+applySettingsEffects();
+renderHist();
+fitViewport();
+render();
+document.fonts && document.fonts.ready.then(fitMain);
 </script>
 </body>
 </html>

@@ -1,0 +1,15 @@
+{
+  "name": "numera",
+  "version": "2.0.0",
+  "private": true,
+  "description": "NUMERA — elegant kalkulator (PWA) for Android og Samsung Galaxy",
+  "type": "module",
+  "scripts": {
+    "test": "node test/engine.test.mjs && node test/ui.test.mjs",
+    "test:engine": "node test/engine.test.mjs",
+    "icons": "python3 icons/make-icons.py"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.0"
+  }
+}
