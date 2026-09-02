@@ -257,17 +257,82 @@ body::after {
   letter-spacing: .42em;
   padding-left: .42em; /* optisk sentrering av tracking */
 }
-.brand-tag {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: .14em;
+.brand { align-items: center; }
+
+/* Modusvelger (nedtrekksmeny) */
+.mode { position: relative; }
+.mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
   color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+  cursor: pointer;
+  -webkit-appearance: none;
   white-space: nowrap;
+  transition: color .2s, background .2s, border-color .2s;
+}
+.mode-btn svg { width: 16px; height: 16px; transition: transform .25s var(--ease); }
+.mode-btn[aria-expanded="true"] { color: var(--ink); border-color: var(--ink-dim); background: var(--soft-2); }
+.mode-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+.mode-btn:active { background: var(--soft); }
+.mode-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 250px;
+  padding: 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(0,0,0,.28), 0 2px 6px rgba(0,0,0,.12);
+  z-index: 30;
+  transform-origin: top left;
+  animation: menuIn .18s var(--ease);
+}
+.menu[hidden] { display: none; }
+@keyframes menuIn { from { opacity: 0; transform: scale(.94) translateY(-4px); } }
+.menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  min-height: 56px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  -webkit-appearance: none;
+  transition: background .15s;
+}
+.menu-item:active { background: var(--soft); }
+.menu-item[aria-checked="true"] { background: var(--soft-2); }
+.mi-txt b { display: block; font-size: 14px; font-weight: 600; }
+.mi-txt small { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--ink-dim); margin-top: 2px; letter-spacing: .02em; }
+.mi-check { width: 20px; height: 20px; flex: none; opacity: 0; transform: scale(.7); transition: opacity .15s, transform .2s var(--ease); }
+.menu-item[aria-checked="true"] .mi-check { opacity: 1; transform: none; }
+
+@media (max-width: 380px) {
+  .brand-name { letter-spacing: .3em; padding-left: .3em; }
+  .icon-btn { width: 38px; }
 }
 .topbar-actions { display: flex; gap: 2px; flex: none; }
 
 .icon-btn {
-  width: 42px; height: 42px;
+  width: 40px; height: 42px;
   display: grid; place-items: center;
   background: transparent;
   border: 1px solid transparent;
@@ -872,7 +937,22 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
   <header class="topbar">
     <div class="brand">
       <span class="brand-name">NUMERA</span>
-      <span class="brand-tag">PRESISJON</span>
+      <div class="mode">
+        <button class="mode-btn" id="btnMode" aria-haspopup="menu" aria-expanded="false" aria-controls="modeMenu">
+          <span id="modeLabel">Standard</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg>
+        </button>
+        <div class="menu" id="modeMenu" role="menu" hidden>
+          <button class="menu-item" role="menuitemradio" data-mode="std" aria-checked="true">
+            <span class="mi-txt"><b>Standard</b><small>De fire regneartene, prosent og fortegn</small></span>
+            <svg class="mi-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+          <button class="menu-item" role="menuitemradio" data-mode="sci" aria-checked="false">
+            <span class="mi-txt"><b>Vitenskapelig</b><small>sin, cos, log, røtter, π og parenteser</small></span>
+            <svg class="mi-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
     <div class="topbar-actions">
       <button class="icon-btn" id="btnHistory" aria-label="Historikk">
@@ -1268,7 +1348,7 @@ body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
    NUMERA — kalkulatormotor, innstillinger og interaksjon
    ================================================================ */
 
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.2.0';
 
 /* @engine-start
    Ren motor uten DOM-avhengigheter. Trekkes ut og testes i test/engine.test.mjs */
@@ -1791,6 +1871,7 @@ $('btnTheme').addEventListener('click', () => {
 /* ---------------- Ark (sheets) ---------------- */
 let sheetHistoryStateAdded = false;
 function openSheet(el){
+  setMenu(false);
   closeSheets(true);
   $('backdrop').classList.add('show');
   el.classList.add('open');
@@ -1835,6 +1916,23 @@ document.querySelectorAll('.sheet').forEach(sheet => {
   sheet.addEventListener('touchend', () => { startY = null; });
 });
 
+/* ---------------- Modusvelger (nedtrekksmeny) ---------------- */
+function setMenu(open){
+  $('modeMenu').hidden = !open;
+  $('btnMode').setAttribute('aria-expanded', String(open));
+}
+function menuOpen(){ return !$('modeMenu').hidden; }
+$('btnMode').addEventListener('click', e => { e.stopPropagation(); setMenu(!menuOpen()); buzz(); });
+document.querySelectorAll('#modeMenu .menu-item').forEach(b => b.addEventListener('click', e => {
+  e.stopPropagation();
+  S.sci = b.dataset.mode === 'sci';
+  saveSettings(); syncSettingsUI(); applySettingsEffects(); buzz(10);
+  setMenu(false);
+}));
+document.addEventListener('pointerdown', e => {
+  if (menuOpen() && !e.target.closest('.mode')) setMenu(false);
+}, { passive: true });
+
 /* ---------------- Innstillingsbindinger ---------------- */
 function syncSettingsUI(){
   $('optSci').checked    = S.sci;
@@ -1851,6 +1949,9 @@ function syncSettingsUI(){
 function applySettingsEffects(){
   $('sciPad').classList.toggle('open', S.sci);
   $('chipRow').hidden = !S.sci;
+  $('modeLabel').textContent = S.sci ? 'Vitenskapelig' : 'Standard';
+  document.querySelectorAll('#modeMenu .menu-item').forEach(b =>
+    b.setAttribute('aria-checked', String((b.dataset.mode === 'sci') === S.sci)));
   $('btnHistory').style.display = S.history ? '' : 'none';
   document.body.classList.toggle('large', S.large);
   applyWake();
@@ -2046,6 +2147,7 @@ document.addEventListener('keydown', e => {
     return;
   }
   const sheetOpen = document.querySelector('.sheet.open');
+  if (e.key === 'Escape' && menuOpen()) { setMenu(false); return; }
   if (e.key === 'Escape' && sheetOpen) { closeSheets(); return; }
   if (sheetOpen) return;
   let btn = findBtn(e.key);
