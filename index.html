@@ -1,2203 +1,1611 @@
 <!DOCTYPE html>
-<html lang="nb" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0E1116">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" id="metaTheme" content="#0f1012">
-<meta name="description" content="NUMERA — en presis og elegant kalkulator for Android og Samsung Galaxy.">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="NUMERA">
-<meta name="application-name" content="NUMERA">
-<meta name="format-detection" content="telephone=no">
-<title>NUMERA — Kalkulator</title>
-
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<meta name="apple-mobile-web-app-title" content="BitWise">
+<title>BitWise — Calculator</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-
-<script>
-/* Tidlig temavalg: hindrer blinking ved lasting */
-(function () {
-  try {
-    var s = JSON.parse(localStorage.getItem('numera:settings') || '{}');
-    var t = s.theme || 'auto';
-    var r = t === 'auto'
-      ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : t;
-    document.documentElement.setAttribute('data-theme', r);
-  } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  }
-})();
-</script>
-
-<link rel="preload" href="fonts/spacegrotesk-var-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-
 <style>
-/* ---------- Skrifter (lokalt, SIL Open Font License) ---------- */
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(fonts/plexmono-400-latin-ext.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+:root{
+  --bg:#0A0C11; --panel:#12151C; --panel-2:#1B1F28; --line:rgba(255,255,255,.06);
+  --key:#1D2129; --key-fn:#141820; --key-op:#272C37; --key-hi:#343A47;
+  --text:#F2F4F8; --text-dim:#9AA3B3; --text-faint:#5A6373;
+  --hex:#F5A97F; --dec:#8AADF4; --oct:#C6A0F6; --bin:#A6DA95; --std:#8BD5CA;
+  --hex-dim:rgba(245,169,127,.16); --dec-dim:rgba(138,173,244,.16);
+  --oct-dim:rgba(198,160,246,.16); --bin-dim:rgba(166,218,149,.16); --std-dim:rgba(139,213,202,.16);
+  --danger:#F0919E; --danger-dim:rgba(240,145,158,.14);
+  --on-accent:#0A0C11; --shadow:rgba(0,0,0,.35); --key-shadow:none;
+  --ind:var(--key-op);
+  --accent:var(--hex); --accent-dim:var(--hex-dim);
+  --r-lg:26px; --r-md:16px; --r-sm:10px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --mono:"Roboto Mono","Noto Sans Mono","Cascadia Mono","SF Mono",Menlo,Consolas,monospace;
+  --sans:"Roboto","SamsungOne","SEC",system-ui,-apple-system,"Segoe UI","Noto Sans",sans-serif;
 }
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url(fonts/plexmono-400-latin.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+body.light{
+  --bg:#EDF0F5; --panel:#FFFFFF; --panel-2:#EBEEF3; --line:rgba(18,26,40,.08);
+  --key:#FFFFFF; --key-fn:#EBEEF3; --key-op:#DDE2EA; --key-hi:#CFD6E0;
+  --text:#141924; --text-dim:#5A6476; --text-faint:#98A1B1;
+  --hex:#C9500A; --dec:#1E5FE0; --oct:#7538D9; --bin:#2F8A24; --std:#0B7A7F;
+  --hex-dim:rgba(201,80,10,.11); --dec-dim:rgba(30,95,224,.11);
+  --oct-dim:rgba(117,56,217,.11); --bin-dim:rgba(47,138,36,.11); --std-dim:rgba(11,122,127,.11);
+  --danger:#C81E3F; --danger-dim:rgba(200,30,63,.10);
+  --on-accent:#FFFFFF; --shadow:rgba(18,26,40,.12); --key-shadow:0 1px 2px rgba(18,26,40,.07);
+  --ind:#FFFFFF;
 }
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url(fonts/plexmono-500-latin-ext.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--sans);
+  font-variant-numeric:tabular-nums; color-scheme:dark;
+  display:flex; flex-direction:column; max-width:480px; margin:0 auto;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overflow:hidden; overscroll-behavior:none; user-select:none; -webkit-user-select:none; touch-action:manipulation;
+  height:100dvh; transition:background .25s,color .25s;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
 }
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url(fonts/plexmono-500-latin.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url(fonts/spacegrotesk-var-latin-ext.woff2) format('woff2');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 400 700;
-  font-display: swap;
-  src: url(fonts/spacegrotesk-var-latin.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+body.light{color-scheme:light}
+button{font-family:inherit;font-variant-numeric:inherit;color:inherit;border:none;background:none;cursor:pointer}
+button:focus-visible,.bit:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block}
+.hidden{display:none !important}
+
+/* ---------- Sliding segmented controls (shared) ---------- */
+.segc{position:relative;display:flex;isolation:isolate}
+.segc>button{position:relative;z-index:1;background:transparent}
+.segc .ind{
+  position:absolute;top:var(--pad,3px);bottom:var(--pad,3px);left:var(--pad,3px);
+  width:calc((100% - 2*var(--pad,3px) - var(--gap,0px)*(var(--n) - 1))/var(--n));
+  background:var(--ind);border-radius:inherit;border-radius:var(--r-sm);
+  transform:translateX(calc(var(--i,0)*(100% + var(--gap,0px))));
+  transition:transform .28s var(--ease),background .2s;z-index:0;
+  box-shadow:0 1px 3px var(--shadow);
 }
 
-/* ============================================================
-   NUMERA — elegant kalkulator
-   Nøytral palett, én aksentfarge (gull), lys + mørk modus.
-   Tilpasset Samsung Galaxy / Android (One UI-følelse).
-   ============================================================ */
+/* ---------- Top bar ---------- */
+.top{display:flex;align-items:center;gap:8px;padding:10px 14px 8px}
+.top .spacer{flex:1}
+.appdots{--n:2;--pad:3px;background:var(--panel);border-radius:14px;padding:3px;gap:0}
+.appdots .ind{background:var(--text)}
+.adot{
+  color:var(--text-dim);font:700 12px/1 var(--sans);letter-spacing:.06em;
+  height:36px;width:62px;border-radius:var(--r-sm);transition:color .2s;
+}
+.adot.active{color:var(--bg)}
+.iconbtn{
+  background:var(--panel);color:var(--text-dim);width:42px;height:42px;flex:none;
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s,box-shadow .15s,transform .08s;
+}
+.iconbtn:active{background:var(--key-hi);transform:scale(.94)}
+.iconbtn:disabled{opacity:.3;pointer-events:none}
+.iconbtn.warn{color:var(--danger);background:var(--danger-dim);box-shadow:inset 0 0 0 1.5px var(--danger)}
+.view{transition:transform .2s var(--ease),opacity .2s var(--ease)}
+.view.slide-l{transform:translateX(-36px);opacity:0}
+.view.slide-r{transform:translateX(36px);opacity:0}
 
-:root {
-  --font-display: "Space Grotesk", "Segoe UI", Roboto, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", "Roboto Mono", "Courier New", monospace;
-  --ease: cubic-bezier(.22,.9,.3,1);
-  --gap: clamp(8px, 1.6vmin, 12px);
-  --radius-key: clamp(16px, 3.8vmin, 22px);
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
+/* ---------- Card ---------- */
+.card{
+  margin:0 14px;background:var(--panel);
+  border-radius:var(--r-lg);display:flex;flex-direction:column;min-height:0;flex:1 1 auto;overflow:hidden;
 }
+body.light .card{box-shadow:0 1px 2px rgba(18,26,40,.05),0 8px 24px -12px rgba(18,26,40,.12)}
+.card.grow{flex:1 1 auto}
+.card-div{display:none}
 
-:root[data-theme="light"] {
-  --bg: #ebebe9;
-  --bg-2: #f4f4f2;
-  --surface: #fafaf8;          /* siffer */
-  --surface-2: #dfe0dd;        /* operatorer: mørkere nyanse */
-  --surface-active: #eeeeec;
-  --ink: #1a1b1d;
-  --ink-dim: #767a80;
-  --line: rgba(26, 27, 29, .12);
-  --key-border: rgba(26, 27, 29, .05);
-  --key-shadow: 0 1px 2px rgba(20,22,25,.08), inset 0 1px 0 rgba(255,255,255,.85);
-  --key-shadow-press: 0 0 0 rgba(0,0,0,0), inset 0 1px 2px rgba(20,22,25,.10);
-  --soft: rgba(26, 27, 29, .06);
-  --soft-2: rgba(26, 27, 29, .035);
-  --accent: #a9772b;
-  --accent-hi: #c99a45;
-  --accent-ink: #241a06;
-  --accent-soft: rgba(169, 119, 43, .13);
-  --eq-glow: 0 6px 18px rgba(169,119,43,.30);
-  --ripple: rgba(20, 22, 25, .10);
-  --sheet-shadow: 0 -12px 40px rgba(15,17,20,.16);
-  --orn-opacity: .04;
-  --dot: rgba(26,27,29,.15);
-  --glow-a: rgba(26,27,29,.05);
-  --glow-b: rgba(255,255,255,.55);
-  --toast-bg: #1a1b1d;
-  --toast-ink: #f4f4f2;
+/* ---------- Mode tabs ---------- */
+.tabs{--n:4;--pad:3px;flex:none;margin:10px 12px 0;background:var(--panel-2);border-radius:14px;padding:3px}
+.tabs .ind{background:var(--accent);box-shadow:none}
+.tab{
+  flex:1;min-width:0;color:var(--text-dim);
+  font:700 13px/1 var(--sans);letter-spacing:.06em;height:36px;border-radius:var(--r-sm);transition:color .2s;
 }
+.tab.active{color:var(--on-accent)}
 
-:root[data-theme="dark"] {
-  --bg: #0f1012;
-  --bg-2: #151618;
-  --surface: #1d1f22;          /* siffer */
-  --surface-2: #2a2d31;        /* operatorer: lysere nyanse */
-  --surface-active: #33363b;
-  --ink: #f2f2f0;
-  --ink-dim: #8a8e94;
-  --line: rgba(242, 242, 240, .11);
-  --key-border: rgba(255, 255, 255, .045);
-  --key-shadow: 0 2px 5px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
-  --key-shadow-press: 0 0 0 rgba(0,0,0,0), inset 0 1px 3px rgba(0,0,0,.45);
-  --soft: rgba(242, 242, 240, .08);
-  --soft-2: rgba(242, 242, 240, .045);
-  --accent: #d8a54a;
-  --accent-hi: #e8bf6e;
-  --accent-ink: #231a05;
-  --accent-soft: rgba(216, 165, 74, .16);
-  --eq-glow: 0 6px 22px rgba(216,165,74,.26);
-  --ripple: rgba(242, 242, 240, .14);
-  --sheet-shadow: 0 -12px 44px rgba(0,0,0,.55);
-  --orn-opacity: .035;
-  --dot: rgba(242,242,240,.12);
-  --glow-a: rgba(242,242,240,.045);
-  --glow-b: rgba(242,242,240,.025);
-  --toast-bg: #f2f2f0;
-  --toast-ink: #0f1012;
+/* ---------- Display ---------- */
+.display{padding:10px 18px 8px;overflow-y:auto;flex:1 1 auto;min-height:200px;display:flex;flex-direction:column}
+.disp-inner{transition:transform .18s var(--ease),opacity .18s var(--ease);display:flex;flex-direction:column;flex:1;min-height:0}
+.disp-inner.slide-l{transform:translateX(-28px);opacity:0}
+.disp-inner.slide-r{transform:translateX(28px);opacity:0}
+.pending{flex:none;min-height:20px;font:400 14px/20px var(--sans);color:var(--text-dim);text-align:right;overflow:hidden;white-space:nowrap;cursor:pointer}
+.pending .op-chip{color:var(--text);font-weight:600}
+.swap-hint{
+  display:inline-flex;align-items:center;height:22px;font-size:13px;color:var(--text-dim);
+  background:var(--panel-2);border-radius:7px;padding:0 8px;margin-left:6px;vertical-align:-5px;
 }
+.main-val{
+  cursor:pointer;flex:none;
+  font:400 clamp(34px,12.5vw,58px)/1.1 var(--sans);text-align:right;color:var(--text);
+  min-height:1.2em;word-break:break-all;letter-spacing:-.025em;
+  max-height:3.4em;overflow:hidden;
+}
+.main-val.sz-m{font-size:clamp(24px,8.5vw,38px)}
+.main-val.sz-s{font-size:clamp(17px,5.8vw,27px);letter-spacing:-.01em}
+.main-val.sz-xs{font-size:clamp(12px,4vw,18px);line-height:1.45;font-family:var(--mono);letter-spacing:0}
+.main-val.err{color:var(--danger);font-size:clamp(18px,6vw,26px);letter-spacing:0}
+.main-val::after{
+  content:"";display:inline-block;width:2px;height:.82em;border-radius:1px;
+  background:var(--accent);margin-left:6px;vertical-align:-.05em;
+  animation:caret 1.1s step-end infinite;
+}
+.main-val.err::after{display:none}
+@keyframes caret{0%,55%{opacity:1}56%,100%{opacity:.12}}
+.conv{flex:none;display:flex;flex-direction:column;gap:0;margin-top:auto;padding-top:6px}
+.insight{flex:none}
+.conv-row{display:flex;align-items:flex-start;gap:10px;cursor:pointer;min-height:26px;border-radius:var(--r-sm);padding:4px 6px;margin:0 -6px;transition:background .12s}
+.conv-row:active{background:var(--panel-2)}
+.conv-row .lbl{font:700 10.5px/18px var(--sans);letter-spacing:.08em;width:40px;height:18px;text-align:center;border-radius:6px;flex:none}
+.conv-row[data-mode="HEX"] .lbl{color:var(--hex);background:var(--hex-dim)}
+.conv-row[data-mode="DEC"] .lbl{color:var(--dec);background:var(--dec-dim)}
+.conv-row[data-mode="OCT"] .lbl{color:var(--oct);background:var(--oct-dim)}
+.conv-row[data-mode="BIN"] .lbl{color:var(--bin);background:var(--bin-dim)}
+.conv-row .val{font:500 14px/1.3 var(--sans);text-align:right;flex:1;word-break:break-all;color:var(--text-dim)}
+.conv-row .val.long{font-size:12.5px;line-height:1.35}
+.conv-row .val.xlong{font-size:11px;line-height:1.4}
+.conv-row[data-mode="BIN"] .val{font:500 12px/1.3 var(--mono);letter-spacing:.02em}
+.conv-row[data-mode="BIN"] .val.long{font-size:11px}
+.conv-row[data-mode="BIN"] .val.xlong{font-size:9.5px;letter-spacing:0}
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* ---------- Word-size row ---------- */
+.meta{display:flex;gap:8px;padding:6px 12px 8px;align-items:center}
+.segbits{--n:5;--pad:3px;flex:1;background:var(--panel-2);border-radius:14px;padding:3px}
+.chip{
+  flex:1;color:var(--text-dim);font:600 12.5px/1 var(--sans);height:32px;border-radius:var(--r-sm);
+  transition:color .2s,background .15s;text-align:center;
+}
+.segbits .chip.active{color:var(--text)}
+.chip#sgn{flex:none;background:var(--panel-2);padding:0 12px;letter-spacing:.05em;font-size:11px;height:38px;border-radius:14px}
+.chip#sgn.active{background:var(--text);color:var(--bg)}
 
-html, body {
-  height: 100%;
-  overscroll-behavior: none;
+/* ---------- Inspector ---------- */
+.inspect{margin:0;background:transparent;border-top:1px solid var(--line);overflow:hidden;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.inspect.folded{flex:0 0 auto}
+.inspect:not(.folded)~.display,.card.grow .display{min-height:120px}
+.inspect-head{flex:none;display:flex;align-items:center;gap:6px;padding:6px 10px;flex-wrap:nowrap}
+.seg{--n:3;--pad:3px;background:var(--panel-2);border-radius:12px;padding:3px}
+.seg button{flex:1;color:var(--text-dim);font:600 12.5px/1 var(--sans);height:32px;padding:0 13px;border-radius:9px;transition:color .2s;white-space:nowrap}
+.seg button.active{color:var(--text)}
+.tool{
+  border:1px solid var(--line);color:var(--text-dim);
+  font:700 11px/1 var(--sans);letter-spacing:.05em;height:34px;padding:0 12px;border-radius:var(--r-sm);transition:background .15s,color .15s,border-color .15s;white-space:nowrap;
 }
+.tool.active{background:var(--text);border-color:var(--text);color:var(--bg)}
+.inspect-head .spacer{flex:1}
+.inspect-head .fold{color:var(--text-faint);width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-sm);transition:transform .25s var(--ease),background .15s}
+.inspect-head .fold:active{background:var(--panel-2)}
+.inspect.folded .fold{transform:rotate(180deg)}
+.inspect-head .lbl{font:700 11px/1 var(--sans);letter-spacing:.08em;color:var(--text-faint);padding-left:4px}
+.inspect-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 10px 10px}
+.inspect-body.vswitch{animation:viewfade .22s var(--ease)}
+@keyframes viewfade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.inspect.folded .inspect-body{display:none}
+.statline{display:flex;gap:6px;flex-wrap:wrap;font:600 10px/1 var(--sans);letter-spacing:.06em;color:var(--text-faint);padding:2px 0 8px}
+.statline span{background:var(--panel-2);border-radius:8px;padding:7px 10px}
+.statline b{color:var(--text);font-weight:700}
+.fieldline{
+  display:flex;gap:10px;align-items:baseline;font:600 11px/1.4 var(--mono);
+  color:var(--accent);background:var(--accent-dim);border-radius:var(--r-sm);padding:8px 11px;margin-bottom:8px;flex-wrap:wrap;
+}
+.fieldline .fl-dim{color:var(--text-dim);font-weight:500;font-family:var(--sans)}
+.frow{display:flex;align-items:baseline;gap:10px;padding:8px 0 2px}
+.frow .flbl{font:700 11px/1 var(--sans);letter-spacing:.08em;color:var(--text-dim)}
+.frow .fval{font:500 17px/1.2 var(--sans);color:var(--text);flex:1;text-align:right;word-break:break-all}
+.frow .fcls{font:700 9px/1 var(--sans);letter-spacing:.06em;color:var(--text-dim);background:var(--panel-2);border-radius:6px;padding:5px 7px}
+.frow .fcls[data-c="NaN"],.frow .fcls[data-c="Infinity"]{color:var(--danger);background:var(--danger-dim)}
+.frow .fcls[data-c="subnormal"]{color:var(--accent);background:var(--accent-dim)}
+.fparts{font:500 11px/1.5 var(--mono);color:var(--text-dim);text-align:right;word-break:break-all}
+.fstrip{display:flex;gap:1px;margin:6px 0 2px}
+.fbit{flex:1;height:13px;border-radius:3px;background:var(--panel-2);transition:background .2s}
+.fgrp{display:flex;gap:1px;margin-bottom:6px}
+.fgrp span{font:700 8px/1 var(--sans);letter-spacing:.06em;color:var(--text-faint);text-align:center;overflow:hidden;white-space:nowrap}
+.fbit.fs.on{background:var(--danger)} .fbit.fe.on{background:var(--accent)} .fbit.fm.on{background:var(--text-dim)}
+.fbit.fs{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 40%,transparent)}
+.fbit.fe{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent)}
+.fkey{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:-1px}
+.fkey.fs{background:var(--danger)} .fkey.fe{background:var(--accent)} .fkey.fm{background:var(--text-dim)}
+/* bit grid */
+.bitrow{display:flex;align-items:flex-start;gap:6px;margin-bottom:7px}
+.bitrow .idx{font:500 10px/20px var(--sans);color:var(--text-faint);width:24px;flex:none;text-align:right}
+.bitrow .idx.lo{text-align:left}
+.nibs{display:flex;gap:7px;flex:1}
+.nib{flex:1;min-width:0}
+.nbits{display:flex;gap:3px}
+.bit{
+  flex:1;min-width:0;aspect-ratio:1/1.15;border-radius:6px;
+  background:var(--panel-2);color:var(--text-faint);font:600 10px/1 var(--mono);
+  transition:background .12s,color .12s,transform .12s;padding:0;
+}
+.bit.on{background:var(--accent);color:var(--on-accent);font-weight:700}
+.bit.flash{animation:bitpop .28s var(--ease)}
+@keyframes bitpop{0%{transform:scale(1.4)}60%{transform:scale(.92)}100%{transform:scale(1)}}
+.bit.insel{outline:2px solid var(--accent);outline-offset:-1px}
+.bit.dead{opacity:.2;pointer-events:none}
+.nhex{display:block;text-align:center;font:700 9px/1 var(--mono);color:var(--text-faint);padding-top:4px;letter-spacing:.05em}
+.nhex.nz{color:var(--text)}
+/* byte inspector */
+.byte-head,.byte-row{display:grid;grid-template-columns:28px 34px 44px 30px 1fr;gap:8px;align-items:center;font:500 12px/1.5 var(--mono)}
+.byte-head{color:var(--text-faint);font:700 9px/1.5 var(--sans);letter-spacing:.08em;position:sticky;top:0;background:var(--panel);padding:4px 0;z-index:1}
+.byte-row{color:var(--text-dim);padding:3px 4px;position:relative;border-radius:7px;overflow:hidden}
+.byte-row>*{position:relative}
+.byte-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w,0%);background:var(--panel-2);border-radius:7px;transition:width .25s var(--ease)}
+.byte-row.nz{color:var(--text)}
+.byte-row.nz .b-hex{color:var(--text);font-weight:700}
+.byte-row .b-bin{text-align:right;letter-spacing:.06em}
+.byte-row .b-asc{color:var(--text-faint)}
+.byte-row.nz .b-asc{color:var(--text)}
+.strline{font:500 11px/1.5 var(--mono);color:var(--text-dim);padding:8px 11px;margin-bottom:8px;background:var(--panel-2);border-radius:var(--r-sm);word-break:break-all}
+.strline .lbl{color:var(--text-faint);font:700 9px/1 var(--sans);letter-spacing:.08em;margin-right:6px}
 
-body {
-  font-family: var(--font-display);
-  background: var(--bg);
-  color: var(--ink);
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  overflow: hidden;
-  position: fixed;
-  inset: 0;
-  transition: background .35s var(--ease), color .35s var(--ease);
+/* ---------- Keypads ---------- */
+.pad{
+  display:grid;grid-template-columns:repeat(var(--cols,6),1fr);gap:8px;
+  padding:10px 14px calc(12px + env(safe-area-inset-bottom));
+  flex:0 1 auto;min-height:0;grid-auto-rows:minmax(42px,1fr);
+  max-height:calc(var(--rows,6)*52px + (var(--rows,6) - 1)*8px + 22px + env(safe-area-inset-bottom));
 }
+.pad.std{--rows:7;grid-template-columns:repeat(4,1fr);max-height:calc(7*60px + 6*8px + 22px + env(safe-area-inset-bottom))}
+.k{
+  --_kbg:var(--key);
+  border-radius:var(--r-md);color:var(--text);
+  font:400 22px/1 var(--sans);min-height:48px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--_kbg);box-shadow:var(--key-shadow);
+  transition:background .1s,transform .08s var(--ease),box-shadow .1s;
+}
+.k:active{transform:scale(.94);background:color-mix(in srgb,var(--_kbg) 84%,var(--text));box-shadow:none}
+.k.fn{--_kbg:var(--key-fn);font:600 13px/1 var(--sans);letter-spacing:.03em;color:var(--text-dim)}
+.k.op{--_kbg:var(--key-op);font:400 26px/1 var(--sans)}
+.k.eq{--_kbg:var(--accent);color:var(--on-accent);font:400 30px/1 var(--sans)}
+.k.eq:active{background:color-mix(in srgb,var(--accent) 85%,var(--on-accent))}
+.k.eq.w3{grid-column:span 3}
+.k.ac{--_kbg:var(--key-fn);color:var(--danger);font:700 14px/1 var(--sans);letter-spacing:.06em}
+.k:disabled{opacity:.22;pointer-events:none}
+.pad.std .k{font-size:25px}
+.pad.std .k.fn{font-size:15px}
+.pad.std .k.op{font-size:28px}
+.pad.std .k.eq{font-size:32px}
+#sci{margin:0 14px 8px;background:var(--panel);border-radius:18px;flex:none}
+body.light #sci{box-shadow:0 1px 2px rgba(18,26,40,.05)}
+.scigrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:2px 0 6px}
+.scigrid .k{min-height:46px;font-size:14px;color:var(--text-dim);--_kbg:var(--panel-2)}
+.tape{
+  flex:1 1 auto;min-height:0;overflow-y:auto;padding:10px 18px 2px;
+  display:flex;flex-direction:column;
+  mask-image:linear-gradient(to bottom,transparent 0,black 28px);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,black 28px);
+}
+.tape .tape-fill{margin-top:auto}
+.tape-row{
+  display:flex;justify-content:flex-end;align-items:baseline;gap:10px;width:100%;
+  padding:9px 4px;text-align:right;border-radius:var(--r-sm);transition:background .12s;
+}
+.tape-row:active{background:var(--panel-2)}
+.tape-row .t-expr{font:400 13px/1.3 var(--sans);color:var(--text-faint);word-break:break-all}
+.tape-row .t-res{font:500 16px/1.3 var(--sans);color:var(--text);word-break:break-all}
+.mem-ind{font:700 11px/1 var(--sans);color:var(--text);background:var(--panel-2);border-radius:6px;padding:4px 7px;margin-right:auto;letter-spacing:.08em}
 
-/* ---------- Lagdelt bakgrunn: glød + fint punktmønster ---------- */
-body::before {
-  content: "";
-  position: fixed; inset: 0;
-  background-image: radial-gradient(var(--dot) 1px, transparent 1.4px);
-  background-size: 26px 26px;
-  opacity: .35;
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 72%);
-  mask-image: linear-gradient(to bottom, black 0%, transparent 72%);
-  pointer-events: none; z-index: 0;
+/* ---------- Toast / update / hint cards ---------- */
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%) translateY(6px);bottom:18%;z-index:70;
+  font:500 13px/1 var(--sans);color:var(--bg);background:var(--text);
+  border-radius:20px;padding:11px 16px;box-shadow:0 6px 18px var(--shadow);pointer-events:none;
+  opacity:0;transition:opacity .18s,transform .18s var(--ease);white-space:nowrap;max-width:88vw;overflow:hidden;text-overflow:ellipsis;
 }
-body::after {
-  content: "";
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(120% 70% at 78% -12%, var(--glow-a), transparent 60%),
-    radial-gradient(100% 60% at -10% 112%, var(--glow-b), transparent 55%);
-  pointer-events: none; z-index: 0;
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.update-bar{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:80;
+  display:flex;align-items:center;gap:12px;
+  font:500 13px/1 var(--sans);color:var(--bg);background:var(--text);
+  border-radius:var(--r-md);padding:13px 14px 13px 16px;box-shadow:0 8px 24px var(--shadow);
+  width:calc(100% - 36px);max-width:444px;justify-content:space-between;animation:hintin .22s var(--ease);
 }
+.update-bar span{font-weight:700;color:var(--accent);filter:saturate(1.2)}
+.hintcard{
+  position:fixed;left:16px;right:16px;bottom:34%;z-index:60;
+  background:var(--panel);border-radius:18px;padding:15px 17px;box-shadow:0 12px 36px rgba(0,0,0,.4);
+  animation:hintin .16s var(--ease);max-width:448px;margin:0 auto;
+}
+body.light .hintcard{box-shadow:0 12px 32px rgba(18,26,40,.22)}
+@keyframes hintin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.hintcard{animation-name:hintin2}
+@keyframes hintin2{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hintcard .h-key{font:700 12px/1 var(--sans);letter-spacing:.06em;color:var(--accent);margin-bottom:8px}
+.hintcard .h-txt{font:400 14px/1.5 var(--sans);color:var(--text)}
+.powrow{display:flex;gap:7px;margin-top:2px}
+.powrow .k{min-height:48px;flex:1;font-size:15px;--_kbg:var(--panel-2)}
+.hintcard .h-txt code{font:600 12px/1 var(--mono);color:var(--text);background:var(--panel-2);border-radius:5px;padding:2px 6px;white-space:nowrap}
+.h-lbl{font:700 9px/1 var(--sans);letter-spacing:.1em;color:var(--text-faint);margin-right:2px}
+.h-ex{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.h-chip{font:600 11px/1 var(--mono);color:var(--text);background:var(--panel-2);border-radius:6px;padding:6px 8px}
+.h-res{font:700 12px/1 var(--mono);color:var(--text);margin-left:2px}
+.h-now{margin-top:8px;font:500 11.5px/1.5 var(--mono);color:var(--text-dim);word-break:break-all}
+.h-now b{color:var(--text);font-weight:700}
+.try{color:var(--text);font-weight:600}
 
-/* Store, svake matematiske glyfer som ambient ornamentikk */
-.ornament {
-  position: fixed;
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--ink);
-  opacity: var(--orn-opacity);
-  pointer-events: none;
-  z-index: 0;
-  line-height: 1;
+/* ---------- Insight pills ---------- */
+.insight{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;justify-content:flex-end;min-height:0}
+.pill{
+  cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+  font:500 12.5px/1 var(--sans);color:var(--text);
+  background:var(--panel-2);border-radius:20px;padding:8px 12px;transition:background .12s;
 }
-.orn-pi   { font-size: 48vmin; top: -7vmin;  right: -5vmin;  transform: rotate(9deg); }
-.orn-root { font-size: 40vmin; bottom: -6vmin; left: -4vmin; transform: rotate(-7deg); }
+.pill:active{background:var(--key-op)}
+.pill .swatch{width:14px;height:14px;border-radius:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);flex:none}
 
-/* ---------- App-ramme ---------- */
-.app {
-  position: relative;
-  z-index: 1;
-  height: 100vh;
-  height: var(--app-h, 100dvh);
-  max-width: 560px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  padding:
-    calc(8px + var(--safe-top))
-    calc(clamp(14px, 4vw, 26px) + var(--safe-right))
-    calc(10px + var(--safe-bottom))
-    calc(clamp(14px, 4vw, 26px) + var(--safe-left));
-  animation: appIn .6s var(--ease) backwards;
+/* ---------- Help overlay ---------- */
+.help{
+  position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;
+  padding:calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));max-width:480px;margin:0 auto;
 }
-@keyframes appIn { from { opacity: 0; transform: translateY(10px); } }
+.help-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.help-top h1{font:500 22px/1.2 var(--sans);letter-spacing:-.01em;flex:1}
+.hsec{background:var(--panel);border-radius:18px;padding:15px 17px;margin-bottom:10px}
+.hsec h2{font:700 12px/1 var(--sans);letter-spacing:.08em;margin-bottom:8px}
+.hsec h2.m-hex{color:var(--hex)} .hsec h2.m-dec{color:var(--dec)}
+.hsec h2.m-oct{color:var(--oct)} .hsec h2.m-bin{color:var(--bin)} .hsec h2.m-std{color:var(--std)}
+.hsec h2.m-gen{color:var(--text)}
+.hsec p{font:400 14px/1.55 var(--sans);color:var(--text-dim);margin-bottom:6px}
+.hsec p:last-child{margin-bottom:0}
+.hsec code{font:600 12px/1 var(--mono);color:var(--text);background:var(--panel-2);border-radius:5px;padding:2px 6px;white-space:nowrap}
 
-/* ---------- Toppbar ---------- */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: clamp(4px, 1.2vmin, 12px);
-  flex: none;
-  min-height: 44px;
+@media (max-height:720px){
+  .main-val{font-size:clamp(26px,10vw,44px)}
+  .display{min-height:170px}
 }
-.brand { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
-.brand-name {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: .42em;
-  padding-left: .42em; /* optisk sentrering av tracking */
-}
-@media (max-width: 380px) {
-  .brand-name { letter-spacing: .3em; padding-left: .3em; }
-  .icon-btn { width: 38px; }
-}
-.topbar-actions { display: flex; gap: 2px; flex: none; }
-
-.icon-btn {
-  width: 40px; height: 42px;
-  display: grid; place-items: center;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 50%;
-  color: var(--ink-dim);
-  cursor: pointer;
-  -webkit-appearance: none;
-  transition: color .2s, background .2s, transform .15s;
-}
-.icon-btn:hover { color: var(--ink); background: var(--soft-2); }
-.icon-btn:active { transform: scale(.9); background: var(--soft); }
-.icon-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-.icon-btn svg { width: 20px; height: 20px; }
-
-/* Sol/måne byttes etter tema */
-.icon-sun  { display: none; }
-.icon-moon { display: block; }
-:root[data-theme="dark"] .icon-sun  { display: block; }
-:root[data-theme="dark"] .icon-moon { display: none; }
-
-/* ---------- Skjerm / display ---------- */
-.display {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  text-align: right;
-  padding: clamp(6px, 1.6vmin, 16px) 4px clamp(8px, 2vmin, 18px);
-  min-height: clamp(128px, 25vh, 240px);
-  animation: appIn .7s var(--ease) .08s backwards;
-}
-.display-meta {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 6px;
-  min-height: 22px;
-}
-.chip {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: .18em;
-  color: var(--ink-dim);
-  border: 1px solid var(--line);
-  background: transparent;
-  padding: 3px 9px;
-  border-radius: 999px;
-  line-height: 1.4;
-}
-
-.expr {
-  font-family: var(--font-mono);
-  font-size: clamp(12px, 3.4vmin, 15px);
-  color: var(--ink-dim);
-  min-height: 1.6em;
-  white-space: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-mask-image: linear-gradient(90deg, transparent, black 28px);
-  mask-image: linear-gradient(90deg, transparent, black 28px);
-}
-.expr::-webkit-scrollbar { display: none; }
-
-.main {
-  font-size: clamp(2.7rem, 12.5vmin, 4.9rem);
-  font-weight: 500;
-  letter-spacing: -.015em;
-  line-height: 1.12;
-  white-space: nowrap;
-  overflow: hidden;
-  cursor: pointer;
-  font-variant-numeric: tabular-nums;
-  transition: color .2s;
-}
-.main:active { color: var(--ink-dim); }
-.main.pop { animation: pop .32s var(--ease); }
-@keyframes pop {
-  0%   { transform: translateY(10px); opacity: 0; }
-  100% { transform: translateY(0);    opacity: 1; }
-}
-.display.shake { animation: shake .4s; }
-@keyframes shake {
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
-}
-.main .err { color: var(--ink-dim); }
-
-.preview {
-  font-family: var(--font-mono);
-  font-size: clamp(12px, 3.4vmin, 15px);
-  color: var(--ink-dim);
-  min-height: 1.6em;
-  opacity: .85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.preview b { color: var(--ink); font-weight: 500; }
-
-.pull {
-  position: relative;
-  flex: none;
-  height: 28px;
-  margin-bottom: calc(var(--gap) * .6);
-  display: grid;
-  place-items: center;
-}
-.pull::before {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; top: 50%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--line) 15%, var(--line) 85%, transparent);
-}
-.pull-btn {
-  position: relative;
-  width: 64px; height: 26px;
-  display: grid; place-items: center;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--bg-2);
-  color: var(--ink-dim);
-  cursor: pointer;
-  -webkit-appearance: none;
-  transition: color .2s, background .2s, border-color .2s, transform .12s;
-}
-.pull-btn::after { /* større trykkflate uten å endre utseendet */
-  content: ""; position: absolute; inset: -12px -20px;
-}
-.pull-btn svg { width: 16px; height: 16px; transition: transform .3s var(--ease); }
-.pull-btn.open svg { transform: rotate(180deg); }
-.pull-btn:active { transform: scale(.94); background: var(--soft); color: var(--ink); }
-.pull-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-
-/* ---------- Tastatur ---------- */
-.keypad-wrap {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap);
-}
-
-.sci-pad {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: calc(var(--gap) * .7);
-  flex: none;
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-6px);
-  transition: max-height .4s var(--ease), opacity .3s var(--ease),
-              transform .4s var(--ease), visibility .4s;
-}
-.sci-pad.open {
-  max-height: 400px;
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-}
-.sci-pad .key { min-height: 44px; }
-
-.keypad {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(48px, 1fr);
-  gap: var(--gap);
-}
-
-.key {
-  position: relative;
-  overflow: hidden;
-  font-family: var(--font-display);
-  font-size: clamp(1.35rem, 5.4vmin, 1.95rem);
-  font-weight: 500;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--key-border);
-  border-radius: var(--radius-key);
-  box-shadow: var(--key-shadow);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  min-height: 48px;
-  transition: background .18s, transform .09s, box-shadow .18s, color .18s;
-  animation: keyIn .5s var(--ease) backwards;
-  animation-delay: calc(var(--i, 0) * 16ms);
-  -webkit-appearance: none;
-  touch-action: manipulation;
-}
-@keyframes keyIn { from { opacity: 0; transform: translateY(12px) scale(.96); } }
-
-@media (hover: hover) { .key:hover { background: var(--surface-active); } }
-.key:active, .key.kbd {
-  transform: scale(.95);
-  box-shadow: var(--key-shadow-press);
-  background: var(--surface-active);
-}
-.key:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-
-.key svg { width: 26px; height: 26px; }
-
-/* Operatorer: samme familie, en nyanse forskjøvet fra sifrene */
-.key.op {
-  color: var(--ink);
-  background: var(--surface-2);
-  font-weight: 600;
-}
-@media (hover: hover) { .key.op:hover { background: var(--surface-active); } }
-.key.op:active, .key.op.kbd { background: var(--surface-active); }
-
-/* AC: den eneste tasten foruten = som bærer farge */
-.key.ac {
-  color: var(--accent);
-  background: transparent;
-  border: 1.5px solid var(--accent);
-  box-shadow: none;
-  font-weight: 600;
-  font-size: clamp(1.05rem, 4.2vmin, 1.35rem);
-  letter-spacing: .12em;
-}
-@media (hover: hover) { .key.ac:hover { background: var(--accent-soft); } }
-.key.ac:active, .key.ac.kbd { background: var(--accent-soft); box-shadow: none; }
-
-.key.eq {
-  background: linear-gradient(180deg, var(--accent-hi), var(--accent));
-  color: var(--accent-ink);
-  font-weight: 700;
-  border-color: transparent;
-  box-shadow: var(--key-shadow), var(--eq-glow);
-}
-@media (hover: hover) { .key.eq:hover { filter: brightness(1.06); } }
-.key.eq:active, .key.eq.kbd { box-shadow: var(--eq-glow); background: linear-gradient(180deg, var(--accent), var(--accent-hi)); }
-
-.key.skey {
-  font-size: clamp(.95rem, 3.6vmin, 1.2rem);
-  font-weight: 500;
-  border-radius: calc(var(--radius-key) * .8);
-  background: transparent;
-  box-shadow: none;
-  border-color: var(--line);
-  color: var(--ink-dim);
-}
-.key.skey:active, .key.skey.kbd { color: var(--ink); background: var(--soft-2); }
-.key.skey.angle, .key.skey.inv { color: var(--ink); font-family: var(--font-mono); font-size: clamp(.8rem, 3vmin, 1rem); letter-spacing: .12em; border-color: var(--ink-dim); }
-.key.skey.inv[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.key.skey .sup { font-size: .6em; }
-.key .sup { font-size: .62em; vertical-align: super; line-height: 0; }
-
-/* Ringbølge ved trykk */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--ripple);
-  transform: translate(-50%, -50%) scale(0);
-  animation: ripple .55s ease-out forwards;
-  pointer-events: none;
-}
-@keyframes ripple {
-  0%   { transform: translate(-50%,-50%) scale(0);   opacity: .5; }
-  100% { transform: translate(-50%,-50%) scale(1);   opacity: 0; }
-}
-
-/* ---------- Ark (bunnpaneler) ---------- */
-.backdrop {
-  position: fixed; inset: 0;
-  background: rgba(8, 10, 12, .45);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .3s var(--ease);
-  z-index: 40;
-}
-.backdrop.show { opacity: 1; pointer-events: auto; }
-
-.sheet {
-  position: fixed;
-  left: 50%;
-  bottom: 0;
-  width: min(100%, 560px);
-  transform: translate(-50%, 105%);
-  background: var(--bg-2);
-  border-top: 1px solid var(--line);
-  border-radius: 24px 24px 0 0;
-  box-shadow: var(--sheet-shadow);
-  padding: 8px clamp(18px, 5vw, 28px) calc(20px + var(--safe-bottom));
-  transition: transform .42s var(--ease);
-  z-index: 50;
-  max-height: 84dvh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  visibility: hidden;
-}
-.sheet.open { transform: translate(-50%, 0); visibility: visible; }
-.grab {
-  width: 42px; height: 4px;
-  border-radius: 999px;
-  background: var(--line);
-  margin: 6px auto 14px;
-}
-.sheet-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  position: sticky;
-  top: 0;
-  background: var(--bg-2);
-  padding: 4px 0;
-  z-index: 1;
-}
-.sheet-head h2 {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: .22em;
-}
-.sheet-head .group { display: flex; align-items: center; gap: 4px; }
-
-.text-btn {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: .14em;
-  color: var(--ink);
-  background: transparent;
-  border: 1px solid var(--ink-dim);
-  border-radius: 999px;
-  padding: 9px 14px;
-  min-height: 36px;
-  cursor: pointer;
-  -webkit-appearance: none;
-  transition: background .2s;
-}
-.text-btn:active { background: var(--soft); }
-
-/* Historikk */
-.hist { list-style: none; }
-.hist-item {
-  width: 100%;
-  text-align: right;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--line);
-  padding: 12px 6px;
-  min-height: 56px;
-  cursor: pointer;
-  color: var(--ink);
-  font-family: var(--font-display);
-  transition: background .2s;
-  border-radius: 10px;
-  -webkit-appearance: none;
-}
-.hist-item:active { background: var(--soft-2); }
-.hist-item .h-expr {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-dim);
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.hist-item .h-res { font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.hist-empty {
-  text-align: center;
-  color: var(--ink-dim);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: .08em;
-  padding: 30px 0 20px;
-  line-height: 1.7;
-}
-
-/* Innstillinger */
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 2px;
-  min-height: 60px;
-  border-bottom: 1px solid var(--line);
-}
-.row:last-of-type { border-bottom: none; }
-.row-txt label, .row-txt .lbl {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: .02em;
-  cursor: pointer;
-}
-.row-txt small {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--ink-dim);
-  margin-top: 3px;
-  letter-spacing: .03em;
-  line-height: 1.5;
-}
-.row[hidden] { display: none; }
-
-.seg {
-  display: flex;
-  background: var(--surface);
-  border: 1px solid var(--key-border);
-  border-radius: 999px;
-  padding: 3px;
-  flex: none;
-}
-.seg-btn {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: .1em;
-  padding: 8px 12px;
-  min-height: 34px;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--ink-dim);
-  cursor: pointer;
-  -webkit-appearance: none;
-  transition: background .2s, color .2s;
-}
-.seg-btn.active {
-  background: var(--ink);
-  color: var(--bg);
-  font-weight: 500;
-}
-
-.switch { position: relative; display: inline-block; flex: none; cursor: pointer; }
-.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
-.track {
-  display: block;
-  width: 50px; height: 30px;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--key-border);
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.12);
-  transition: background .25s var(--ease), border-color .25s;
-  position: relative;
-}
-.thumb {
-  position: absolute;
-  top: 4px; left: 4px;
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: var(--ink-dim);
-  transition: transform .25s var(--ease), background .25s;
-}
-.switch input:checked + .track {
-  background: var(--ink);
-  border-color: var(--ink);
-}
-.switch input:checked + .track .thumb {
-  transform: translateX(20px);
-  background: var(--bg);
-}
-.switch input:focus-visible + .track { outline: 2px solid var(--ink); outline-offset: 2px; }
-
-.sheet-foot {
-  margin-top: 18px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: .12em;
-  color: var(--ink-dim);
-  line-height: 1.9;
-}
-.sheet-foot button {
-  background: none; border: none;
-  color: var(--ink);
-  font: inherit;
-  letter-spacing: .12em;
-  cursor: pointer;
-  margin-top: 6px;
-  padding: 6px 10px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  -webkit-appearance: none;
-}
-
-/* Hjelp */
-.help-intro {
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--ink-dim);
-  margin: 2px 0 14px;
-}
-.help-group {
-  margin-top: 18px;
-}
-.help-group h3 {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .18em;
-  color: var(--ink-dim);
-  margin-bottom: 4px;
-}
-.help-item {
-  display: grid;
-  grid-template-columns: 52px 1fr;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
-  align-items: start;
-}
-.help-item:last-child { border-bottom: none; }
-.help-sym {
-  height: 44px;
-  display: grid; place-items: center;
-  border-radius: 12px;
-  background: var(--surface);
-  border: 1px solid var(--key-border);
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: var(--ink);
-}
-.help-sym.mono { font-family: var(--font-mono); font-size: .8rem; letter-spacing: .08em; color: var(--ink-dim); }
-.help-txt b { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
-.help-txt p { font-size: 13px; line-height: 1.55; color: var(--ink-dim); }
-.help-txt code {
-  display: inline-block;
-  margin-top: 6px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink);
-  background: var(--soft-2);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 4px 9px;
-  line-height: 1.6;
-  user-select: text;
-}
-
-/* ---------- Toast ---------- */
-.toast {
-  position: fixed;
-  left: 50%;
-  bottom: calc(26px + var(--safe-bottom));
-  transform: translate(-50%, 20px);
-  background: var(--toast-bg);
-  color: var(--toast-ink);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: .12em;
-  padding: 11px 20px;
-  border-radius: 999px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .3s var(--ease), transform .3s var(--ease);
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  max-width: calc(100% - 32px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.25);
-}
-.toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
-.toast button {
-  background: none; border: none;
-  color: var(--toast-ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  font: inherit;
-  letter-spacing: .12em;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 4px 0;
-  -webkit-appearance: none;
-}
-
-/* ---------- Landskap (Samsung i breddeformat) ---------- */
-@media (orientation: landscape) and (min-width: 620px) {
-  .app {
-    max-width: none;
-    display: grid;
-    grid-template-columns: minmax(250px, 42%) 1fr;
-    grid-template-rows: auto 1fr;
-    column-gap: clamp(18px, 3vw, 40px);
-  }
-  .topbar { grid-column: 1 / -1; }
-  .display {
-    grid-column: 1; grid-row: 2;
-    min-height: 0;
-    justify-content: center;
-  }
-  .pull { display: none; }
-  .keypad-wrap { grid-column: 2; grid-row: 2; }
-  .orn-pi { font-size: 34vmin; }
-  .orn-root { display: none; }
-  .sheet { width: min(100%, 640px); }
-}
-@media (orientation: landscape) and (max-height: 460px) {
-  .display { min-height: 0; padding-top: 0; }
-  .main { font-size: clamp(2rem, 9vmin, 3rem); }
-  .key { min-height: 36px; }
-  .keypad { grid-auto-rows: minmax(36px, 1fr); }
-}
-
-/* Svært lave skjermer i portrett (delt skjerm på Samsung) */
-@media (orientation: portrait) and (max-height: 560px) {
-  .display { min-height: 96px; }
-  .ornament { display: none; }
-}
-
-/* Stor tekst (innstilling) */
-body.large .main  { font-size: clamp(3.2rem, 15vmin, 5.8rem); }
-body.large .expr,
-body.large .preview { font-size: clamp(14px, 4vmin, 18px); }
-body.large .key { font-size: clamp(1.55rem, 6.2vmin, 2.2rem); }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .main-val::after{animation:none;opacity:1}
 }
 </style>
 </head>
 <body>
 
-<div class="ornament orn-pi" aria-hidden="true">π</div>
-<div class="ornament orn-root" aria-hidden="true">√</div>
-
-<main class="app" id="app">
-
-  <!-- Toppbar -->
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-name">NUMERA</span>
-    </div>
-    <div class="topbar-actions">
-      <button class="icon-btn" id="btnHistory" aria-label="Historikk">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-          <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
-        </svg>
-      </button>
-      <button class="icon-btn" id="btnHelp" aria-label="Hjelp">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="8.5"/>
-          <path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.35-1 .9-1 1.6v.4"/>
-          <circle cx="12" cy="16.6" r=".6" fill="currentColor" stroke="none"/>
-        </svg>
-      </button>
-      <button class="icon-btn" id="btnTheme" aria-label="Bytt tema">
-        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-          <circle cx="12" cy="12" r="4"/>
-          <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M18.7 5.3l-1.5 1.5M6.8 17.2l-1.5 1.5"/>
-        </svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 13.5A8 8 0 0 1 10.5 4 8 8 0 1 0 20 13.5z"/>
-        </svg>
-      </button>
-      <button class="icon-btn" id="btnSettings" aria-label="Innstillinger">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
-          <path d="M4 7h16M4 12h16M4 17h16"/>
-          <circle cx="9"  cy="7"  r="2.1" fill="var(--bg)"/>
-          <circle cx="15" cy="12" r="2.1" fill="var(--bg)"/>
-          <circle cx="7"  cy="17" r="2.1" fill="var(--bg)"/>
-        </svg>
-      </button>
-    </div>
-  </header>
-
-  <!-- Skjerm -->
-  <section class="display" id="displayBox" aria-live="polite">
-    <div class="display-meta" id="chipRow" hidden>
-      <span class="chip" id="chipAngle">DEG</span>
-      <span class="chip">SCI</span>
-    </div>
-    <div class="expr" id="exprLine">&nbsp;</div>
-    <div class="main" id="mainLine" title="Hold inne for å kopiere">0</div>
-    <div class="preview" id="previewLine"></div>
-  </section>
-
-  <div class="pull">
-    <button class="pull-btn" id="btnPull" aria-expanded="false" aria-controls="sciPad" aria-label="Vis vitenskapelige funksjoner">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg>
-    </button>
+<header class="top">
+  <div class="appdots segc" id="appdots" role="tablist" aria-label="Calculator"><i class="ind"></i>
+    <button class="adot active" data-app="PRG" role="tab">PRG</button>
+    <button class="adot" data-app="STD" role="tab">STD</button>
   </div>
+  <div class="spacer"></div>
+  <button class="iconbtn hidden" id="installBtn" aria-label="Install BitWise as an app"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg></button>
+  <button class="iconbtn hidden" id="histClear" aria-label="Clear calculation history"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v6m4-6v6"/></svg></button>
+  <button class="iconbtn" id="helpBtn" aria-label="Open guide"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/></svg></button>
+  <button class="iconbtn" id="themeBtn" aria-label="Toggle light and dark theme"></button>
+</header>
 
-  <!-- Tastatur -->
-  <section class="keypad-wrap">
+<!-- ============ PROGRAMMER VIEW ============ -->
+<div id="viewPRG" class="view" style="display:flex;flex-direction:column;flex:1;min-height:0">
+<section class="card" id="prgCard">
+<nav class="tabs segc" id="tabs" aria-label="Number base"><i class="ind"></i>
+  <button class="tab active" data-mode="HEX">HEX</button>
+  <button class="tab" data-mode="DEC">DEC</button>
+  <button class="tab" data-mode="OCT">OCT</button>
+  <button class="tab" data-mode="BIN">BIN</button>
+</nav>
+<section class="display" id="swipeZone">
+  <div class="disp-inner" id="dispInner">
+    <div class="pending" id="pending"></div>
+    <div class="main-val" id="mainVal">0</div>
+    <div class="conv" id="conv"></div>
+    <div class="insight" id="insight"></div>
+  </div>
+</section>
 
-    <div class="sci-pad" id="sciPad" aria-label="Vitenskapelige funksjoner">
-      <button class="key skey inv" style="--i:0" data-action="inv" id="btnInv" aria-pressed="false">INV</button>
-      <button class="key skey" style="--i:1"  data-action="lparen">(</button>
-      <button class="key skey" style="--i:2"  data-action="rparen">)</button>
-      <button class="key skey" style="--i:3"  data-fn="sqrt">√</button>
-      <button class="key skey" style="--i:4"  data-op="^">x<span class="sup">y</span></button>
-      <button class="key skey" style="--i:5"  data-fn="sin" data-inv="asin">sin</button>
-      <button class="key skey" style="--i:6"  data-fn="cos" data-inv="acos">cos</button>
-      <button class="key skey" style="--i:7"  data-fn="tan" data-inv="atan">tan</button>
-      <button class="key skey" style="--i:8"  data-fn="ln"  data-inv="exp">ln</button>
-      <button class="key skey" style="--i:9"  data-fn="log" data-inv="pow10">log</button>
-      <button class="key skey" style="--i:10" data-const="pi">π</button>
-      <button class="key skey" style="--i:11" data-const="e">e</button>
-      <button class="key skey" style="--i:12" data-action="square">x<span class="sup">2</span></button>
-      <button class="key skey" style="--i:13" data-action="fact">n!</button>
-      <button class="key skey angle" style="--i:14" data-action="angle" id="btnAngle">DEG</button>
+<div class="card-div"></div>
+<div class="meta" id="meta">
+  <div class="segbits segc" id="segbits"><i class="ind"></i>
+  <button class="chip" data-bits="8">8</button>
+  <button class="chip" data-bits="16">16</button>
+  <button class="chip" data-bits="32">32</button>
+  <button class="chip active" data-bits="64">64</button>
+  <button class="chip" data-bits="128">128</button>
+  </div>
+  <button class="chip" id="sgn">UNSIGNED</button>
+</div>
+
+<section class="inspect folded" id="inspect">
+  <div class="inspect-head">
+    <div class="seg segc" id="seg"><i class="ind"></i>
+      <button class="active" data-view="bits">Bits</button>
+      <button data-view="bytes">Bytes</button>
+      <button data-view="float">Float</button>
     </div>
+    <button class="tool" id="fieldBtn">FIELD</button>
+    <button class="tool hidden" id="endBtn">BE</button>
+    <button class="tool hidden" id="copyBtn">COPY</button>
+    <div class="spacer"></div>
+    <button class="fold" id="fold" aria-label="Collapse inspector"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+  </div>
+  <div class="inspect-body" id="inspectBody"></div>
+</section>
+</section>
 
-    <div class="keypad" id="keypad">
-      <button class="key ac"  style="--i:0"  data-action="ac" id="btnAC">AC</button>
-      <button class="key"     style="--i:1"  data-action="back" aria-label="Slett siste">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9.5 5h10a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 19.5 19h-10L3 12l6.5-7z"/>
-          <path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>
-        </svg>
-      </button>
-      <button class="key op"  style="--i:2"  data-action="percent">%</button>
-      <button class="key op"  style="--i:3"  data-op="÷">÷</button>
+<main class="pad" id="pad"><!-- keys generated per mode --></main>
+</div>
 
-      <button class="key" style="--i:4"  data-digit="7">7</button>
-      <button class="key" style="--i:5"  data-digit="8">8</button>
-      <button class="key" style="--i:6"  data-digit="9">9</button>
-      <button class="key op" style="--i:7" data-op="×">×</button>
-
-      <button class="key" style="--i:8"  data-digit="4">4</button>
-      <button class="key" style="--i:9"  data-digit="5">5</button>
-      <button class="key" style="--i:10" data-digit="6">6</button>
-      <button class="key op" style="--i:11" data-op="−">−</button>
-
-      <button class="key" style="--i:12" data-digit="1">1</button>
-      <button class="key" style="--i:13" data-digit="2">2</button>
-      <button class="key" style="--i:14" data-digit="3">3</button>
-      <button class="key op" style="--i:15" data-op="+">+</button>
-
-      <button class="key" style="--i:16" data-action="neg">±</button>
-      <button class="key" style="--i:17" data-digit="0">0</button>
-      <button class="key" style="--i:18" data-action="comma">,</button>
-      <button class="key eq" style="--i:19" data-action="equals" aria-label="Er lik">=</button>
+<!-- ============ STANDARD VIEW ============ -->
+<div id="viewSTD" class="view hidden" style="display:flex;flex-direction:column;flex:1;min-height:0">
+<section class="card">
+<div class="tape" id="tape"><div class="tape-fill"></div></div>
+<section class="display" style="flex:none;padding-bottom:12px">
+  <div class="pending" id="sPending" style="display:flex;justify-content:flex-end;align-items:center;gap:8px"><span class="mem-ind hidden" id="memInd">M</span><span id="sPendTxt"></span></div>
+  <div class="main-val" id="sMainVal">0</div>
+</section>
+</section>
+<div class="inspect folded" id="sci">
+  <div class="inspect-head">
+    <span class="lbl">SCIENTIFIC</span>
+    <button class="tool" id="degBtn">DEG</button>
+    <div class="spacer"></div>
+    <button class="fold" id="sciFold" aria-label="Expand scientific keys"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+  </div>
+  <div class="inspect-body" id="sciBody">
+    <div class="scigrid">
+      <button class="k fn" data-k="SIN">sin</button>
+      <button class="k fn" data-k="COS">cos</button>
+      <button class="k fn" data-k="TAN">tan</button>
+      <button class="k fn" data-k="PI">π</button>
+      <button class="k fn" data-k="LN">ln</button>
+      <button class="k fn" data-k="LOG">log₁₀</button>
+      <button class="k fn" data-k="FACT">x!</button>
+      <button class="k fn" data-k="EULER">e</button>
     </div>
+  </div>
+</div>
+<main class="pad std" id="sPad">
+  <button class="k ac" data-k="AC">AC</button>
+  <button class="k ac" data-k="BS"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7z"/><path d="M12 9.5l5 5m0-5l-5 5"/></svg></button>
+  <button class="k fn" data-k="NEG">±</button>
+  <button class="k op" data-k="DIV">÷</button>
 
-  </section>
+  <button class="k fn" data-k="MC">MC</button>
+  <button class="k fn" data-k="MR">MR</button>
+  <button class="k fn" data-k="MPLUS">M+</button>
+  <button class="k fn" data-k="MMINUS">M−</button>
+
+  <button class="k fn" data-k="SQRT">√</button>
+  <button class="k fn" data-k="SQ">xⁿ</button>
+  <button class="k fn" data-k="INV">1/x</button>
+  <button class="k fn" data-k="PCT">%</button>
+
+  <button class="k" data-k="7">7</button>
+  <button class="k" data-k="8">8</button>
+  <button class="k" data-k="9">9</button>
+  <button class="k op" data-k="MUL">×</button>
+
+  <button class="k" data-k="4">4</button>
+  <button class="k" data-k="5">5</button>
+  <button class="k" data-k="6">6</button>
+  <button class="k op" data-k="SUB">−</button>
+
+  <button class="k" data-k="1">1</button>
+  <button class="k" data-k="2">2</button>
+  <button class="k" data-k="3">3</button>
+  <button class="k op" data-k="ADD">+</button>
+
+  <button class="k" data-k="0" style="grid-column:span 2">0</button>
+  <button class="k" data-k="DOT">·</button>
+  <button class="k eq" data-k="EQ">=</button>
 </main>
+</div>
 
-<!-- Bakgrunn for ark -->
-<div class="backdrop" id="backdrop"></div>
-
-<!-- Historikk-ark -->
-<section class="sheet" id="sheetHistory" role="dialog" aria-label="Historikk">
-  <div class="grab"></div>
-  <div class="sheet-head">
-    <h2>HISTORIKK</h2>
-    <div class="group">
-      <button class="text-btn" id="btnClearHist">TØM</button>
-      <button class="icon-btn" data-close aria-label="Lukk">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-    </div>
+<div class="toast" id="toast"></div>
+<button class="update-bar hidden" id="updateBar">A new version of BitWise is ready <span>Update</span></button>
+<div class="hintcard hidden" id="powcard">
+  <div class="h-key">POWER — choose the exponent</div>
+  <div class="powrow">
+    <button class="k fn" data-p="2">x²</button>
+    <button class="k fn" data-p="3">x³</button>
+    <button class="k fn" data-p="4">x⁴</button>
+    <button class="k fn" data-p="5">x⁵</button>
+    <button class="k fn" data-p="custom">xʸ…</button>
   </div>
-  <ul class="hist" id="histList"></ul>
-  <p class="hist-empty" id="histEmpty">Ingen regnestykker ennå.<br>Trykk på et resultat her for å bruke det videre.</p>
-</section>
+</div>
+<div class="hintcard hidden" id="hintcard"><div class="h-key" id="hintKey"></div><div class="h-txt" id="hintTxt"></div></div>
 
-<!-- Hjelp-ark -->
-<section class="sheet" id="sheetHelp" role="dialog" aria-label="Hjelp">
-  <div class="grab"></div>
-  <div class="sheet-head">
-    <h2>SLIK VIRKER DET</h2>
-    <button class="icon-btn" data-close aria-label="Lukk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
+<!-- ============ HELP / GUIDE ============ -->
+<div class="help hidden" id="help">
+  <div class="help-top">
+    <h1>How BitWise works</h1>
+    <button class="iconbtn" id="helpClose" aria-label="Close guide"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
-
-  <p class="help-intro">NUMERA regner med vanlig prioritet: parenteser først, så potenser, deretter gange og dele, og til slutt pluss og minus. Slå på vitenskapelige funksjoner i innstillingene for å få tastene under.</p>
-
-  <div class="help-group">
-    <h3>GRUNNTASTER</h3>
-    <div class="help-item">
-      <div class="help-sym">%</div>
-      <div class="help-txt">
-        <b>Prosent</b>
-        <p>Etter pluss eller minus regnes prosenten av tallet foran. Alene eller etter gange og dele betyr det «delt på hundre».</p>
-        <code>200 + 10 % = 220</code>
-        <code>1 500 − 25 % = 1 125</code>
-        <code>40 × 15 % = 6</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">±</div>
-      <div class="help-txt">
-        <b>Bytt fortegn</b>
-        <p>Gjør tallet du skriver negativt eller positivt. Fungerer også på et ferdig resultat.</p>
-        <code>25 → ± → −25</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">C</div>
-      <div class="help-txt">
-        <b>C og AC</b>
-        <p>C sletter bare tallet du holder på å skrive. Trykk en gang til (AC) for å tømme hele regnestykket.</p>
-      </div>
-    </div>
+  <div class="hsec"><h2 class="m-gen">ONE NUMBER, FOUR LANGUAGES</h2>
+    <p>The four modes are not different calculators — they are four ways of writing the <span class="try">same number</span>. Type <code>255</code> in DEC, then swipe: it becomes <code>FF</code> in HEX, <code>377</code> in OCT and <code>1111 1111</code> in BIN. The value never changes, only the notation. The small rows under the display always show the other three at once.</p>
   </div>
-
-  <div class="help-group">
-    <h3>POTENSER OG RØTTER</h3>
-    <div class="help-item">
-      <div class="help-sym">√</div>
-      <div class="help-txt">
-        <b>Kvadratrot</b>
-        <p>Finner tallet som ganget med seg selv gir verdien. Skriv rot først, deretter tallet og lukk parentesen.</p>
-        <code>√(144) = 12</code>
-        <code>√(2) = 1,41421356237</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">x²</div>
-      <div class="help-txt">
-        <b>Kvadrat</b>
-        <p>Ganger tallet med seg selv.</p>
-        <code>7 x² = 49</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">xʸ</div>
-      <div class="help-txt">
-        <b>Potens</b>
-        <p>Første tall opphøyd i det andre. Praktisk for renter og vekst.</p>
-        <code>2 ^ 10 = 1 024</code>
-        <code>1,05 ^ 3 = 1,157625 (5 % rente i 3 år)</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">n!</div>
-      <div class="help-txt">
-        <b>Fakultet</b>
-        <p>Ganger sammen alle hele tall fra 1 opp til n. Brukes for å telle rekkefølger og kombinasjoner.</p>
-        <code>5 ! = 120 (1·2·3·4·5)</code>
-      </div>
-    </div>
+  <div class="hsec"><h2 class="m-dec">DEC — BASE 10</h2>
+    <p>Everyday numbers, the ones you count with. Use it when the number is just a quantity: money, distances, IDs.</p>
+    <p><span class="try">Try:</span> type a Unix timestamp like <code>1784073600</code> — BitWise recognizes it and shows the actual date.</p>
   </div>
-
-  <div class="help-group">
-    <h3>TRIGONOMETRI</h3>
-    <div class="help-item">
-      <div class="help-sym mono">DEG</div>
-      <div class="help-txt">
-        <b>Grader eller radianer</b>
-        <p>Tasten veksler mellom DEG og RAD, og gjelder for sin, cos og tan. Bruk DEG for vinkler i grader (mest vanlig), RAD for matematikk med π.</p>
-        <code>DEG: sin(30) = 0,5</code>
-        <code>RAD: sin(π ÷ 6) = 0,5</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym mono">INV</div>
-      <div class="help-txt">
-        <b>Omvendte funksjoner</b>
-        <p>Trykk INV, og de fem funksjonstastene bytter til sin⁻¹, cos⁻¹, tan⁻¹, eˣ og 10ˣ for ett trykk. sin⁻¹ finner vinkelen når du kjenner forholdet.</p>
-        <code>INV sin(0,5) = 30</code>
-        <code>INV log(3) = 1 000</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">sin</div>
-      <div class="help-txt">
-        <b>sin, cos, tan</b>
-        <p>Forholdet mellom sidene i en rettvinklet trekant. Sinus er motstående side delt på hypotenus, cosinus er hosliggende delt på hypotenus, og tangens er motstående delt på hosliggende.</p>
-        <code>cos(60) = 0,5</code>
-        <code>tan(45) = 1</code>
-        <code>10 × sin(30) = 5 (høyde av skrå stige på 10 m)</code>
-      </div>
-    </div>
+  <div class="hsec"><h2 class="m-hex">HEX — BASE 16</h2>
+    <p>Compact shorthand for binary: one hex digit is exactly four bits. That's why programmers use it for colors, memory addresses and raw data.</p>
+    <p><span class="try">Try:</span> type <code>FF5733</code> — that's a web color, and BitWise shows you the actual shade. Type <code>48</code> and it tells you that's the letter <code>H</code> in ASCII.</p>
   </div>
-
-  <div class="help-group">
-    <h3>LOGARITMER OG KONSTANTER</h3>
-    <div class="help-item">
-      <div class="help-sym">log</div>
-      <div class="help-txt">
-        <b>Logaritme (base 10)</b>
-        <p>Svarer på «10 opphøyd i hva gir dette tallet?». Brukes for desibel, pH og størrelsesordener.</p>
-        <code>log(1 000) = 3</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">ln</div>
-      <div class="help-txt">
-        <b>Naturlig logaritme</b>
-        <p>Samme spørsmål med grunntallet e. Brukes ved kontinuerlig vekst og halveringstid.</p>
-        <code>ln(e) = 1</code>
-        <code>ln(2) ÷ 0,05 = 13,86 (år til dobling ved 5 %)</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">π</div>
-      <div class="help-txt">
-        <b>Pi og e</b>
-        <p>π (3,14159…) er forholdet mellom omkrets og diameter. e (2,71828…) er grunntallet for naturlig vekst. Et tall rett før en konstant ganges automatisk.</p>
-        <code>2 π 5 = 31,4159265359 (omkrets, r = 5)</code>
-        <code>π × 3 x² = 28,2743338823 (areal, r = 3)</code>
-      </div>
-    </div>
+  <div class="hsec"><h2 class="m-oct">OCT — BASE 8</h2>
+    <p>Groups bits three at a time. Its most famous job today is Unix file permissions.</p>
+    <p><span class="try">Try:</span> type <code>755</code> in OCT — BitWise decodes it to <code>rwxr-xr-x</code>: owner can read/write/execute, everyone else read/execute. That's what <code>chmod 755</code> means.</p>
   </div>
-
-  <div class="help-group">
-    <h3>PARENTESER OG MINNE</h3>
-    <div class="help-item">
-      <div class="help-sym">( )</div>
-      <div class="help-txt">
-        <b>Parenteser</b>
-        <p>Regnes ut først. Manglende sluttparenteser lukkes automatisk når du trykker =.</p>
-        <code>(2 + 3) × 4 = 20</code>
-        <code>2 + 3 × 4 = 14</code>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym">=</div>
-      <div class="help-txt">
-        <b>Regne videre på svaret</b>
-        <p>Trykker du en operator rett etter =, fortsetter regnestykket med svaret. Trykker du et tall, starter du på nytt.</p>
-        <code>12 × 4 = 48, deretter + 2 = 50</code>
-      </div>
-    </div>
+  <div class="hsec"><h2 class="m-bin">BIN — BASE 2</h2>
+    <p>The machine's native tongue: every digit is one bit, on or off. Perfect for flags, masks and understanding what the bitwise keys (AND, OR, XOR, shifts) actually do.</p>
+    <p><span class="try">Try:</span> type <code>1010</code>, then press <code>&lt;&lt;</code> <code>1</code> <code>=</code> and watch every bit slide one place left in the grid — that's why shifting left doubles a number.</p>
   </div>
-
-  <div class="help-group">
-    <h3>TIPS</h3>
-    <div class="help-item">
-      <div class="help-sym mono">HOLD</div>
-      <div class="help-txt">
-        <b>Kopier resultatet</b>
-        <p>Hold fingeren på det store tallet for å kopiere det til utklippstavlen.</p>
-      </div>
-    </div>
-    <div class="help-item">
-      <div class="help-sym mono">TAST</div>
-      <div class="help-txt">
-        <b>Fysisk tastatur</b>
-        <p>Med tastatur (DeX eller PC) bruker du tallene, + − * /, ^, %, ( ), Enter for =, Backspace for slett og Escape for AC. I vitenskapelig modus: s, c, t, l, g, r, p, e og i for INV.</p>
-      </div>
-    </div>
+  <div class="hsec"><h2 class="m-gen">THE BIT GRID &amp; BYTES</h2>
+    <p>Every square is one bit — <span class="try">tap any square to flip it</span> and watch all four notations update. The chevron swaps between keypad and inspector: expand to give the bit grid the whole screen, collapse to get the keys back — picking Bits, Bytes or <code>FIELD</code> opens it automatically. <code>FIELD</code> lets you tap two bits to read out just that slice, like a hardware register field. The Bytes view shows the same value carved into bytes with hex, decimal and ASCII — flip <code>BE/LE</code> to see both memory orderings, and <code>COPY</code> puts the full hex word on your clipboard. The <span class="try">Float</span> view decodes the same bits as IEEE 754: sign, exponent and mantissa color-coded — type <code>3F800000</code> in HEX and see it become float 1.0. Mid-calculation (e.g. after typing <code>8</code> <code>−</code>) a small line like <code>8 − ⇄</code> appears above the big number — tap it to swap the two operands, turning 8−3 into 3−8.</p>
   </div>
-</section>
-
-<!-- Innstillingsark -->
-<section class="sheet" id="sheetSettings" role="dialog" aria-label="Innstillinger">
-  <div class="grab"></div>
-  <div class="sheet-head">
-    <h2>INNSTILLINGER</h2>
-    <button class="icon-btn" data-close aria-label="Lukk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
+  <div class="hsec"><h2 class="m-std">STD — EVERYDAY MODE</h2>
+    <p>A normal decimal calculator with a professional touch: a <span class="try">history tape</span> above the keys remembers your last 40 calculations even after closing the app — tap any line to bring its result back. The trash button in the header wipes the tape — it asks for a second tap (turning red) so one stray touch can't erase everything. Memory keys work like a classic desk calculator: <code>M+</code>/<code>M−</code> accumulate, <code>MR</code> recalls (an <code>M</code> badge shows when something is stored), <code>MC</code> clears. <code>√</code> and <code>1/x</code> apply instantly; <code>xⁿ</code> opens a power picker (x² to x⁵, or <code>xʸ…</code> to type any exponent, even 0.5 or negative). Everything lands on the tape. Percent is smart too: <code>200 + 10 %</code> means 200 plus 10 <em>percent of 200</em>, so <code>=</code> gives 220.</p>
   </div>
-
-  <div class="row" id="rowInstall" hidden>
-    <div class="row-txt">
-      <span class="lbl">Installer på telefonen</span>
-      <small>Legger NUMERA på hjemskjermen og åpner uten nettleserlinje</small>
-    </div>
-    <button class="text-btn" id="btnInstall">INSTALLER</button>
+  <div class="hsec"><h2 class="m-gen">NOT SURE WHAT A KEY DOES?</h2>
+    <p><span class="try">Long-press it.</span> Function keys like AND, XOR, RoL, MOD, %, M+ and friends pop up a short explanation with an example — without pressing the key. Digits and obvious keys stay quiet.</p>
   </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <span class="lbl">Tema</span>
-      <small>Følger systemet i automatisk modus</small>
-    </div>
-    <div class="seg" id="themeSeg" role="group" aria-label="Temavalg">
-      <button class="seg-btn" data-tc="auto">AUTO</button>
-      <button class="seg-btn" data-tc="light">LYS</button>
-      <button class="seg-btn" data-tc="dark">MØRK</button>
-    </div>
+  <div class="hsec"><h2 class="m-gen">COPYING RESULTS</h2>
+    <p><span class="try">Tap the big number</span> to copy it — in HEX/OCT/BIN it copies with the proper prefix (<code>0xFF</code>, <code>0o377</code>, <code>0b11111111</code>) so it pastes straight into code. Long-press any square in the bit grid to see that bit's weight without toggling it.</p>
   </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <label for="optSci">Vitenskapelige funksjoner</label>
-      <small>Kan også åpnes med pilen over tastaturet</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optSci"><span class="track"><span class="thumb"></span></span></label>
+  <div class="hsec"><h2 class="m-gen">POWER GESTURES</h2>
+    <p><span class="try">Long-press AC</span> to undo a clear and get your number back. Press <code>=</code> again to repeat the last operation (<code>5 + 3 = = =</code> → 8, 11, 14). <span class="try">Drag across the bit grid</span> to paint a whole run of bits on or off in one stroke. Long-press a conversion row to copy the value in that base; tap an insight pill to copy what it found (the IP, the color, the chmod string). Long-press a tape entry to delete just that line.</p>
   </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <label for="optSep">Tusenskilletegn</label>
-      <small>Grupperer sifre i store tall</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optSep"><span class="track"><span class="thumb"></span></span></label>
+  <div class="hsec"><h2 class="m-gen">GESTURES</h2>
+    <p>Swipe left/right <span class="try">on the display</span> to change base (HEX → DEC → OCT → BIN) — the keypad reshapes itself so you only ever see keys that exist in that base. Swipe left/right <span class="try">on the keypad</span> to flip between the programmer and standard calculators — the small PRG/STD dots at the top show where you are. Tap any small conversion row to jump straight to that base. Word-size chips (8–128) set how many bits the number lives in; SIGNED switches to two's-complement so negative numbers make sense.</p>
   </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <label for="optHaptic">Vibrasjon</label>
-      <small>Haptisk tilbakemelding ved tastetrykk</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optHaptic"><span class="track"><span class="thumb"></span></span></label>
+  <div class="hsec"><h2 class="m-gen">INSTALL AS AN APP</h2>
+    <p>Opened from its website, BitWise shows an <span class="try">install button</span> in the header — tap it and it lands on your home screen as a fullscreen app with its own icon. After the first visit it works with no connection at all.</p>
+    <p>Updates arrive by themselves: when a new version has been published, a bar appears at the bottom — tap <span class="try">Update</span> and the new version loads. The build id at the bottom of this guide tells you which version you are on.</p>
   </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <label for="optSound">Tastelyd</label>
-      <small>Diskret klikk ved hvert trykk</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optSound"><span class="track"><span class="thumb"></span></span></label>
-  </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <label for="optHist">Historikk</label>
-      <small>Lagrer tidligere regnestykker på enheten</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optHist"><span class="track"><span class="thumb"></span></span></label>
-  </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <label for="optLarge">Stor tekst</label>
-      <small>Økt skriftstørrelse på skjerm og taster</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optLarge"><span class="track"><span class="thumb"></span></span></label>
-  </div>
-
-  <div class="row">
-    <div class="row-txt">
-      <label for="optWake">Hold skjermen på</label>
-      <small>Skjermen slukker ikke mens appen er åpen</small>
-    </div>
-    <label class="switch"><input type="checkbox" id="optWake"><span class="track"><span class="thumb"></span></span></label>
-  </div>
-
-  <div class="sheet-foot">
-    NUMERA <span id="verLabel"></span><br>
-    TILPASSET SAMSUNG GALAXY · ANDROID<br>
-    <button id="btnReset">Tilbakestill alt</button>
-  </div>
-</section>
-
-<div class="toast" id="toast" role="status"><span id="toastMsg"></span><button id="toastAct" hidden></button></div>
+  <div class="hsec"><p style="text-align:center;color:var(--text-faint);font-size:11px">BitWise v13 · build <span id="buildLbl">local</span> · single-file · no tracking, no network — your numbers stay on your phone</p></div>
+</div>
 
 <script>
+(function(){
 "use strict";
-/* ================================================================
-   NUMERA — kalkulatormotor, innstillinger og interaksjon
-   ================================================================ */
-
-const APP_VERSION = '2.3.0';
-
-/* @engine-start
-   Ren motor uten DOM-avhengigheter. Trekkes ut og testes i test/engine.test.mjs */
-const Engine = (() => {
-
-  const OP_DISPLAY = { '+':' + ', '-':' − ', '×':' × ', '÷':' ÷ ', '^':' ^ ' };
-  const FN_DISPLAY = { sqrt:'√', asin:'sin⁻¹', acos:'cos⁻¹', atan:'tan⁻¹', exp:'e^', pow10:'10^' };
-  const THIN = '\u2009';
-
-  function groupDigits(s, sep){
-    return sep ? s.replace(/\B(?=(\d{3})+(?!\d))/g, THIN) : s;
+/* ================= shared ================= */
+const MODES=["HEX","DEC","OCT","BIN"];
+const BASE={HEX:16n,DEC:10n,OCT:8n,BIN:2n};
+const GROUP={HEX:4,DEC:3,OCT:3,BIN:4};
+const $=(id)=>document.getElementById(id);
+function fitVal(el){
+  const n=el.textContent.length;
+  el.classList.remove("sz-m","sz-s","sz-xs");
+  if(n>90)el.classList.add("sz-xs");
+  else if(n>34)el.classList.add("sz-s");
+  else if(n>16)el.classList.add("sz-m");
+  /* then measure: shrink until the text genuinely fits its box (max 3 lines) */
+  el.style.fontSize="";
+  if(!el.clientHeight)return;
+  let px=parseFloat(getComputedStyle(el).fontSize)||24;
+  let guard=40;
+  while(el.scrollHeight>el.clientHeight+1&&px>10&&guard-->0){
+    px-=1;el.style.fontSize=px+"px";
   }
+}
+const haptic=(ms)=>{try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}};
+const store={
+  get(k){try{return localStorage.getItem(k);}catch(e){return null;}},
+  set(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+};
 
-  /* Intern tallstreng ("-12.5", "1e21") -> norsk visning ("−12,5", "1·10^21") */
-  function fmtNum(s, sep){
-    if (s === null || s === undefined || s === '') return '0';
-    s = String(s);
-    if (s === 'NaN' || s === 'Infinity' || s === '-Infinity') return 'Feil';
-    if (/[eE]/.test(s)) {
-      let [m, e] = s.split(/[eE]/);
-      m = m.replace('.', ',').replace('-', '−');
-      e = e.replace('+', '').replace('-', '−');
-      return m + '·10^' + e;
-    }
-    const neg = s.startsWith('-');
-    if (neg) s = s.slice(1);
-    const [ip, dp] = s.split('.');
-    const out = groupDigits(ip, sep) + (dp !== undefined ? ',' + dp : '');
-    return (neg ? '−' : '') + out;
+/* ================= programmer core (pure) ================= */
+const mask=(v,bits)=>v&((1n<<BigInt(bits))-1n);
+const toSigned=(v,bits)=>{v=mask(v,bits);return v>=(1n<<BigInt(bits-1))?v-(1n<<BigInt(bits)):v;};
+const fromSigned=(v,bits)=>mask(v,bits);
+const popcount=(v)=>{let c=0;while(v){c+=Number(v&1n);v>>=1n;}return c;};
+const msbIndex=(v)=>{if(v===0n)return -1;let i=-1;while(v){v>>=1n;i++;}return i;};
+const extract=(v,hi,lo)=>(v>>BigInt(lo))&((1n<<BigInt(hi-lo+1))-1n);
+const esc=(s)=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+/* IEEE 754 decode of the current bit pattern */
+function f32parts(v){
+  const x=Number(mask(v,32));
+  const buf=new ArrayBuffer(4),dv=new DataView(buf);
+  dv.setUint32(0,x);
+  const val=dv.getFloat32(0);
+  const s=(x>>>31)&1,e=(x>>>23)&0xFF,m=x&0x7FFFFF;
+  const cls=e===255?(m?"NaN":"Infinity"):e===0?(m?"subnormal":"zero"):"normal";
+  return {s,e,m,val,cls,bias:127,ebits:8,mbits:23};
+}
+function f64parts(v){
+  v=mask(v,64);
+  const buf=new ArrayBuffer(8),dv=new DataView(buf);
+  dv.setBigUint64(0,v);
+  const val=dv.getFloat64(0);
+  const s=Number((v>>63n)&1n),e=Number((v>>52n)&0x7FFn),m=v&0xFFFFFFFFFFFFFn;
+  const cls=e===2047?(m?"NaN":"Infinity"):e===0?(m?"subnormal":"zero"):"normal";
+  return {s,e,m,val,cls,bias:1023,ebits:11,mbits:52};
+}
+function fmtFloat(val){
+  if(Number.isNaN(val))return "NaN";
+  if(!isFinite(val))return val>0?"+Infinity":"−Infinity";
+  if(val===0)return Object.is(val,-0)?"−0":"0";
+  const a=Math.abs(val);
+  if(a>=1e-4&&a<1e15)return String(parseFloat(val.toPrecision(9)));
+  return val.toExponential(6);
+}
+/* insight engine: recognizes what a value likely means */
+function insights(v,mode,bits){
+  const out=[]; v=mask(v,bits);
+  if(v===0n)return out;
+  if(mode==="OCT"&&v<=0o7777n){
+    const p=Number(v&0o777n);
+    const rwx=n=>((n&4)?"r":"-")+((n&2)?"w":"-")+((n&1)?"x":"-");
+    const s=rwx(p>>6)+rwx((p>>3)&7)+rwx(p&7);
+    out.push({t:"chmod → "+s,c:s});
   }
-
-  /* Tall under innskriving ("12." skal vise "12,") */
-  function fmtEntry(e, sep){
-    const neg = e.startsWith('-');
-    const b = neg ? e.slice(1) : e;
-    const hasDot = b.includes('.');
-    const [ip, dp] = b.split('.');
-    return (neg ? '−' : '') + groupDigits(ip || '0', sep) + (hasDot ? ',' + (dp || '') : '');
+  if(mode==="HEX"&&v>0xFFFn&&v<=0xFFFFFFn){
+    const hx=v.toString(16).toUpperCase().padStart(6,"0");
+    out.push({t:"#"+hx+" as color",swatch:"#"+hx,c:"#"+hx});
   }
-
-  function roundSig(n, sig){
-    sig = sig || 12;
-    if (!isFinite(n) || n === 0) return n;
-    const d = Math.ceil(Math.log10(Math.abs(n)));
-    const p = Math.pow(10, sig - d);
-    if (!isFinite(p) || p === 0) return n;
-    const r = Math.round(n * p) / p;
-    return r === 0 ? 0 : r;
+  if(mode==="HEX"&&v>0xFFFFFFn&&v<=0xFFFFFFFFn){
+    const ip=[24,16,8,0].map(sh=>Number((v>>BigInt(sh))&0xFFn)).join(".");
+    out.push({t:"as IPv4 → "+ip,c:ip});
   }
-
-  /* Avrundet resultat som streng, uten avrundingsstøy */
-  function resultString(v){
-    const r = roundSig(v);
-    let s = String(r);
-    if (/e/.test(s)) {
-      /* Rydd mantissen: 1.2300000000001e+21 -> 1.23e+21 */
-      let [m, e] = s.split('e');
-      m = String(parseFloat(parseFloat(m).toPrecision(12)));
-      s = m + 'e' + e;
-    }
-    return s;
+  if(v>=32n&&v<=126n)out.push({t:"ASCII '"+esc(String.fromCharCode(Number(v)))+"'"});
+  if(mode==="DEC"&&v>=946684800n&&v<=4102444800n){
+    const iso=new Date(Number(v)*1000).toISOString().slice(0,16).replace("T"," ")+" UTC";
+    out.push({t:"Unix time → "+iso,c:iso});
   }
+  const named={"255":"max u8 (2⁸−1)","65535":"max u16 (2¹⁶−1)","4294967295":"max u32 (2³²−1)","18446744073709551615":"max u64 (2⁶⁴−1)","127":"max i8","32767":"max i16","2147483647":"max i32","9223372036854775807":"max i64"};
+  const nm=named[v.toString()];
+  if(nm)out.push({t:nm});
+  if((v&(v-1n))===0n)out.push({t:"2^"+msbIndex(v)+" · only bit "+msbIndex(v)+" set"});
+  else if(!nm&&((v+1n)&v)===0n)out.push({t:"2^"+(msbIndex(v)+1)+"−1 · low "+(msbIndex(v)+1)+" bits set"});
+  return out.slice(0,2);
+}
 
-  function buildExpr(toks, sep){
-    return toks.map(tk => {
-      if (tk.t === 'num')   return fmtNum(tk.v, sep);
-      if (tk.t === 'const') return tk.v === 'pi' ? 'π' : 'e';
-      if (tk.t === 'op')    return OP_DISPLAY[tk.v] || tk.v;
-      if (tk.t === 'fn')    return (FN_DISPLAY[tk.v] || tk.v) + '(';
-      if (tk.t === 'lp')    return '(';
-      if (tk.t === 'rp')    return ')';
-      if (tk.t === 'post')  return tk.v;
-      return '';
-    }).join('');
+function group(str,n){
+  let neg=str.startsWith("-"); if(neg)str=str.slice(1);
+  const out=[]; for(let i=str.length;i>0;i-=n) out.unshift(str.slice(Math.max(0,i-n),i));
+  return (neg?"-":"")+out.join(" ");
+}
+function fmt(v,mode,bits,signed){
+  v=mask(v,bits);
+  if(mode==="DEC"){ const d=signed?toSigned(v,bits):v; return group(d.toString(10),3); }
+  return group(v.toString(Number(BASE[mode])).toUpperCase(),GROUP[mode]);
+}
+function applyOp(a,b,op,bits,signed){
+  const M=BigInt(bits);
+  switch(op){
+    case "AND":return mask(a&b,bits);
+    case "OR" :return mask(a|b,bits);
+    case "XOR":return mask(a^b,bits);
+    case "ADD":return mask(a+b,bits);
+    case "SUB":return mask(a-b,bits);
+    case "MUL":return mask(a*b,bits);
+    case "DIV":{
+      if(b===0n)throw new Error("div0");
+      if(signed){const sa=toSigned(a,bits),sb=toSigned(b,bits);return fromSigned(sa/sb,bits);}
+      return a/b;
+    }
+    case "MOD":{
+      if(b===0n)throw new Error("div0");
+      if(signed){const sa=toSigned(a,bits),sb=toSigned(b,bits);return fromSigned(sa%sb,bits);}
+      return a%b;
+    }
+    case "SHL":{const n=b>=M?M:b;return mask(a<<n,bits);}
+    case "SHR":{
+      const n=b>=M?M:b;
+      if(signed){let s=toSigned(a,bits);return fromSigned(s>>n,bits);}
+      return a>>n;
+    }
   }
+  throw new Error("op?");
+}
+const opNOT=(v,bits)=>mask(~v,bits);
+const opNEG=(v,bits)=>mask(-v,bits);
+const rol=(v,bits)=>mask((v<<1n)|(v>>BigInt(bits-1)),bits);
+const ror=(v,bits)=>mask((v>>1n)|((v&1n)<<BigInt(bits-1)),bits);
 
-  function balance(toks){
-    return toks.reduce((a, t) => a + (t.t === 'lp' || t.t === 'fn' ? 1 : t.t === 'rp' ? -1 : 0), 0);
+/* ================= programmer state ================= */
+const S={mode:"HEX",bits:64,signed:false,cur:0n,acc:null,op:null,fresh:true,err:false,
+         view:"bits",endian:"BE",field:{active:false,a:null,b:null}};
+const OP_SYM={AND:"AND",OR:"OR",XOR:"XOR",ADD:"+",SUB:"−",MUL:"×",DIV:"÷",MOD:"MOD",SHL:"<<",SHR:">>",POW:"^"};
+
+/* ================= rendering: programmer ================= */
+function setAccent(){
+  const cs=document.documentElement.style;
+  const key=(APP.mode==="STD")?"std":S.mode.toLowerCase();
+  cs.setProperty("--accent",`var(--${key})`);
+  cs.setProperty("--accent-dim",`var(--${key}-dim)`);
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===S.mode));
+  $("tabs").style.setProperty("--i",MODES.indexOf(S.mode));
+}
+/* per-mode keypad layouts: only the keys that exist in that base */
+const KEY={AC:["AC","ac"],BS:[`<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7z"/><path d="M12 9.5l5 5m0-5l-5 5"/></svg>`,"ac"],AND:["AND","fn"],OR:["OR","fn"],XOR:["XOR","fn"],
+  NOT:["NOT","fn"],SHL:["&lt;&lt;","fn"],SHR:["&gt;&gt;","fn"],ROL:["RoL","fn"],ROR:["RoR","fn"],
+  MOD:["MOD","fn"],NEG:["±","fn"],CE:["CE","fn"],SWP:["⇄","fn"],DIV:["÷","op"],MUL:["×","op"],SUB:["−","op"],ADD:["+","op"],EQ:["=","eq"]};
+const LAYOUTS={
+  HEX:{cols:6,keys:["AC","BS","AND","OR","XOR","NOT",
+                    "MOD","NEG","SHL","SHR","ROL","ROR",
+                    "A","B","7","8","9","DIV",
+                    "C","D","4","5","6","MUL",
+                    "E","F","1","2","3","SUB",
+                    "0*2","00","EQ*2","ADD"]},
+  DEC:{cols:5,keys:["AC","BS","AND","OR","XOR",
+                    "NOT","SHL","SHR","ROL","ROR",
+                    "MOD","7","8","9","DIV",
+                    "NEG","4","5","6","MUL",
+                    "00","1","2","3","SUB",
+                    "0*2","EQ*2","ADD"]},
+  OCT:{cols:6,keys:["AC","BS","AND","OR","XOR","NOT",
+                    "SHL","SHR","ROL","ROR","MOD","NEG",
+                    "4","5","6","7","DIV","MUL",
+                    "0","1","2","3","SUB","ADD",
+                    "CE","SWP","00*2","EQ*2"]},
+  BIN:{cols:4,keys:["AC","BS","AND","OR",
+                    "XOR","NOT","SHL","SHR",
+                    "ROL","ROR","MOD","NEG",
+                    "0","1","DIV","MUL",
+                    "00","SUB","ADD","EQ"]}
+};
+let padMode=null;
+function renderPad(){
+  if(padMode===S.mode)return;
+  padMode=S.mode;
+  const L=LAYOUTS[S.mode];
+  const pad=$("pad");
+  pad.style.setProperty("--cols",L.cols);
+  pad.style.setProperty("--rows",Math.ceil(L.keys.reduce((n,k)=>n+(k.includes("*")?Number(k.split("*")[1]):1),0)/L.cols));
+  pad.innerHTML=L.keys.map(spec=>{
+    let k=spec,col=0,span=1;
+    if(k.includes("@")){const p=k.split("@");k=p[0];col=Number(p[1]);}
+    if(k.includes("*")){const p=k.split("*");k=p[0];span=Number(p[1]);}
+    const def=KEY[k];
+    const label=def?def[0]:k;
+    const cls=def?" "+def[1]:"";
+    const attr=def?"":(/^[A-F]$/.test(k)?" data-hex":` data-d="${k}"`);
+    return `<button class="k${cls}"${attr} data-k="${k}"${(col||span>1)?` style="grid-column:${col?col+" / ":""}span ${span}"`:""}>${label}</button>`;
+  }).join("");
+}
+function renderDisplay(){
+  const mv=$("mainVal");
+  if(S.err){mv.textContent="Cannot divide by 0";mv.classList.add("err");}
+  else{mv.classList.remove("err");mv.textContent=fmt(S.cur,S.mode,S.bits,S.signed);}
+  fitVal(mv);
+  $("pending").innerHTML=(S.acc!==null&&S.op)
+    ?`${fmt(S.acc,S.mode,S.bits,S.signed)} <span class="op-chip">${OP_SYM[S.op]}</span> <span class="swap-hint">⇄</span>`
+    :"";
+  $("conv").innerHTML=MODES.filter(m=>m!==S.mode).map(m=>{
+    const t=S.err?"—":fmt(S.cur,m,S.bits,S.signed);
+    const cls=t.length>78?" xlong":t.length>30?" long":"";
+    return `<div class="conv-row" data-mode="${m}"><span class="lbl">${m}</span><span class="val${cls}">${t}</span></div>`;
+  }).join("");
+  $("insight").innerHTML=S.err?"":insights(S.cur,S.mode,S.bits).map(i=>
+    `<span class="pill" data-copy="${(i.c||i.t).replace(/"/g,"&quot;")}">${i.swatch?`<span class="swatch" style="background:${i.swatch}"></span>`:""}${i.t}</span>`
+  ).join("");
+}
+function fieldRange(){
+  const f=S.field;
+  if(f.a===null)return null;
+  const b=(f.b===null)?f.a:f.b;
+  return {hi:Math.max(f.a,b),lo:Math.min(f.a,b)};
+}
+function renderInspector(){
+  const body=$("inspectBody"), v=mask(S.cur,S.bits);
+  if(renderInspector._last!==S.view){
+    body.classList.remove("vswitch");void body.offsetWidth;body.classList.add("vswitch");
+    renderInspector._last=S.view;
   }
+  $("fieldBtn").classList.toggle("hidden",S.view!=="bits");
+  $("fieldBtn").classList.toggle("active",S.field.active);
+  $("endBtn").classList.toggle("hidden",S.view!=="bytes");
+  $("copyBtn").classList.toggle("hidden",S.view!=="bytes");
+  $("endBtn").textContent=S.endian;
 
-  /* Legger til manglende sluttparenteser (som Google/Samsung-kalkulatoren) */
-  function autoClose(toks){
-    const out = toks.slice();
-    let b = balance(out);
-    while (b-- > 0) out.push({ t:'rp' });
-    return out;
-  }
-
-  /* Rekursiv nedstigning.
-     Prioritet: + −  <  × ÷  <  unær ±  <  ^ (høyreassosiativ)  <  postfiks (% !)  <  primær
-     Prosent: «a + b%» og «a − b%» tolkes som prosent av a (Samsung-oppførsel). */
-  function evaluate(toks, angleMode){
-    let i = 0;
-    const peek = () => toks[i];
-
-    function expr(){
-      let v = term(null);
-      while (peek() && peek().t === 'op' && (peek().v === '+' || peek().v === '-')) {
-        const o = toks[i++].v;
-        const r = term(v);
-        v = o === '+' ? v + r : v - r;
-      }
-      return v;
+  if(S.view==="bits"){
+    const pc=popcount(v), mi=msbIndex(v);
+    let html=`<div class="statline"><span>SET <b>${pc}</b></span><span>MSB <b>${mi<0?"—":mi}</b></span><span>LZ <b>${mi<0?S.bits:S.bits-1-mi}</b></span></div>`;
+    const r=fieldRange();
+    if(S.field.active&&r){
+      const w=r.hi-r.lo+1, fv=extract(v,r.hi,r.lo);
+      html+=`<div class="fieldline"><span>[${r.hi}:${r.lo}]</span><span class="fl-dim">w=${w}</span><span>HEX ${fv.toString(16).toUpperCase()}</span><span>DEC ${fv.toString(10)}</span>${S.field.b===null?'<span class="fl-dim">tap end bit…</span>':""}</div>`;
+    }else if(S.field.active){
+      html+=`<div class="fieldline"><span class="fl-dim">tap first bit of the field…</span></div>`;
     }
-    function term(pctBase){
-      let v = unary(pctBase);
-      while (peek() && peek().t === 'op' && (peek().v === '×' || peek().v === '÷')) {
-        const o = toks[i++].v, r = unary(null);
-        if (o === '÷') { if (r === 0) throw new Error('div0'); v /= r; }
-        else v *= r;
-      }
-      return v;
-    }
-    function unary(pctBase){
-      const p = peek();
-      if (p && p.t === 'op' && (p.v === '-' || p.v === '+')) {
-        i++; const v = unary(pctBase);
-        return p.v === '-' ? -v : v;
-      }
-      return power(pctBase);
-    }
-    function power(pctBase){
-      const b = post(pctBase);
-      const p = peek();
-      if (p && p.t === 'op' && p.v === '^') { i++; return Math.pow(b, unary(null)); }
-      return b;
-    }
-    function post(pctBase){
-      let v = prim();
-      while (peek() && peek().t === 'post') {
-        const o = toks[i++].v;
-        if (o === '%') v = (pctBase !== null && pctBase !== undefined) ? pctBase * v / 100 : v / 100;
-        else v = fact(v);
-      }
-      return v;
-    }
-    function prim(){
-      const t = toks[i++];
-      if (!t) throw new Error('syntax');
-      if (t.t === 'num')   return parseFloat(t.v);
-      if (t.t === 'const') return t.v === 'pi' ? Math.PI : Math.E;
-      if (t.t === 'lp') {
-        const v = expr();
-        if (!(toks[i] && toks[i].t === 'rp')) throw new Error('syntax');
-        i++; return v;
-      }
-      if (t.t === 'fn') {
-        const v = expr();
-        if (!(toks[i] && toks[i].t === 'rp')) throw new Error('syntax');
-        i++; return applyFn(t.v, v);
-      }
-      throw new Error('syntax');
-    }
-    function applyFn(f, x){
-      const rad = angleMode === 'deg' ? x * Math.PI / 180 : x;
-      switch (f) {
-        case 'sin':  return cleanTrig(Math.sin(rad));
-        case 'cos':  return cleanTrig(Math.cos(rad));
-        case 'tan': {
-          /* tan(90°) er udefinert — fang det før flyttallene lurer oss */
-          if (angleMode === 'deg' && Math.abs(((x % 180) + 180) % 180 - 90) < 1e-9) throw new Error('domain');
-          return cleanTrig(Math.tan(rad));
+    for(let row=Math.ceil(S.bits/16)-1;row>=0;row--){
+      const hi=row*16+15, lo=row*16;
+      let nibs="";
+      for(let nb=3;nb>=0;nb--){
+        const nHi=lo+nb*4+3, nLo=lo+nb*4;
+        let cells="", nval=0n;
+        for(let i=nHi;i>=nLo;i--){
+          const dead=i>=S.bits, on=!dead&&((v>>BigInt(i))&1n)===1n;
+          if(on)nval|=1n<<BigInt(i-nLo);
+          const insel=S.field.active&&r&&S.field.b!==null&&i>=r.lo&&i<=r.hi;
+          cells+=`<button class="bit${on?" on":""}${dead?" dead":""}${insel?" insel":""}${S._flash===i?" flash":""}" data-bit="${i}" aria-label="bit ${i}">${on?1:0}</button>`;
         }
-        case 'asin': if (x < -1 || x > 1) throw new Error('domain'); return fromRad(Math.asin(x));
-        case 'acos': if (x < -1 || x > 1) throw new Error('domain'); return fromRad(Math.acos(x));
-        case 'atan': return fromRad(Math.atan(x));
-        case 'ln':   if (x <= 0) throw new Error('domain'); return Math.log(x);
-        case 'log':  if (x <= 0) throw new Error('domain'); return Math.log10(x);
-        case 'exp':  return Math.exp(x);
-        case 'pow10': return Math.pow(10, x);
-        case 'sqrt': if (x <  0) throw new Error('domain'); return Math.sqrt(x);
+        const deadNib=nLo>=S.bits;
+        nibs+=`<div class="nib"><div class="nbits">${cells}</div><span class="nhex${nval?" nz":""}">${deadNib?"":nval.toString(16).toUpperCase()}</span></div>`;
       }
-      throw new Error('syntax');
+      html+=`<div class="bitrow"><span class="idx">${Math.min(hi,S.bits-1)}</span><div class="nibs">${nibs}</div><span class="idx lo">${lo}</span></div>`;
     }
-    function fromRad(r){ return angleMode === 'deg' ? r * 180 / Math.PI : r; }
-    /* Fjerner flyttallsstøy nær 0 og ±1 (sin(180°) -> 0, ikke 1.2e-16) */
-    function cleanTrig(v){
-      if (Math.abs(v) < 1e-14) return 0;
-      if (Math.abs(Math.abs(v) - 1) < 1e-14) return Math.sign(v);
-      return v;
+    body.innerHTML=html;
+  }else if(S.view==="float"){
+    const v=mask(S.cur,S.bits);
+    if(S.bits<32){body.innerHTML='<div class="statline" style="padding-top:10px">Float view needs a 32-bit word or wider — pick 32, 64 or 128 above.</div>';return;}
+    const one=(p,name,width)=>{
+      const eb=p.e.toString(2).padStart(p.ebits,"0");
+      const mhex="0x"+p.m.toString(16).toUpperCase();
+      const unb=p.cls==="normal"?` = 2^${p.e-p.bias}`:"";
+      let strip="";
+      for(let i=width-1;i>=0;i--){
+        const on=((v>>BigInt(i%width))&1n)===1n?" on":"";
+        const c=i===width-1?"fs":(i>=p.mbits?"fe":"fm");
+        strip+=`<span class="fbit ${c}${on}"></span>`;
+      }
+      return `<div class="frow"><span class="flbl">${name}</span><span class="fval">${fmtFloat(p.val)}</span><span class="fcls" data-c="${p.cls}">${p.cls}</span></div>
+        <div class="fparts">S ${p.s} · E ${eb}₂ (${p.e}${unb}) · M ${mhex}</div>
+        <div class="fstrip">${strip}</div>
+        <div class="fgrp"><span style="flex:1">S</span><span style="flex:${p.ebits}">EXP</span><span style="flex:${p.mbits}">MANTISSA</span></div>`;
+    };
+    let html='<div class="statline"><span><b class="fkey fs"></b> SIGN</span><span><b class="fkey fe"></b> EXPONENT</span><span><b class="fkey fm"></b> MANTISSA</span></div>';
+    html+=one(f32parts(v),"FLOAT32",32);
+    if(S.bits>=64)html+=one(f64parts(v),"FLOAT64",64);
+    body.innerHTML=html;
+  }else{
+    const nBytes=S.bits/8;
+    /* ASCII string preview, most significant byte first */
+    let str="";
+    for(let i=nBytes-1;i>=0;i--){
+      const b=Number((v>>BigInt(i*8))&0xFFn);
+      str+=(b>=32&&b<127)?String.fromCharCode(b):"·";
     }
-    function fact(n){
-      if (n < 0 || !Number.isInteger(n) || n > 170) throw new Error('domain');
-      let r = 1;
-      for (let k = 2; k <= n; k++) r *= k;
-      return r;
+    str=str.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+    let rows=`<div class="strline"><span class="lbl">ASCII</span>${str}</div>`;
+    rows+=`<div class="byte-head"><span>BYTE</span><span>HEX</span><span>DEC</span><span>ASC</span><span class="b-bin">BINARY</span></div>`;
+    const order=[];
+    for(let i=nBytes-1;i>=0;i--)order.push(i);
+    if(S.endian==="LE")order.reverse();
+    for(const i of order){
+      const b=Number((v>>BigInt(i*8))&0xFFn);
+      const asc=(b>=32&&b<127)?String.fromCharCode(b).replace(/&/g,"&amp;").replace(/</g,"&lt;"):"·";
+      rows+=`<div class="byte-row${b?" nz":""}" style="--w:${(b/255*100).toFixed(1)}%"><span>${i}</span><span class="b-hex">${b.toString(16).toUpperCase().padStart(2,"0")}</span><span>${b}</span><span class="b-asc">${asc}</span><span class="b-bin">${b.toString(2).padStart(8,"0").replace(/(\d{4})(\d{4})/,"$1 $2")}</span></div>`;
     }
-
-    const v = expr();
-    if (i < toks.length) throw new Error('syntax');
-    if (!isFinite(v)) throw new Error('result');
-    return v;
-  }
-
-  return { fmtNum, fmtEntry, roundSig, resultString, buildExpr, balance, autoClose, evaluate, THIN };
-})();
-/* @engine-end */
-
-const $ = id => document.getElementById(id);
-
-/* ---------------- Innstillinger ---------------- */
-const DEFAULTS = { theme:'auto', sci:false, sep:true, haptic:true, sound:false, history:true, large:false, wake:false, angle:'deg' };
-let S = Object.assign({}, DEFAULTS, safeParse(localStorage.getItem('numera:settings'), {}));
-const saveSettings = () => { try { localStorage.setItem('numera:settings', JSON.stringify(S)); } catch (e) {} };
-function safeParse(s, fallback){ try { const v = JSON.parse(s); return v === null || v === undefined ? fallback : v; } catch (e) { return fallback; } }
-
-/* ---------------- Tilstand ---------------- */
-let tokens = [];          // fullførte token: {t:'num'|'op'|'fn'|'const'|'lp'|'rp'|'post', v}
-let entry = '';           // tall som skrives inn nå (intern desimal = '.')
-let mainValue = '0';      // sist viste tallverdi
-let justEvaluated = false;
-let lastAnswer = null;
-let hist = safeParse(localStorage.getItem('numera:history'), []);
-if (!Array.isArray(hist)) hist = [];
-let errTimer = null;
-let inv = false;          // INV: viser sin⁻¹, cos⁻¹, tan⁻¹, eˣ, 10ˣ
-
-const INV_LABEL = { sin:'sin⁻¹', cos:'cos⁻¹', tan:'tan⁻¹', ln:'eˣ', log:'10ˣ' };
-function applyInv(){
-  const b = document.getElementById('btnInv');
-  b.setAttribute('aria-pressed', String(inv));
-  document.querySelectorAll('.key[data-inv]').forEach(k => {
-    k.textContent = inv ? INV_LABEL[k.dataset.fn] : k.dataset.fn;
-  });
-}
-
-const fmtNum   = s => Engine.fmtNum(s, S.sep);
-const fmtEntry = e => Engine.fmtEntry(e, S.sep);
-const buildExpr = t => Engine.buildExpr(t, S.sep);
-
-/* ---------------- Handlinger ---------------- */
-function commitEntry(){
-  if (entry !== '') {
-    let v = entry;
-    if (v.endsWith('.')) v = v.slice(0, -1);
-    if (v === '-' || v === '') v = '0';
-    tokens.push({ t:'num', v }); mainValue = v; entry = '';
+    body.innerHTML=rows;
   }
 }
-function lastTok(){ return tokens[tokens.length - 1]; }
-function needsImplicitX(){
-  if (entry !== '') return true;
-  const l = lastTok();
-  return !!l && (l.t === 'num' || l.t === 'const' || l.t === 'rp' || l.t === 'post');
-}
-function resetIfEvaluated(){
-  if (justEvaluated) { tokens = []; mainValue = '0'; justEvaluated = false; setExpr(''); }
-}
-/* Etter «=» skal en operator fortsette på svaret, ikke starte på nytt */
-function continueIfEvaluated(){
-  if (justEvaluated) { justEvaluated = false; setExpr(''); }
-}
-
-function inputDigit(d){
-  clearTimeout(errTimer);
-  resetIfEvaluated();
-  if (entry.replace(/[^0-9]/g, '').length >= 15) { buzz([10, 30, 10]); return; }
-  if (entry === '0') entry = d === '0' ? '0' : d;
-  else if (entry === '-0') entry = d === '0' ? '-0' : '-' + d;
-  else entry += d;
-  render();
-}
-
-function inputComma(){
-  clearTimeout(errTimer);
-  resetIfEvaluated();
-  if (entry === '' || entry === '-') entry += '0.';
-  else if (!entry.includes('.')) entry += '.';
-  render();
-}
-
-function inputOp(op){
-  clearTimeout(errTimer);
-  continueIfEvaluated();
-  commitEntry();
-  const l = lastTok();
-  if (!tokens.length) {
-    if (op === '-') { tokens.push({ t:'op', v:'-' }); }
-    else if (lastAnswer !== null) { tokens.push({ t:'num', v:String(lastAnswer) }); tokens.push({ t:'op', v:op }); }
-    else return;
-  } else if (l.t === 'op') {
-    if (op === '-' && l.v !== '-') tokens.push({ t:'op', v:'-' });
-    else tokens[tokens.length - 1] = { t:'op', v:op };
-  } else if (l.t === 'lp' || l.t === 'fn') {
-    if (op === '-') tokens.push({ t:'op', v:'-' });
-    else return;
-  } else {
-    tokens.push({ t:'op', v:op });
-  }
-  render();
-}
-
-function inputFn(name){
-  clearTimeout(errTimer);
-  resetIfEvaluated();
-  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
-  tokens.push({ t:'fn', v:name });
-  render();
-}
-
-function inputConst(c){
-  clearTimeout(errTimer);
-  resetIfEvaluated();
-  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
-  tokens.push({ t:'const', v:c });
-  mainValue = c === 'pi' ? Engine.resultString(Math.PI) : Engine.resultString(Math.E);
-  render();
-}
-
-function inputLParen(){
-  clearTimeout(errTimer);
-  resetIfEvaluated();
-  if (needsImplicitX()) { commitEntry(); tokens.push({ t:'op', v:'×' }); }
-  tokens.push({ t:'lp' });
-  render();
-}
-
-function inputRParen(){
-  clearTimeout(errTimer);
-  resetIfEvaluated();
-  commitEntry();
-  if (Engine.balance(tokens) <= 0) return;
-  const l = lastTok();
-  if (!l || !(l.t === 'num' || l.t === 'rp' || l.t === 'const' || l.t === 'post')) return;
-  tokens.push({ t:'rp' });
-  render();
-}
-
-function postfix(kind){ /* '%' | '!' | 'square' */
-  clearTimeout(errTimer);
-  continueIfEvaluated();
-  commitEntry();
-  const l = lastTok();
-  if (!l || !(l.t === 'num' || l.t === 'rp' || l.t === 'const' || l.t === 'post')) return;
-  if (kind === 'square') { tokens.push({ t:'op', v:'^' }); tokens.push({ t:'num', v:'2' }); }
-  else tokens.push({ t:'post', v:kind });
-  render();
-}
-
-function doNeg(){
-  clearTimeout(errTimer);
-  continueIfEvaluated();
-  if (entry !== '') {
-    entry = entry.startsWith('-') ? entry.slice(1) : '-' + entry;
-  } else {
-    const l = lastTok();
-    if (l && l.t === 'num') {
-      l.v = String(-parseFloat(l.v));
-      if (l.v === '0' || l.v === '-0') l.v = '0';
-      mainValue = l.v;
-    } else if (!l) {
-      entry = '-0';
-    }
-  }
-  render();
-}
-
-function doBack(){
-  clearTimeout(errTimer);
-  if (justEvaluated) { doAC(true); return; }
-  if (entry !== '') {
-    entry = entry.slice(0, -1);
-    if (entry === '-') entry = '';
-  } else {
-    const l = tokens.pop();
-    /* x² er to token (^ og 2): fjern begge */
-    if (l && l.t === 'num' && l.v === '2' && lastTok() && lastTok().t === 'op' && lastTok().v === '^') tokens.pop();
-    const nums = tokens.filter(t => t.t === 'num');
-    mainValue = nums.length ? nums[nums.length - 1].v : '0';
-  }
-  render();
-}
-
-function doAC(full){
-  clearTimeout(errTimer);
-  if (!full && entry !== '') { entry = ''; if (!tokens.length) mainValue = '0'; }
-  else {
-    tokens = []; entry = ''; mainValue = '0'; justEvaluated = false;
-    setExpr(''); setPreview('');
-  }
-  render();
-}
-
-function computePreview(){
-  let copy = tokens.slice();
-  if (entry !== '') copy.push({ t:'num', v: entry.endsWith('.') ? entry.slice(0, -1) : entry });
-  while (copy.length) {
-    const l = copy[copy.length - 1];
-    if (l.t === 'op' || l.t === 'fn' || l.t === 'lp') copy.pop();
-    else break;
-  }
-  const hasOp = copy.some(t => t.t === 'op' || t.t === 'fn' || t.t === 'post');
-  if (copy.length < 2 || !hasOp) return null;
-  copy = Engine.autoClose(copy);
-  try {
-    const v = Engine.evaluate(copy, S.angle);
-    return fmtNum(Engine.resultString(v));
-  } catch (e) { return null; }
-}
-
-function doEquals(){
-  clearTimeout(errTimer);
-  if (justEvaluated) return;
-  commitEntry();
-  if (!tokens.length) return;
-  /* Fjern hengende operator, lukk parenteser */
-  while (tokens.length && (lastTok().t === 'op' || lastTok().t === 'fn' || lastTok().t === 'lp')) tokens.pop();
-  if (!tokens.length) { doAC(true); return; }
-  tokens = Engine.autoClose(tokens);
-  const exprText = buildExpr(tokens);
-  try {
-    const v = Engine.evaluate(tokens.slice(), S.angle);
-    const rs = Engine.resultString(v);
-    if (S.history) {
-      hist.unshift({ e: exprText, r: rs, t: Date.now() });
-      hist = hist.slice(0, 60);
-      try { localStorage.setItem('numera:history', JSON.stringify(hist)); } catch (e) {}
-      renderHist();
-    }
-    lastAnswer = parseFloat(rs);
-    tokens = [{ t:'num', v: rs }];
-    entry = ''; mainValue = rs; justEvaluated = true;
-    setExpr(exprText + ' =');
-    setPreview('');
-    const m = $('mainLine');
-    m.classList.remove('pop'); void m.offsetWidth; m.classList.add('pop');
-    buzz(14);
-  } catch (e) {
-    flashError(e.message);
-    return;
-  }
-  render();
-}
-
-const ERR_TEXT = { div0:'Kan ikke dele på 0', domain:'Utenfor definisjonsområdet', syntax:'Ufullstendig uttrykk', result:'For stort tall' };
-function flashError(kind){
-  const box = $('displayBox'), m = $('mainLine');
-  box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
-  m.innerHTML = '<span class="err">Feil</span>';
-  $('previewLine').textContent = ERR_TEXT[kind] || 'Kan ikke regnes ut';
-  buzz([30, 40, 30]);
-  clearTimeout(errTimer);
-  errTimer = setTimeout(render, 1400);
-}
-
-/* ---------------- Rendering ---------------- */
-function setExpr(t){
-  const el = $('exprLine');
-  el.textContent = t || '\u00A0';
-  el.scrollLeft = el.scrollWidth;
-}
-function setPreview(t){
-  const el = $('previewLine');
-  el.textContent = '';
-  if (!t) return;
-  el.append('= ');
-  const b = document.createElement('b'); b.textContent = t; el.append(b);
-}
-
 function render(){
-  const exprStr = buildExpr(tokens) + (entry !== '' ? fmtEntry(entry) : '');
-  if (!justEvaluated) setExpr(exprStr);
-  $('mainLine').textContent = entry !== '' ? fmtEntry(entry) : fmtNum(mainValue);
-  if (!justEvaluated) setPreview(computePreview() || '');
-
-  $('btnAC').textContent = (entry !== '' || tokens.length) ? 'C' : 'AC';
-  $('btnAngle').textContent = S.angle.toUpperCase();
-  $('chipAngle').textContent = S.angle.toUpperCase();
-  fitMain();
+  setAccent();renderPad();renderDisplay();renderInspector();
+  $("sgn").textContent=S.signed?"SIGNED":"UNSIGNED";
+  $("sgn").classList.toggle("active",S.signed);
+  document.querySelectorAll("#meta [data-bits]").forEach(c=>c.classList.toggle("active",Number(c.dataset.bits)===S.bits));
+  document.querySelectorAll("#seg button").forEach(b=>b.classList.toggle("active",b.dataset.view===S.view));
+  $("seg").style.setProperty("--i",["bits","bytes","float"].indexOf(S.view));
+  $("segbits").style.setProperty("--i",[8,16,32,64,128].indexOf(S.bits));
 }
 
-function fitMain(){
-  const el = $('mainLine');
-  el.style.fontSize = '';
-  const w = el.clientWidth;
-  if (!w) return;
-  let fs = parseFloat(getComputedStyle(el).fontSize);
-  let guard = 0;
-  while (el.scrollWidth > w + 1 && fs > 15 && guard++ < 30) {
-    fs *= 0.92;
-    el.style.fontSize = fs + 'px';
+/* ================= programmer input ================= */
+function clearErr(){if(S.err){S.err=false;S.cur=0n;S.acc=null;S.op=null;S.fresh=true;}}
+function inputDigit(d){
+  clearErr();
+  const base=BASE[S.mode];
+  const digits=d==="00"?[0n,0n]:[BigInt(parseInt(d,16))];
+  if(S.fresh){S.cur=0n;S.fresh=false;}
+  for(const dg of digits){
+    if(dg>=base)return;
+    const next=S.cur*base+dg;
+    if(next!==mask(next,S.bits)){haptic(30);return;}
+    S.cur=next;
   }
 }
-if (window.ResizeObserver) new ResizeObserver(() => fitMain()).observe($('displayBox'));
-
-/* ---------------- Historikk ---------------- */
-function renderHist(){
-  const list = $('histList');
-  list.innerHTML = '';
-  $('histEmpty').style.display = hist.length ? 'none' : 'block';
-  hist.forEach(h => {
-    const li = document.createElement('li');
-    const b = document.createElement('button');
-    b.className = 'hist-item';
-    b.type = 'button';
-    const e = document.createElement('span'); e.className = 'h-expr'; e.textContent = h.e + ' =';
-    const r = document.createElement('span'); r.className = 'h-res';  r.textContent = fmtNum(h.r);
-    b.append(e, r);
-    b.addEventListener('click', () => {
-      clearTimeout(errTimer);
-      tokens = [{ t:'num', v: h.r }];
-      entry = ''; mainValue = h.r; justEvaluated = false;
-      lastAnswer = parseFloat(h.r);
-      setExpr(''); setPreview('');
-      closeSheets(); render(); buzz();
-    });
-    li.appendChild(b);
-    list.appendChild(li);
-  });
+function pressOp(op){
+  clearErr();
+  try{
+    if(S.acc!==null&&S.op&&!S.fresh){S.acc=applyOp(S.acc,S.cur,S.op,S.bits,S.signed);S.cur=S.acc;}
+    else S.acc=S.cur;
+    S.op=op;S.fresh=true;
+  }catch(e){S.err=true;S.acc=null;S.op=null;haptic(60);}
 }
-
-/* ---------------- Tema ---------------- */
-const mq = matchMedia('(prefers-color-scheme: dark)');
-function applyTheme(){
-  const resolved = S.theme === 'auto' ? (mq.matches ? 'dark' : 'light') : S.theme;
-  document.documentElement.setAttribute('data-theme', resolved);
-  $('metaTheme').content = resolved === 'dark' ? '#0f1012' : '#ebebe9';
-}
-mq.addEventListener('change', () => { if (S.theme === 'auto') applyTheme(); });
-
-$('btnTheme').addEventListener('click', () => {
-  const resolved = document.documentElement.getAttribute('data-theme');
-  S.theme = resolved === 'dark' ? 'light' : 'dark';
-  saveSettings(); applyTheme(); syncSettingsUI(); buzz();
-});
-
-/* ---------------- Ark (sheets) ---------------- */
-let sheetHistoryStateAdded = false;
-function openSheet(el){
-  closeSheets(true);
-  $('backdrop').classList.add('show');
-  el.classList.add('open');
-  el.scrollTop = 0;
-  /* Android-tilbakeknappen lukker arket i stedet for å forlate appen */
-  if (!sheetHistoryStateAdded) {
-    try { history.pushState({ sheet: true }, ''); sheetHistoryStateAdded = true; } catch (e) {}
+function pressEq(){
+  clearErr();
+  if(S.acc===null||!S.op){
+    if(S._rep){
+      try{S.cur=applyOp(S.cur,S._rep.b,S._rep.op,S.bits,S.signed);}
+      catch(e){S.err=true;haptic(60);}
+      S.fresh=true;
+    }
+    return;
   }
+  const b=S.cur;
+  try{S.cur=applyOp(S.acc,S.cur,S.op,S.bits,S.signed);S._rep={op:S.op,b};}
+  catch(e){S.err=true;haptic(60);}
+  S.acc=null;S.op=null;S.fresh=true;
 }
-function closeSheets(keepHistory){
-  $('backdrop').classList.remove('show');
-  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('open'));
-  if (!keepHistory && sheetHistoryStateAdded) {
-    sheetHistoryStateAdded = false;
-    try { history.back(); } catch (e) {}
+function press(k){
+  switch(k){
+    case "AC":
+      if(!S.err&&(S.cur!==0n||S.acc!==null))S._undo={cur:S.cur,acc:S.acc,op:S.op};
+      S.cur=0n;S.acc=null;S.op=null;S.fresh=true;S.err=false;S._rep=null;break;
+    case "BS":clearErr();if(!S.fresh)S.cur=S.cur/BASE[S.mode];break;
+    case "CE":clearErr();S.cur=0n;S.fresh=true;break;
+    case "SWP":{if(S.acc===null||!S.op||S.err)break;
+      const a=S.acc;S.acc=S.cur;S.cur=a;S.fresh=true;break;}
+    case "NOT":clearErr();S.cur=opNOT(S.cur,S.bits);S.fresh=true;break;
+    case "NEG":clearErr();S.cur=opNEG(S.cur,S.bits);S.fresh=true;break;
+    case "ROL":clearErr();S.cur=rol(S.cur,S.bits);S.fresh=true;break;
+    case "ROR":clearErr();S.cur=ror(S.cur,S.bits);S.fresh=true;break;
+    case "EQ":pressEq();break;
+    case "AND":case "OR":case "XOR":case "ADD":case "SUB":
+    case "MUL":case "DIV":case "MOD":case "SHL":case "SHR":pressOp(k);break;
+    default:inputDigit(k);
   }
+  render();
 }
-window.addEventListener('popstate', () => {
-  if (sheetHistoryStateAdded) { sheetHistoryStateAdded = false; closeSheets(true); }
-});
-$('backdrop').addEventListener('click', () => closeSheets());
-document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeSheets()));
-$('btnHistory').addEventListener('click', () => { renderHist(); openSheet($('sheetHistory')); buzz(); });
-$('btnHelp').addEventListener('click', () => { openSheet($('sheetHelp')); buzz(); });
-$('btnPull').addEventListener('click', () => {
-  S.sci = !S.sci; saveSettings(); syncSettingsUI(); applySettingsEffects(); buzz(10);
-});
-$('btnSettings').addEventListener('click', () => { openSheet($('sheetSettings')); buzz(); });
-$('btnClearHist').addEventListener('click', () => {
-  hist = []; try { localStorage.setItem('numera:history', '[]'); } catch (e) {}
-  renderHist(); buzz(); toast('HISTORIKK TØMT');
-});
-
-/* Sveip ned på gripefeltet for å lukke */
-document.querySelectorAll('.sheet').forEach(sheet => {
-  let startY = null;
-  sheet.addEventListener('touchstart', e => {
-    startY = sheet.scrollTop <= 0 ? e.touches[0].clientY : null;
-  }, { passive: true });
-  sheet.addEventListener('touchmove', e => {
-    if (startY === null) return;
-    const dy = e.touches[0].clientY - startY;
-    if (dy > 90) { startY = null; closeSheets(); }
-  }, { passive: true });
-  sheet.addEventListener('touchend', () => { startY = null; });
-});
-
-/* ---------------- Innstillingsbindinger ---------------- */
-function syncSettingsUI(){
-  $('optSci').checked    = S.sci;
-  $('optSep').checked    = S.sep;
-  $('optHaptic').checked = S.haptic;
-  $('optSound').checked  = S.sound;
-  $('optHist').checked   = S.history;
-  $('optLarge').checked  = S.large;
-  $('optWake').checked   = S.wake;
-  document.querySelectorAll('#themeSeg .seg-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.tc === S.theme));
+function setMode(m,dir){
+  if(m===S.mode)return;
+  const inner=$("dispInner");
+  if(dir){
+    inner.classList.add(dir==="left"?"slide-l":"slide-r");
+    setTimeout(()=>{
+      S.mode=m;render();
+      inner.classList.remove("slide-l","slide-r");
+      inner.classList.add(dir==="left"?"slide-r":"slide-l");
+      requestAnimationFrame(()=>requestAnimationFrame(()=>inner.classList.remove("slide-l","slide-r")));
+    },160);
+  }else{S.mode=m;render();}
+  haptic(10);
 }
-
-function applySettingsEffects(){
-  $('sciPad').classList.toggle('open', S.sci);
-  $('chipRow').hidden = !S.sci;
-  const pull = $('btnPull');
-  pull.classList.toggle('open', S.sci);
-  pull.setAttribute('aria-expanded', String(S.sci));
-  pull.setAttribute('aria-label', S.sci ? 'Skjul vitenskapelige funksjoner' : 'Vis vitenskapelige funksjoner');
-  if (!S.sci && inv) { inv = false; applyInv(); }
-  $('btnHistory').style.display = S.history ? '' : 'none';
-  document.body.classList.toggle('large', S.large);
-  applyWake();
+function setBits(n){
+  S.bits=n;S.cur=mask(S.cur,n);if(S.acc!==null)S.acc=mask(S.acc,n);
+  S.field={active:S.field.active,a:null,b:null};
   render();
 }
 
-document.querySelectorAll('#themeSeg .seg-btn').forEach(b =>
-  b.addEventListener('click', () => { S.theme = b.dataset.tc; saveSettings(); applyTheme(); syncSettingsUI(); buzz(); }));
-
-$('optSci').addEventListener('change',   e => { S.sci    = e.target.checked; saveSettings(); applySettingsEffects(); });
-$('optSep').addEventListener('change',   e => { S.sep    = e.target.checked; saveSettings(); render(); });
-$('optHaptic').addEventListener('change',e => { S.haptic = e.target.checked; saveSettings(); buzz(12); });
-$('optSound').addEventListener('change', e => { S.sound  = e.target.checked; saveSettings(); tick(1400); });
-$('optHist').addEventListener('change',  e => {
-  S.history = e.target.checked; saveSettings(); applySettingsEffects();
-});
-$('optLarge').addEventListener('change', e => { S.large = e.target.checked; saveSettings(); applySettingsEffects(); });
-$('optWake').addEventListener('change',  e => { S.wake  = e.target.checked; saveSettings(); applyWake(); });
-
-$('btnReset').addEventListener('click', () => {
-  if (!confirm('Tilbakestille alle innstillinger og slette historikken?')) return;
-  try { localStorage.removeItem('numera:settings'); localStorage.removeItem('numera:history'); } catch (e) {}
-  location.reload();
-});
-
-/* ---------------- Hold skjermen på (Wake Lock) ---------------- */
-let wakeLock = null;
-async function applyWake(){
-  if (!('wakeLock' in navigator)) { $('optWake').closest('.row').hidden = true; return; }
-  try {
-    if (S.wake && !wakeLock && document.visibilityState === 'visible') {
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', () => { wakeLock = null; });
-    } else if (!S.wake && wakeLock) {
-      await wakeLock.release(); wakeLock = null;
+/* ================= standard calculator ================= */
+const SD={cur:"0",acc:null,op:null,fresh:true,err:false,mem:0,hist:[],deg:true};
+function sdNum(){return parseFloat(SD.cur);}
+function sdFmt(x){
+  if(!isFinite(x))return "Error";
+  if(Number.isInteger(x)&&Math.abs(x)<1e15)return group(x.toString(),3);
+  let s=parseFloat(x.toPrecision(12)).toString();
+  if(s.includes("e"))return s;
+  const [i,d]=s.split(".");
+  return group(i,3)+(d?"."+d:"");
+}
+function sdApply(a,b,op){
+  switch(op){case "ADD":return a+b;case "SUB":return a-b;
+    case "MUL":return a*b;case "DIV":return b===0?NaN:a/b;
+    case "POW":return Math.pow(a,b);}
+}
+function sdRender(){
+  const mv=$("sMainVal");
+  if(SD.err){mv.textContent=SD.errMsg||"Cannot divide by 0";mv.classList.add("err");}
+  else{
+    mv.classList.remove("err");
+    mv.textContent=SD.fresh?sdFmt(sdNum()):(function(){
+      /* show entry string, grouped integer part */
+      const neg=SD.cur.startsWith("-");
+      let s=neg?SD.cur.slice(1):SD.cur;
+      const [i,d]=s.split(".");
+      return (neg?"-":"")+group(i||"0",3)+(s.includes(".")?"."+(d||""):"");
+    })();
+    fitVal(mv);
+  }
+  $("sPendTxt").innerHTML=(SD.acc!==null&&SD.op)
+    ?`${sdFmt(SD.acc)} <span class="op-chip">${OP_SYM[SD.op]}</span> <span class="swap-hint">⇄</span>`:"";
+  $("memInd").classList.toggle("hidden",SD.mem===0);
+}
+function renderTape(){
+  const tape=$("tape");
+  $("histClear").disabled=SD.hist.length===0;
+  tape.innerHTML='<div class="tape-fill"></div>'
+    +SD.hist.map((h,i)=>
+    `<button class="tape-row" data-i="${i}"><span class="t-expr">${h.e}</span><span class="t-res">= ${h.r}</span></button>`
+  ).join("");
+  tape.scrollTop=tape.scrollHeight;
+}
+function sciTape(expr,r){
+  SD.hist.push({e:expr,r:sdFmt(r)});
+  if(SD.hist.length>40)SD.hist.shift();store.set("bw.hist",JSON.stringify(SD.hist));renderTape();
+  SD.cur=sdFmtRaw(r);SD.fresh=true;
+}
+function sdClearErr(){if(SD.err){SD.err=false;SD.errMsg="";SD.cur="0";SD.acc=null;SD.op=null;SD.fresh=true;}}
+function pressStd(k){
+  switch(k){
+    case "AC":
+      if(!SD.err&&(SD.cur!=="0"||SD.acc!==null))SD._undo={cur:SD.cur,acc:SD.acc,op:SD.op};
+      SD.cur="0";SD.acc=null;SD.op=null;SD.fresh=true;SD.err=false;SD.errMsg="";SD._rep=null;break;
+    case "BS":sdClearErr();if(!SD.fresh){SD.cur=SD.cur.length>1?SD.cur.slice(0,-1):"0";if(SD.cur==="-")SD.cur="0";}break;
+    case "DOT":sdClearErr();if(SD.fresh){SD.cur="0.";SD.fresh=false;}else if(!SD.cur.includes("."))SD.cur+=".";break;
+    case "NEG":sdClearErr();
+      if(SD.fresh){SD.cur=sdFmtRaw(-sdNum());}
+      else SD.cur=SD.cur.startsWith("-")?SD.cur.slice(1):"-"+SD.cur;
+      break;
+    case "PCT":{sdClearErr();const x=sdNum();
+      /* smart percent: 200 + 10 % means 200 + 20 */
+      if(SD.acc!==null&&(SD.op==="ADD"||SD.op==="SUB"))SD.cur=sdFmtRaw(SD.acc*x/100);
+      else SD.cur=sdFmtRaw(x/100);
+      SD.fresh=true;break;}
+    case "SQRT":{sdClearErr();const x=sdNum();
+      if(x<0){SD.err=true;SD.errMsg="Invalid input";break;}
+      const r=Math.sqrt(x);SD.hist.push({e:`√(${sdFmt(x)})`,r:sdFmt(r)});
+      if(SD.hist.length>40)SD.hist.shift();store.set("bw.hist",JSON.stringify(SD.hist));renderTape();
+      SD.cur=sdFmtRaw(r);SD.fresh=true;break;}
+    case "SQ":sdClearErr();$("powcard").classList.remove("hidden");break;
+    case "INV":{sdClearErr();const x=sdNum();
+      if(x===0){SD.err=true;SD.errMsg="Cannot divide by 0";break;}
+      const r=1/x;SD.hist.push({e:`1/(${sdFmt(x)})`,r:sdFmt(r)});
+      if(SD.hist.length>40)SD.hist.shift();store.set("bw.hist",JSON.stringify(SD.hist));renderTape();
+      SD.cur=sdFmtRaw(r);SD.fresh=true;break;}
+    case "SIN":case "COS":case "TAN":{sdClearErr();const x=sdNum();
+      const rad=SD.deg?x*Math.PI/180:x;
+      const fn={SIN:Math.sin,COS:Math.cos,TAN:Math.tan}[k];
+      let r=fn(rad);
+      if(Math.abs(r)<1e-12)r=0;
+      if(!isFinite(r)||Math.abs(r)>1e15){SD.err=true;SD.errMsg="Invalid input";break;}
+      sciTape(`${k.toLowerCase()}(${sdFmt(x)}${SD.deg?"°":""})`,r);break;}
+    case "LN":case "LOG":{sdClearErr();const x=sdNum();
+      if(x<=0){SD.err=true;SD.errMsg="Invalid input";break;}
+      const r=k==="LN"?Math.log(x):Math.log10(x);
+      sciTape(`${k==="LN"?"ln":"log"}(${sdFmt(x)})`,r);break;}
+    case "FACT":{sdClearErr();const x=sdNum();
+      if(x<0||x>170||Math.abs(x-Math.round(x))>1e-9){SD.err=true;SD.errMsg="Invalid input";break;}
+      let r=1;for(let i=2;i<=Math.round(x);i++)r*=i;
+      sciTape(`(${sdFmt(x)})!`,r);break;}
+    case "PI":sdClearErr();SD.cur=sdFmtRaw(Math.PI);SD.fresh=true;break;
+    case "EULER":sdClearErr();SD.cur=sdFmtRaw(Math.E);SD.fresh=true;break;
+    case "MC":SD.mem=0;break;
+    case "MR":sdClearErr();SD.cur=sdFmtRaw(SD.mem);SD.fresh=true;break;
+    case "MPLUS":sdClearErr();SD.mem=parseFloat(sdFmtRaw(SD.mem+sdNum()));SD.fresh=true;break;
+    case "MMINUS":sdClearErr();SD.mem=parseFloat(sdFmtRaw(SD.mem-sdNum()));SD.fresh=true;break;
+    case "EQ":{
+      sdClearErr();
+      if(SD.acc===null||!SD.op){
+        if(SD._rep){
+          const a=sdNum(), r=sdApply(a,SD._rep.b,SD._rep.op);
+          if(isNaN(r)){SD.err=true;SD.errMsg=SD._rep.op==="POW"?"Invalid input":"Cannot divide by 0";haptic(60);}
+          else{
+            SD.cur=sdFmtRaw(r);
+            SD.hist.push({e:`${sdFmt(a)} ${OP_SYM[SD._rep.op]} ${sdFmt(SD._rep.b)}`,r:sdFmt(r)});
+            if(SD.hist.length>40)SD.hist.shift();
+            store.set("bw.hist",JSON.stringify(SD.hist));renderTape();
+          }
+          SD.fresh=true;
+        }
+        break;
+      }
+      const b=sdNum(), r=sdApply(SD.acc,b,SD.op);
+      if(isNaN(r)){SD.err=true;SD.errMsg=SD.op==="POW"?"Invalid input":"Cannot divide by 0";haptic(60);}
+      else{
+        SD.cur=sdFmtRaw(r);SD._rep={op:SD.op,b};
+        SD.hist.push({e:`${sdFmt(SD.acc)} ${OP_SYM[SD.op]} ${sdFmt(b)}`,r:sdFmt(r)});
+        if(SD.hist.length>40)SD.hist.shift();
+        store.set("bw.hist",JSON.stringify(SD.hist));
+        renderTape();
+      }
+      SD.acc=null;SD.op=null;SD.fresh=true;break;
     }
-  } catch (e) { wakeLock = null; }
-}
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') applyWake(); });
-
-/* ---------------- Sanselig tilbakemelding ---------------- */
-function buzz(p){
-  if (!S.haptic || !navigator.vibrate) return;
-  try { navigator.vibrate(p || 8); } catch (e) {}
-}
-
-let actx = null;
-function tick(freq){
-  if (!S.sound) return;
-  try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-    if (actx.state === 'suspended') actx.resume();
-    const t = actx.currentTime;
-    const o = actx.createOscillator(), g = actx.createGain();
-    o.type = 'triangle';
-    o.frequency.value = freq || 1750;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.05, t + 0.006);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
-    o.connect(g); g.connect(actx.destination);
-    o.start(t); o.stop(t + 0.08);
-  } catch (e) {}
-}
-
-/* Ringbølge + trykk på alle taster */
-document.addEventListener('pointerdown', e => {
-  const btn = e.target.closest('.key');
-  if (!btn) return;
-  const r = btn.getBoundingClientRect();
-  const d = Math.max(r.width, r.height) * 2.2;
-  const s = document.createElement('span');
-  s.className = 'ripple';
-  s.style.width = s.style.height = d + 'px';
-  s.style.left = (e.clientX - r.left) + 'px';
-  s.style.top  = (e.clientY - r.top) + 'px';
-  btn.appendChild(s);
-  s.addEventListener('animationend', () => s.remove());
-  buzz(btn.classList.contains('eq') ? 12 : 8);
-  tick(btn.dataset.digit ? 1750 : btn.classList.contains('eq') ? 900 : 1400);
-}, { passive: true });
-
-/* ---------------- Tastelogikk (delegering) ---------------- */
-function route(btn){
-  const d = btn.dataset;
-  if (d.digit  !== undefined) return inputDigit(d.digit);
-  if (d.op     !== undefined) {
-    const map = { '−':'-', '+':'+', '×':'×', '÷':'÷', '^':'^' };
-    return inputOp(map[d.op]);
+    case "ADD":case "SUB":case "MUL":case "DIV":case "POW":{
+      sdClearErr();
+      if(SD.acc!==null&&SD.op&&!SD.fresh){
+        const r=sdApply(SD.acc,sdNum(),SD.op);
+        if(isNaN(r)){SD.err=true;SD.acc=null;SD.op=null;break;}
+        SD.acc=r;SD.cur=sdFmtRaw(r);
+      }else SD.acc=sdNum();
+      SD.op=k;SD.fresh=true;break;
+    }
+    default:/* digit */
+      sdClearErr();
+      if(SD.fresh){SD.cur=k;SD.fresh=false;}
+      else if(SD.cur.replace(/[-.]/g,"").length<15)SD.cur=(SD.cur==="0"?k:SD.cur+k);
   }
-  if (d.fn     !== undefined) {
-    const name = inv && d.inv ? d.inv : d.fn;
-    if (inv) { inv = false; applyInv(); }
-    return inputFn(name);
-  }
-  if (d.const  !== undefined) return inputConst(d.const);
-  switch (d.action) {
-    case 'comma':   return inputComma();
-    case 'neg':     return doNeg();
-    case 'back':    return doBack();
-    case 'ac':      return doAC();
-    case 'equals':  return doEquals();
-    case 'lparen':  return inputLParen();
-    case 'rparen':  return inputRParen();
-    case 'percent': return postfix('%');
-    case 'fact':    return postfix('!');
-    case 'square':  return postfix('square');
-    case 'inv':
-      inv = !inv; applyInv(); return;
-    case 'angle':
-      S.angle = S.angle === 'deg' ? 'rad' : 'deg';
-      saveSettings(); render(); return;
-  }
+  sdRender();
 }
-document.addEventListener('click', e => {
-  const btn = e.target.closest('.key');
-  if (btn) route(btn);
+function sdFmtRaw(x){ /* canonical string for internal cur */
+  if(!isFinite(x))return "0";
+  return parseFloat(x.toPrecision(12)).toString();
+}
+
+/* ================= app switch + theme ================= */
+const APP={mode:"PRG"};
+function applyApp(m){
+  APP.mode=m;
+  $("viewPRG").classList.toggle("hidden",m!=="PRG");
+  $("viewSTD").classList.toggle("hidden",m!=="STD");
+  $("tabs").classList.toggle("hidden",m!=="PRG");
+  $("histClear").classList.toggle("hidden",m!=="STD");
+  document.querySelectorAll("#appdots .adot").forEach(d=>d.classList.toggle("active",d.dataset.app===m));
+  $("appdots").style.setProperty("--i",m==="STD"?1:0);
+  document.querySelectorAll(".pd").forEach(d=>d.classList.toggle("on",d.dataset.app===m));
+  setAccent();
+  if(m==="STD")sdRender();else render();
+  store.set("bw.app",m);
+}
+function setApp(m,dir){
+  if(m===APP.mode)return;
+  haptic(12);
+  if(!dir){applyApp(m);return;}
+  const out=$(APP.mode==="PRG"?"viewPRG":"viewSTD");
+  const inn=$(m==="PRG"?"viewPRG":"viewSTD");
+  out.classList.add(dir==="left"?"slide-l":"slide-r");
+  setTimeout(()=>{
+    applyApp(m);
+    out.classList.remove("slide-l","slide-r");
+    inn.classList.add(dir==="left"?"slide-r":"slide-l");
+    requestAnimationFrame(()=>requestAnimationFrame(()=>inn.classList.remove("slide-l","slide-r")));
+  },170);
+}
+function setTheme(light){
+  document.body.classList.toggle("light",light);
+  $("themeBtn").innerHTML=light
+    ?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4l1.4-1.4"/></svg>'
+    :'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  const tm=document.querySelector('meta[name="theme-color"]');
+  if(tm)tm.content=light?"#EFF2F6":"#0E1116";
+  store.set("bw.theme",light?"light":"dark");
+}
+
+/* ================= events ================= */
+$("pad").addEventListener("click",e=>{
+  if(hintFired){hintFired=false;return;}
+  const k=e.target.closest("[data-k]"); if(!k)return;
+  haptic(8); press(k.dataset.k);
 });
-
-/* Hindre kontekstmeny ved langt trykk på taster */
-$('app').addEventListener('contextmenu', e => {
-  if (e.target.closest('.key') || e.target.closest('.main')) e.preventDefault();
+const SUP={"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+const sup=n=>String(n).split("").map(c=>SUP[c]||c).join("");
+function applyPow(p){
+  const x=sdNum(), r=Math.pow(x,p);
+  if(!isFinite(r)){SD.err=true;SD.errMsg="Invalid input";sdRender();return;}
+  SD.hist.push({e:`(${sdFmt(x)})${sup(p)}`,r:sdFmt(r)});
+  if(SD.hist.length>40)SD.hist.shift();store.set("bw.hist",JSON.stringify(SD.hist));renderTape();
+  SD.cur=sdFmtRaw(r);SD.fresh=true;sdRender();
+}
+let _lastCopy="";
+function showToast(msg){
+  const t=$("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(showToast._t);showToast._t=setTimeout(()=>t.classList.remove("show"),1300);
+}
+function copyText(s){
+  _lastCopy=s;
+  try{navigator.clipboard&&navigator.clipboard.writeText(s);}catch(e){}
+  showToast("Copied "+s);haptic(8);
+}
+function copyBase(mode){
+  if(S.err)return;
+  const v=mask(S.cur,S.bits);
+  const pre={HEX:"0x",OCT:"0o",BIN:"0b",DEC:""}[mode];
+  const body=mode==="DEC"?(S.signed?toSigned(v,S.bits):v).toString(10)
+    :v.toString(Number(BASE[mode])).toUpperCase();
+  copyText(pre+body);
+}
+$("mainVal").addEventListener("click",()=>copyBase(S.mode));
+$("insight").addEventListener("click",e=>{
+  const p=e.target.closest(".pill"); if(!p)return;
+  copyText(p.dataset.copy);
 });
-
-/* Langt trykk på slett-tasten = tøm alt (Samsung-vane) */
-let backHoldTimer = null;
-const backBtn = document.querySelector('[data-action="back"]');
-backBtn.addEventListener('pointerdown', () => {
-  backHoldTimer = setTimeout(() => { doAC(true); buzz(20); backHoldTimer = null; backBtn.dataset.held = '1'; }, 600);
+$("sMainVal").addEventListener("click",()=>{
+  if(SD.err)return;
+  copyText(sdFmtRaw(sdNum()));
 });
-['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
-  backBtn.addEventListener(ev, () => clearTimeout(backHoldTimer)));
-backBtn.addEventListener('click', e => {
-  if (backBtn.dataset.held) { delete backBtn.dataset.held; e.stopImmediatePropagation(); e.preventDefault(); }
-}, true);
-
-/* ---------------- Langt trykk = kopier resultat ---------------- */
-let lpTimer = null;
-$('mainLine').addEventListener('pointerdown', () => {
-  lpTimer = setTimeout(copyResult, 550);
+$("powcard").addEventListener("click",e=>{
+  const b=e.target.closest("[data-p]"); if(!b)return;
+  $("powcard").classList.add("hidden"); haptic(8);
+  if(b.dataset.p==="custom"){pressStd("POW");return;}
+  applyPow(Number(b.dataset.p));
 });
-['pointerup', 'pointerleave', 'pointercancel'].forEach(ev =>
-  $('mainLine').addEventListener(ev, () => clearTimeout(lpTimer)));
-
-function copyResult(){
-  const plain = $('mainLine').textContent.replace(/\u2009/g, '').replace(/−/g, '-').replace(/,/g, '.');
-  if (plain === 'Feil') return;
-  buzz(20);
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(plain)
-      .then(() => toast('KOPIERT'))
-      .catch(() => toast('KUNNE IKKE KOPIERE'));
-  } else {
-    toast('KUNNE IKKE KOPIERE');
+function delTape(i){
+  SD.hist.splice(i,1);
+  store.set("bw.hist",JSON.stringify(SD.hist));
+  renderTape();showToast("Entry removed");haptic(12);
+}
+let tapeTimer=null,tapeFired=false;
+$("tape").addEventListener("touchstart",e=>{
+  const r=e.target.closest(".tape-row"); if(!r)return;
+  tapeTimer=setTimeout(()=>{tapeFired=true;delTape(Number(r.dataset.i));},450);
+},{passive:true});
+$("tape").addEventListener("touchmove",()=>clearTimeout(tapeTimer),{passive:true});
+$("tape").addEventListener("touchend",()=>clearTimeout(tapeTimer),{passive:true});
+$("tape").addEventListener("click",e=>{
+  if(tapeFired){tapeFired=false;return;}
+  const r=e.target.closest(".tape-row"); if(!r)return;
+  sdClearErr(); haptic(8);
+  SD.cur=SD.hist[Number(r.dataset.i)].r.replace(/ /g,"");
+  SD.fresh=true; sdRender();
+});
+$("sPad").addEventListener("click",e=>{
+  if(hintFired){hintFired=false;return;}
+  const k=e.target.closest("[data-k]"); if(!k)return;
+  haptic(8); pressStd(k.dataset.k);
+});
+$("tabs").addEventListener("click",e=>{
+  const t=e.target.closest(".tab"); if(!t)return;
+  const cur=MODES.indexOf(S.mode),nxt=MODES.indexOf(t.dataset.mode);
+  setMode(t.dataset.mode,nxt>cur?"left":"right");
+});
+let convTimer=null,convFired=false;
+$("conv").addEventListener("touchstart",e=>{
+  const r=e.target.closest(".conv-row"); if(!r)return;
+  convTimer=setTimeout(()=>{convFired=true;copyBase(r.dataset.mode);},450);
+},{passive:true});
+$("conv").addEventListener("touchmove",()=>clearTimeout(convTimer),{passive:true});
+$("conv").addEventListener("touchend",()=>clearTimeout(convTimer),{passive:true});
+$("conv").addEventListener("click",e=>{
+  if(convFired){convFired=false;return;}
+  const r=e.target.closest(".conv-row"); if(!r)return;
+  const cur=MODES.indexOf(S.mode),nxt=MODES.indexOf(r.dataset.mode);
+  setMode(r.dataset.mode,nxt>cur?"left":"right");
+});
+$("meta").addEventListener("click",e=>{
+  const c=e.target.closest(".chip"); if(!c)return; haptic(8);
+  if(c.id==="sgn"){S.signed=!S.signed;render();return;}
+  setBits(Number(c.dataset.bits));
+});
+$("seg").addEventListener("click",e=>{
+  const b=e.target.closest("[data-view]"); if(!b)return;
+  S.view=b.dataset.view;setInspect(true);render();
+});
+$("fieldBtn").addEventListener("click",()=>{
+  S.field.active=!S.field.active;S.field.a=null;S.field.b=null;
+  if(S.field.active)setInspect(true);
+  render();haptic(8);
+});
+$("endBtn").addEventListener("click",()=>{
+  S.endian=S.endian==="BE"?"LE":"BE";render();haptic(8);
+});
+$("copyBtn").addEventListener("click",()=>{
+  const v=mask(S.cur,S.bits), hex=v.toString(16).toUpperCase().padStart(S.bits/4,"0");
+  try{navigator.clipboard&&navigator.clipboard.writeText("0x"+hex);}catch(e){}
+  $("copyBtn").textContent="✓";setTimeout(()=>{$("copyBtn").textContent="COPY";},900);
+  haptic(8);
+});
+function setInspect(open){
+  $("inspect").classList.toggle("folded",!open);
+  $("pad").classList.toggle("hidden",open);
+  $("prgCard").classList.toggle("grow",open);
+}
+$("sciFold").addEventListener("click",()=>{
+  $("sci").classList.toggle("folded");haptic(8);
+});
+$("degBtn").addEventListener("click",()=>{
+  SD.deg=!SD.deg;$("degBtn").textContent=SD.deg?"DEG":"RAD";
+  $("degBtn").classList.toggle("active",!SD.deg);haptic(8);
+});
+$("sciBody").addEventListener("click",e=>{
+  if(hintFired){hintFired=false;return;}
+  const b=e.target.closest("[data-k]"); if(!b)return;
+  haptic(8);pressStd(b.dataset.k);
+});
+$("fold").addEventListener("click",()=>{
+  setInspect($("inspect").classList.contains("folded"));haptic(8);
+});
+function setBitTo(i,set){
+  const m=1n<<BigInt(i);
+  const nv=set?(S.cur|m):(S.cur&~m);
+  if(mask(nv,S.bits)!==mask(S.cur,S.bits)){clearErr();S.cur=mask(nv,S.bits);S.fresh=true;render();}
+}
+const paint={start:null,set:false,on:false,fired:false};
+$("inspectBody").addEventListener("touchstart",e=>{
+  const b=e.target.closest(".bit");
+  if(!b||S.field.active){paint.start=null;return;}
+  paint.start=Number(b.dataset.bit);
+  paint.set=!b.classList.contains("on");
+  paint.on=false;
+},{passive:true});
+$("inspectBody").addEventListener("touchmove",e=>{
+  if(paint.start===null||S.field.active)return;
+  const t=e.touches[0];let el=null;
+  try{el=document.elementFromPoint(t.clientX,t.clientY);}catch(err){}
+  const b=el&&el.closest?el.closest(".bit"):null;
+  if(!b)return;
+  const i=Number(b.dataset.bit);
+  if(!paint.on){
+    if(i===paint.start)return;
+    paint.on=true;paint.fired=true;haptic(6);
+    setBitTo(paint.start,paint.set);
   }
-}
-
-let toastTimer = null;
-function toast(msg, action){
-  const t = $('toast'), a = $('toastAct');
-  $('toastMsg').textContent = msg;
-  clearTimeout(toastTimer);
-  if (action) {
-    a.hidden = false; a.textContent = action.label; a.onclick = action.fn;
-    t.classList.add('show');
-    toastTimer = setTimeout(() => t.classList.remove('show'), 12000);
-  } else {
-    a.hidden = true; a.onclick = null;
-    t.classList.add('show');
-    toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+  setBitTo(i,paint.set);
+},{passive:true});
+$("inspectBody").addEventListener("touchend",()=>{paint.start=null;},{passive:true});
+let bitHintFired=false,bitTimer=null;
+$("inspectBody").addEventListener("touchstart",e=>{
+  const b=e.target.closest(".bit"); if(!b)return;
+  bitTimer=setTimeout(()=>{
+    bitHintFired=true;
+    const i=Number(b.dataset.bit), val=1n<<BigInt(i);
+    $("hintKey").textContent="BIT "+i;
+    $("hintTxt").innerHTML=`Weight 2${sup(i)} = <code>0x${val.toString(16).toUpperCase()}</code> = ${group(val.toString(10),3)}. Tap to toggle it.`;
+    $("hintcard").classList.remove("hidden");
+    clearTimeout(showHint._t);showHint._t=setTimeout(hideHint,5000);
+    haptic(15);
+  },450);
+},{passive:true});
+$("inspectBody").addEventListener("touchmove",()=>clearTimeout(bitTimer),{passive:true});
+$("inspectBody").addEventListener("touchend",()=>clearTimeout(bitTimer),{passive:true});
+$("inspectBody").addEventListener("click",e=>{
+  if(paint.fired){paint.fired=false;return;}
+  if(bitHintFired){bitHintFired=false;return;}
+  const b=e.target.closest(".bit"); if(!b)return;
+  const i=Number(b.dataset.bit);
+  haptic(6);
+  if(S.field.active){
+    if(S.field.a===null||S.field.b!==null){S.field.a=i;S.field.b=null;}
+    else S.field.b=i;
+    render();return;
   }
+  clearErr();
+  S.cur=mask(S.cur^(1n<<BigInt(i)),S.bits);
+  S._flash=i;
+  S.fresh=true; render();
+  S._flash=null;
+});
+/* ---------- long-press hints on the non-obvious keys ---------- */
+const HINTS={
+  AND:{t:"AND",d:"Bitwise AND — a result bit is 1 only where <code>both</code> numbers have 1. The classic masking tool: keep some bits, zero the rest.",
+    ex:["F3","AND","0F","="],res:"3",note:"keeps only the low nibble"},
+  OR:{t:"OR",d:"Bitwise OR — 1 where <code>either</code> number has 1. Used to set flags without touching the rest.",
+    ex:["F0","OR","0F","="],res:"FF"},
+  XOR:{t:"XOR",d:"Exclusive OR — 1 where the bits <code>differ</code>. XOR with a mask flips exactly those bits; <code>X XOR X = 0</code>.",
+    ex:["FF","XOR","0F","="],res:"F0",note:"low nibble flipped"},
+  NOT:{t:"NOT",d:"Inverts every bit in the word instantly — handy for building masks.",
+    live:()=>`NOT ${fmt(S.cur,S.mode,S.bits,S.signed)} → <b>${fmt(opNOT(S.cur,S.bits),S.mode,S.bits,S.signed)}</b>`},
+  SHL:{t:"<< SHIFT LEFT",d:"Slides all bits n places left; each step doubles. Bits pushed past the word edge are lost.",
+    ex:["1","<<","4","="],res:"10₁₆ (=16)"},
+  SHR:{t:">> SHIFT RIGHT",d:"Slides bits right; each step halves. In SIGNED mode the sign bit is kept (arithmetic), in UNSIGNED zeros come in.",
+    ex:["F0",">>","4","="],res:"F"},
+  ROL:{t:"RoL — ROTATE LEFT",d:"All bits move one step left; the top bit re-enters at the bottom. Nothing is ever lost.",
+    live:()=>`RoL ${fmt(S.cur,S.mode,S.bits,S.signed)} → <b>${fmt(rol(S.cur,S.bits),S.mode,S.bits,S.signed)}</b>`},
+  ROR:{t:"RoR — ROTATE RIGHT",d:"All bits move one step right; the lowest bit wraps to the top. Press repeatedly to walk a bit around the word.",
+    live:()=>`RoR ${fmt(S.cur,S.mode,S.bits,S.signed)} → <b>${fmt(ror(S.cur,S.bits),S.mode,S.bits,S.signed)}</b>`},
+  MOD:{t:"MOD",d:"Remainder after division — wrap-around counters, divisibility checks (<code>X MOD 2</code> tests odd/even).",
+    ex:["A","MOD","3","="],res:"1"},
+  NEG:{t:"± NEGATE",d:"Two's-complement negate — flips the sign. In UNSIGNED mode the value wraps instead.",
+    live:()=>`± ${fmt(S.cur,S.mode,S.bits,S.signed)} → <b>${fmt(opNEG(S.cur,S.bits),S.mode,S.bits,S.signed)}</b>`},
+  "00":{t:"00",d:"Types two zeros with one tap — quick for round numbers."},
+  CE:{t:"CE — CLEAR ENTRY",d:"Clears only the number you are typing; the pending operation survives. Mistyped the second operand? CE and retype.",
+    ex:["7","+","5","CE","2","="],res:"11₈",note:"the 5 was replaced by 2"},
+  SWP:{t:"⇄ SWAP",d:"Swaps the two operands mid-calculation. Same as tapping the small pending line above the display.",
+    ex:["3","−","8","⇄","="],res:"5",note:"3−8 became 8−3"},
+  PCT:{t:"% SMART PERCENT",d:"After + or − it means percent <code>of the first number</code>. On its own it divides by 100.",
+    ex:["200","+","10","%","="],res:"220"},
+  INV:{t:"1/x RECIPROCAL",d:"Replaces the number with 1 divided by it. Applied instantly, logged on the tape.",
+    live:()=>{const x=sdNum();return x===0?null:`1/${sdFmt(x)} → <b>${sdFmt(1/x)}</b>`;}},
+  SQ:{t:"xⁿ POWERS",d:"Opens a picker: square, cube, x⁴, x⁵ — or <code>xʸ…</code> to type any exponent (even 0.5 for roots) and press =.",
+    ex:["5","xⁿ","x³"],res:"125"},
+  SQRT:{t:"√ SQUARE ROOT",d:"Instant square root. Negative numbers give Invalid input.",
+    live:()=>{const x=sdNum();return x<0?null:`√${sdFmt(x)} → <b>${sdFmt(Math.sqrt(x))}</b>`;}},
+  SIN:{t:"sin",d:"Sine of the displayed angle. The DEG/RAD chip sets whether you mean degrees or radians.",
+    live:()=>{const x=sdNum();return `sin(${sdFmt(x)}${SD.deg?"°":""}) → <b>${sdFmt(Math.abs(Math.sin(SD.deg?x*Math.PI/180:x))<1e-12?0:Math.sin(SD.deg?x*Math.PI/180:x))}</b>`;}},
+  COS:{t:"cos",d:"Cosine of the displayed angle — DEG/RAD chip applies.",
+    live:()=>{const x=sdNum();return `cos(${sdFmt(x)}${SD.deg?"°":""}) → <b>${sdFmt(Math.abs(Math.cos(SD.deg?x*Math.PI/180:x))<1e-12?0:Math.cos(SD.deg?x*Math.PI/180:x))}</b>`;}},
+  TAN:{t:"tan",d:"Tangent of the displayed angle — DEG/RAD chip applies. Undefined at 90° gives Invalid input.",
+    ex:["45","tan"],res:"1"},
+  LN:{t:"ln — NATURAL LOG",d:"Logarithm base e. Only defined for positive numbers.",
+    live:()=>{const x=sdNum();return x<=0?null:`ln(${sdFmt(x)}) → <b>${sdFmt(Math.log(x))}</b>`;}},
+  LOG:{t:"log₁₀",d:"Logarithm base 10 — how many digits, roughly. log(1000) = 3.",
+    ex:["100","log₁₀"],res:"2"},
+  FACT:{t:"x! — FACTORIAL",d:"Multiplies 1×2×…×x. Whole numbers 0–170 only (171! overflows).",
+    ex:["5","x!"],res:"120"},
+  PI:{t:"π",d:"Inserts 3.14159… ready to calculate with — try <code>π</code> <code>×</code> <code>r²</code> for a circle's area."},
+  EULER:{t:"e",d:"Inserts Euler's number 2.71828…, the base of natural logarithms."},
+  MC:{t:"MC — MEMORY CLEAR",d:"Empties the memory register; the little M badge disappears."},
+  MR:{t:"MR — MEMORY RECALL",d:"Brings the stored memory value to the display so you can calculate with it.",
+    ex:["8","M+","AC","MR"],res:"8"},
+  MPLUS:{t:"M+ — MEMORY ADD",d:"Adds the displayed number into memory — works across separate calculations, so you can sum as you go.",
+    ex:["8","M+","2","M+","MR"],res:"10"},
+  MMINUS:{t:"M− — MEMORY SUBTRACT",d:"Subtracts the displayed number from memory."},
+};
+let hintTimer=null,hintFired=false;
+function showHint(k){
+  const h=HINTS[k]; if(!h)return false;
+  $("hintKey").textContent=h.t;
+  let html=h.d;
+  if(h.ex)html+=`<div class="h-ex"><span class="h-lbl">TRY</span>${h.ex.map(x=>`<span class="h-chip">${x}</span>`).join("")}<span class="h-res">= ${h.res}</span>${h.note?`<span class="h-lbl" style="width:100%;margin-top:2px">${h.note.toUpperCase()}</span>`:""}</div>`;
+  if(h.live){const l=h.live();if(l)html+=`<div class="h-now"><span class="h-lbl">NOW</span> ${l}</div>`;}
+  $("hintTxt").innerHTML=html;
+  $("hintcard").classList.remove("hidden");
+  clearTimeout(showHint._t);
+  showHint._t=setTimeout(hideHint,6000);
+  return true;
 }
+function hideHint(){$("hintcard").classList.add("hidden");}
+function undoClear(isStd){
+  if(isStd){
+    if(!SD._undo)return false;
+    SD.cur=SD._undo.cur;SD.acc=SD._undo.acc;SD.op=SD._undo.op;SD._undo=null;SD.fresh=true;
+    sdRender();showToast("Restored");haptic(12);return true;
+  }
+  if(!S._undo)return false;
+  S.cur=S._undo.cur;S.acc=S._undo.acc;S.op=S._undo.op;S._undo=null;S.fresh=true;
+  render();showToast("Restored");haptic(12);return true;
+}
+function armHint(target,isStd){
+  const b=target.closest("[data-k]");
+  if(!b)return;
+  const k=b.dataset.k;
+  if(!HINTS[k]&&k!=="AC")return;
+  hintTimer=setTimeout(()=>{
+    hintFired=true;
+    if(k==="AC"){if(!undoClear(isStd))showToast("Nothing to restore");return;}
+    if(showHint(k))haptic(15);
+  },450);
+}
+function disarmHint(){clearTimeout(hintTimer);hintTimer=null;}
+for(const [id,isStd] of [["pad",false],["sPad",true],["sciBody",true]]){
+  const el=$(id);
+  el.addEventListener("touchstart",e=>armHint(e.target,isStd),{passive:true});
+  el.addEventListener("touchmove",disarmHint,{passive:true});
+  el.addEventListener("touchend",disarmHint,{passive:true});
+  el.addEventListener("mousedown",e=>armHint(e.target,isStd));
+  el.addEventListener("mouseup",disarmHint);
+  el.addEventListener("contextmenu",e=>e.preventDefault());
+}
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".hintcard")){hideHint();$("powcard").classList.add("hidden");}
+},true);
 
-/* ---------------- Fysisk tastatur (DeX / PC) ---------------- */
-const KEYS = Array.from(document.querySelectorAll('.key'));
-function findBtn(k){
-  return KEYS.find(b => {
-    const d = b.dataset;
-    if (d.digit === k) return true;
-    if (k === ',' || k === '.') return d.action === 'comma';
-    if (k === '*') return d.op === '×';
-    if (k === '/') return d.op === '÷';
-    if (k === '-') return d.op === '−';
-    if (k === '+') return d.op === '+';
-    if (k === '^') return d.op === '^';
-    if (k === '%') return d.action === 'percent';
-    if (k === '(') return d.action === 'lparen';
-    if (k === ')') return d.action === 'rparen';
-    if (k === '!') return d.action === 'fact';
-    if (k === 'Enter' || k === '=') return d.action === 'equals';
-    if (k === 'Backspace') return d.action === 'back';
-    if (k === 'Escape' || k === 'Delete') return d.action === 'ac';
-    return false;
-  });
+/* swipe on the keypads (and STD display) switches PRG ↔ STD */
+function appSwipe(dx){
+  if(dx<0)setApp(APP.mode==="PRG"?"STD":"PRG","left");
+  else    setApp(APP.mode==="PRG"?"STD":"PRG","right");
 }
-document.addEventListener('keydown', e => {
-  if (e.ctrlKey || e.metaKey || e.altKey) {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !document.querySelector('.sheet.open')) { copyResult(); e.preventDefault(); }
+let px=0,py=0,pt=0,pmoved=false;
+function padStart(e){const t=e.touches[0];px=t.clientX;py=t.clientY;pt=Date.now();pmoved=false;}
+function padMove(e){
+  const t=e.touches[0];
+  if(Math.abs(t.clientX-px)>10||Math.abs(t.clientY-py)>10)pmoved=true;
+}
+function padEnd(e){
+  const t=e.changedTouches[0],dx=t.clientX-px,dy=t.clientY-py;
+  if(Date.now()-pt>600||Math.abs(dx)<56||Math.abs(dy)>Math.abs(dx)*0.6)return;
+  appSwipe(dx);
+}
+/* suppress the key's click after a real swipe so buttons don't fire */
+for(const id of ["pad","sPad"]){
+  const el=$(id);
+  el.addEventListener("touchstart",padStart,{passive:true});
+  el.addEventListener("touchmove",padMove,{passive:true});
+  el.addEventListener("touchend",padEnd,{passive:true});
+  el.addEventListener("click",e=>{if(pmoved){e.stopPropagation();e.preventDefault();pmoved=false;}},true);
+}
+/* STD has no mode swipe, so its display also switches apps */
+{
+  const el=$("viewSTD").querySelector(".display");
+  el.addEventListener("touchstart",padStart,{passive:true});
+  el.addEventListener("touchend",padEnd,{passive:true});
+}
+$("appdots").addEventListener("click",e=>{
+  const d=e.target.closest("[data-app]"); if(!d)return;
+  setApp(d.dataset.app,d.dataset.app==="STD"?"left":"right");
+});
+$("themeBtn").addEventListener("click",()=>{
+  setTheme(!document.body.classList.contains("light"));haptic(8);
+});
+$("pending").addEventListener("click",()=>{
+  if(S.acc===null||!S.op||S.err)return;
+  const a=S.acc;S.acc=S.cur;S.cur=a;S.fresh=true;haptic(8);render();
+});
+$("sPending").addEventListener("click",()=>{
+  if(SD.acc===null||!SD.op||SD.err)return;
+  const a=SD.acc;SD.acc=sdNum();SD.cur=sdFmtRaw(a);SD.fresh=true;haptic(8);sdRender();
+});
+let hcArmed=false,hcTimer=null;
+$("histClear").addEventListener("click",()=>{
+  if(!hcArmed){
+    hcArmed=true;$("histClear").classList.add("warn");haptic(15);
+    hcTimer=setTimeout(()=>{hcArmed=false;$("histClear").classList.remove("warn");},2200);
     return;
   }
-  const sheetOpen = document.querySelector('.sheet.open');
-  if (e.key === 'Escape' && sheetOpen) { closeSheets(); return; }
-  if (sheetOpen) return;
-  let btn = findBtn(e.key);
-  if (!btn) {
-    const sci = { s:'sin', c:'cos', t:'tan', l:'ln', g:'log', r:'sqrt', p:'pi', e:'e' }[e.key.toLowerCase()];
-    if (sci && S.sci) btn = KEYS.find(b => b.dataset.fn === sci || b.dataset.const === sci);
-    if (e.key.toLowerCase() === 'i' && S.sci) btn = $('btnInv');
-  }
-  if (btn) {
-    e.preventDefault();
-    btn.classList.add('kbd');
-    setTimeout(() => btn.classList.remove('kbd'), 130);
-    route(btn);
-  }
+  clearTimeout(hcTimer);hcArmed=false;$("histClear").classList.remove("warn");
+  SD.hist=[];store.set("bw.hist","[]");renderTape();haptic(20);
 });
-
-/* ---------------- Skjermtilpasning (Samsung) ---------------- */
-function fitViewport(){
-  const vv = window.visualViewport;
-  const h = vv ? vv.height : window.innerHeight;
-  document.documentElement.style.setProperty('--app-h', h + 'px');
-  fitMain();
+$("helpBtn").addEventListener("click",()=>{$("help").classList.remove("hidden");haptic(8);});
+$("helpClose").addEventListener("click",()=>{$("help").classList.add("hidden");haptic(8);});
+/* swipe: PRG modes; also swipe on STD/PRG top bar switches app? keep modes only */
+let tx=0,ty=0,tt=0;
+function onStart(e){const t=e.touches[0];tx=t.clientX;ty=t.clientY;tt=Date.now();}
+function onEnd(e){
+  const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;
+  if(Date.now()-tt>600||Math.abs(dx)<48||Math.abs(dy)>Math.abs(dx)*0.7)return;
+  const i=MODES.indexOf(S.mode);
+  if(dx<0)setMode(MODES[(i+1)%4],"left");
+  else    setMode(MODES[(i+3)%4],"right");
 }
-window.addEventListener('resize', fitViewport);
-if (window.visualViewport) window.visualViewport.addEventListener('resize', fitViewport);
-window.addEventListener('orientationchange', () => setTimeout(fitViewport, 120));
-
-/* ---------------- PWA: installasjon ---------------- */
-let installPrompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  installPrompt = e;
-  $('rowInstall').hidden = false;
-});
-$('btnInstall').addEventListener('click', async () => {
-  if (!installPrompt) return;
-  installPrompt.prompt();
-  const { outcome } = await installPrompt.userChoice;
-  if (outcome === 'accepted') toast('INSTALLERT');
-  installPrompt = null;
-  $('rowInstall').hidden = true;
-});
-window.addEventListener('appinstalled', () => { $('rowInstall').hidden = true; toast('NUMERA ER INSTALLERT'); });
-
-/* ---------------- PWA: service worker + automatisk oppdatering ---------------- */
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
-
-      /* Ny versjon lastet ned i bakgrunnen -> tilby oppdatering */
-      const onWaiting = () => {
-        if (!reg.waiting) return;
-        toast('NY VERSJON KLAR', { label: 'OPPDATER', fn: () => reg.waiting && reg.waiting.postMessage({ type: 'SKIP_WAITING' }) });
-      };
-      /* Ligger det allerede en ferdig versjon klar ved oppstart, tas den i bruk med en gang */
-      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      reg.addEventListener('updatefound', () => {
-        const nw = reg.installing;
-        if (!nw) return;
-        nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) onWaiting();
-        });
-      });
-
-      /* Sjekk etter oppdatering hver gang appen kommer i forgrunnen */
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') reg.update().catch(() => {});
-      });
-      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000);
-    } catch (e) { /* offline eller ikke støttet */ }
-  });
-
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    location.reload();
-  });
+for(const el of [$("swipeZone"),$("tabs")]){
+  el.addEventListener("touchstart",onStart,{passive:true});
+  el.addEventListener("touchend",onEnd,{passive:true});
 }
+document.addEventListener("keydown",e=>{
+  if(APP.mode==="STD"){
+    const map={"+":"ADD","-":"SUB","*":"MUL","/":"DIV","%":"PCT","^":"POW","Enter":"EQ","=":"EQ",
+               "Backspace":"BS","Escape":"AC",".":"DOT",",":"DOT"};
+    if(/^[0-9]$/.test(e.key))return pressStd(e.key);
+    if(map[e.key]){e.preventDefault();pressStd(map[e.key]);}
+    return;
+  }
+  const map={"+":"ADD","-":"SUB","*":"MUL","/":"DIV","%":"MOD","Enter":"EQ","=":"EQ",
+             "Backspace":"BS","Escape":"AC","~":"NOT"};
+  const k=e.key;
+  if(/^[0-9]$/.test(k))return press(k);
+  if(/^[a-fA-F]$/.test(k)&&S.mode==="HEX")return press(k.toUpperCase());
+  if(map[k]){e.preventDefault();press(map[k]);}
+});
 
-/* ---------------- Init ---------------- */
-$('verLabel').textContent = 'v' + APP_VERSION;
-/* Snarvei fra hjemskjermen (manifest shortcuts): ?mode=sci */
-if (new URLSearchParams(location.search).get('mode') === 'sci') S.sci = true;
-applyTheme();
-syncSettingsUI();
-applySettingsEffects();
-renderHist();
-fitViewport();
-render();
-document.fonts && document.fonts.ready.then(fitMain);
+/* ================= init ================= */
+let light=false;
+const saved=store.get("bw.theme");
+if(saved)light=saved==="light";
+else{try{light=window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches;}catch(e){}}
+setTheme(light);
+try{const h=store.get("bw.hist");if(h)SD.hist=JSON.parse(h).slice(-40);}catch(e){}
+renderTape();
+const savedApp=store.get("bw.app");
+render();sdRender();
+if(savedApp==="STD")setApp("STD");
+
+/* ================= PWA install ================= */
+let installEvt=null;
+const isStandalone=()=>{
+  try{return window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;}
+  catch(e){return false;}
+};
+function showInstall(on){$("installBtn").classList.toggle("hidden",!on);}
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();installEvt=e;showInstall(true);
+});
+/* fallback: if the browser never offers a prompt (iOS, some webviews),
+   still show the button and explain the manual route */
+setTimeout(()=>{if(!installEvt&&!isStandalone())showInstall(true);},2500);
+$("installBtn").addEventListener("click",async()=>{
+  haptic(10);
+  if(installEvt){
+    installEvt.prompt();
+    try{
+      const c=await installEvt.userChoice;
+      if(c&&c.outcome==="accepted")showToast("Installing BitWise…");
+    }catch(e){}
+    installEvt=null;showInstall(false);
+    return;
+  }
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const local=location.protocol==="file:";
+  $("hintKey").textContent="INSTALL BITWISE";
+  $("hintTxt").innerHTML=local
+    ? 'Installing needs the file served over <code>http</code> or <code>https</code> — from a local server or a website. Opened straight from storage, browsers block installation.'
+    : ios
+      ? 'In Safari, tap the <span class="try">Share</span> button, then <code>Add to Home Screen</code>. BitWise then runs fullscreen with its own icon.'
+      : 'Open your browser menu (⋮) and choose <code>Install app</code> or <code>Add to Home screen</code>. If it is missing, BitWise is probably already installed.';
+  $("hintcard").classList.remove("hidden");
+  clearTimeout(showHint._t);showHint._t=setTimeout(hideHint,7000);
+});
+window.addEventListener("appinstalled",()=>{
+  showToast("BitWise installed 🎉");
+  installEvt=null;showInstall(false);
+});
+if(isStandalone())showInstall(false);
+/* ================= offline + auto-update ================= */
+const BUILD="__BUILD__";
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){
+  let refreshing=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{
+    if(refreshing)return;refreshing=true;location.reload();
+  });
+  navigator.serviceWorker.register("./sw.js").then(reg=>{
+    if(!store.get("bw.sw")){store.set("bw.sw","1");showToast("Offline-ready");}
+    const offer=(w)=>{
+      if(!navigator.serviceWorker.controller)return; /* first install, nothing to update */
+      const bar=$("updateBar");
+      bar.classList.remove("hidden");
+      bar.onclick=()=>{bar.classList.add("hidden");w.postMessage("SKIP_WAITING");};
+    };
+    if(reg.waiting)offer(reg.waiting);
+    reg.addEventListener("updatefound",()=>{
+      const w=reg.installing;if(!w)return;
+      w.addEventListener("statechange",()=>{if(w.state==="installed")offer(w);});
+    });
+    /* look for a new build every time the app comes back to the foreground */
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")reg.update().catch(()=>{});});
+  }).catch(()=>{});
+}
+{const el=$("buildLbl");if(el)el.textContent=BUILD.startsWith("__")?"local":BUILD;}
+
+/* ================= test surface ================= */
+window.CALC={S,SD,APP,mask,toSigned,fromSigned,fmt,applyOp,opNOT,opNEG,rol,ror,
+  popcount,msbIndex,extract,insights,f32parts,f64parts,fmtFloat,press,pressStd,setMode,setBits,setApp,setTheme,sdFmt,
+  _appSwipe:appSwipe,_setInspect:setInspect,_showHint:showHint,_hideHint:hideHint,HINTS,_getLastCopy:()=>_lastCopy,_undo:undoClear,_copyBase:copyBase,_paintBit:setBitTo,_delTape:delTape,_render:render,_sdRender:sdRender};
+})();
 </script>
 </body>
 </html>
